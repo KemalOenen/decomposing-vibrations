@@ -8,7 +8,7 @@
 
 
 **************************************************************************************************************
-                                          Kemal Önen, Dennis F. Dinu                                          
+                                  Kemal Önen, Dennis F. Dinu, Klaus R. Liedl                                  
                                       Liedl Lab, University of Innsbruck                                      
 **************************************************************************************************************
 
@@ -28,9 +28,9 @@ dihedrals: []
 There are 0 redundant internal coordinates used.
 
 The condition numbers of the B-Matrix are given by:
-Sum-Norm of B: 17.45854754594021
-Eucledian-Norm of B: 3.024607943190573
-Infinity-Norm of B: 17.530175269521163
+Sum-Norm of B: 17.45854753248841
+Eucledian-Norm of B: 3.0246079431905732
+Infinity-Norm of B: 17.530175260115534
 
 
 Testing if the Internal Coordinate Set is complete ...
