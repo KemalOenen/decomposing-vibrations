@@ -1,0 +1,84 @@
+ .__   __.   ______   .___  ___.   ______    _______   _______   ______   ______      .______   ____    ____ 
+ |  \ |  |  /  __  \  |   \/   |  /  __  \  |       \ |   ____| /      | /  __  \     |   _  \  \   \  /   / 
+ |   \|  | |  |  |  | |  \  /  | |  |  |  | |  .--.  ||  |__   |  ,----'|  |  |  |    |  |_)  |  \   \/   /  
+ |  . `  | |  |  |  | |  |\/|  | |  |  |  | |  |  |  ||   __|  |  |     |  |  |  |    |   ___/    \_    _/   
+ |  |\   | |  `--'  | |  |  |  | |  `--'  | |  '--'  ||  |____ |  `----.|  `--'  |  __|  |          |  |     
+ |__| \__|  \______/  |__|  |__|  \______/  |_______/ |_______| \______| \______/  (__) _|          |__|     
+                                                                                                             
+
+
+**************************************************************************************************************
+                                          Kemal Önen, Dennis F. Dinu                                          
+                                      Liedl Lab, University of Innsbruck                                      
+**************************************************************************************************************
+
+You did NOT include the consideration of out-of-plane angles. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The following primitive internals (bonds, (in-plane) angles, out-of-plane angles and torsions) were generated:
+bonds: [('H1', 'N'), ('N', 'H2'), ('N', 'H3')]
+in-plane angles: [('H1', 'N', 'H2'), ('H1', 'N', 'H3'), ('H2', 'N', 'H3')]
+out-of-plane angles: []
+dihedrals: []
+
+6 internal coordinates are at least needed for the decomposition scheme.
+6 Internal Coordinates are used in your analysis.
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 17.45854754594021
+Eucledian-Norm of B: 3.024607943190573
+Infinity-Norm of B: 17.530175269521163
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------------------Results of the Decomposition Scheme--------------------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 1109.17 1687.75 1687.75 3471.62 3597.25 3597.29
+            (H1, N)               3556.16    0.03    0.00    0.00    0.34    0.17    0.50
+            (N, H2)               3556.13    0.03    0.00    0.00    0.34    0.67    0.00
+            (N, H3)               3556.16    0.03    0.00    0.00    0.34    0.17    0.50
+        (H1, N, H2)               1518.93    0.43    0.16    0.47    0.00    0.00    0.00
+        (H1, N, H3)               1518.93    0.43    0.62    0.00    0.00    0.00    0.00
+        (H2, N, H3)               1518.93    0.43    0.16    0.47    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 1109.17 1687.75 1687.75 3471.62 3597.25 3597.29
+            (H1, N)    2.03    0.09    0.28   33.33   16.67   49.98
+            (N, H2)    2.03    0.37    0.00   33.34   66.64    0.00
+            (N, H3)    2.03    0.09    0.28   33.33   16.67   49.98
+        (H1, N, H2)   31.30   16.57   49.72    0.00    0.01    0.02
+        (H1, N, H3)   31.30   66.29    0.00    0.00    0.02    0.00
+        (H2, N, H3)   31.30   16.57   49.72    0.00    0.01    0.02
+
+--------------------------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordiante per normal-coordinate 
+
+Internal Coordinate 1109.17 1687.75 1687.75 3471.62 3597.25 3597.29
+            (H1, N)    0.00   -0.00   -0.00    0.15    0.08    0.25
+            (N, H2)    0.00   -0.00   -0.00    0.15    0.33    0.00
+            (N, H3)    0.00   -0.00   -0.00    0.15    0.08    0.25
+        (H1, N, H2)    0.02    0.02    0.05    0.00   -0.00   -0.00
+        (H1, N, H3)    0.02    0.07    0.00    0.00   -0.00   -0.00
+        (H2, N, H3)    0.02    0.02    0.05    0.00   -0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 1109.17 1687.75 1687.75 3471.62 3597.25 3597.29
+            (H1, N)    0.06   -0.02   -0.07   33.27   16.69   50.07
+            (N, H2)    0.06   -0.09   -0.00   33.28   66.75    0.00
+            (N, H3)    0.06   -0.02   -0.07   33.27   16.69   50.07
+        (H1, N, H2)   33.27   16.69   50.07    0.06   -0.02   -0.07
+        (H1, N, H3)   33.27   66.75    0.00    0.06   -0.09   -0.00
+        (H2, N, H3)   33.27   16.69   50.07    0.06   -0.02   -0.07
