@@ -16,9 +16,10 @@ You did NOT include the consideration of out-of-plane angles. Note that out-of-p
 than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
 useful for planar systems.
 
-The following primitive internals (bonds, (in-plane) angles, out-of-plane angles and torsions) were generated:
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
 bonds: [('H1', 'N'), ('N', 'H2'), ('N', 'H3')]
 in-plane angles: [('H1', 'N', 'H2'), ('H1', 'N', 'H3'), ('H2', 'N', 'H3')]
+linear valence-angles: []
 out-of-plane angles: []
 dihedrals: []
 
@@ -63,7 +64,7 @@ Internal Coordinate 1109.17 1687.75 1687.75 3471.62 3597.25 3597.29
 --------------------------------------------------------------------------------------------------------------
 
 
-2.) Eigenvalues for each internal coordiante per normal-coordinate 
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
 
 Internal Coordinate 1109.17 1687.75 1687.75 3471.62 3597.25 3597.29
             (H1, N)    0.00   -0.00   -0.00    0.15    0.08    0.25

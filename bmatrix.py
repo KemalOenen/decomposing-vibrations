@@ -68,6 +68,17 @@ def B_Matrix_Entry_Angle_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordinates_A
              B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC))
 
 
+
+
+def B_Matrix_Entry_LinearAngle_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    return 0
+
+def B_Matrix_Entry_LinearAngle_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    return 0
+
+def B_Matrix_Entry_LinearAngle_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    return 0
+
 ''''' 
 Note: For the Entries of the torsion-part of the B-Matrix entry, we define the following geometry:
 B-A-C-D or with vectors: B <- A <-> C -> DCoordinates_AtomC
@@ -210,13 +221,13 @@ def B_Matrix_Entry_OutOfPlane_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordina
              + B_Matrix_Entry_OutOfPlane_AtomD(Coordinates_AtomA,Coordinates_AtomB,
                                                Coordinates_AtomC,Coordinates_AtomD))
 
-def b_matrix(atoms, bonds, angles, out_of_plane , dihedrals):
+def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof):
     n_atoms = len(atoms)
     coordinates = np.array([a.coordinates for a in atoms])
     atom_index = {a.symbol: i for i, a in enumerate(atoms)}
-    n_internal = len(bonds) + len(angles) + len(out_of_plane)  +  len(dihedrals)
-    assert n_internal >= 3*n_atoms - 6, \
-        f"Wrong number of internal coordinates, n_internal ({n_internal}) should be >= {3*n_atoms-6}."
+    n_internal = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
+    assert n_internal >= idof, \
+        f"Wrong number of internal coordinates, n_internal ({n_internal}) should be >= {idof}."
     matrix = np.zeros((n_internal, 3*n_atoms))
     i_internal = 0
     for bond in bonds:
@@ -231,6 +242,13 @@ def b_matrix(atoms, bonds, angles, out_of_plane , dihedrals):
         matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_Angle_AtomB(coord[1], coord[0], coord[2])
         matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_Angle_AtomA(coord[1], coord[0], coord[2])
         matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_Angle_AtomC(coord[1], coord[0], coord[2])
+        i_internal += 1
+    for linear_angle in linear_angles:
+        index = [atom_index[a] * 3 for a in linear_angle]
+        coord = [coordinates[atom_index[a]] for a in linear_angle]
+        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngle_AtomB(coord[1], coord[0], coord[2])
+        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngle_AtomA(coord[1], coord[0], coord[2])
+        matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngle_AtomC(coord[1], coord[0], coord[2])
         i_internal += 1
     for outofplane in out_of_plane:
         index = [atom_index[a] * 3 for a in outofplane]

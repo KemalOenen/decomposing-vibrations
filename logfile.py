@@ -104,7 +104,7 @@ def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_o
     logging.info("")
     
     logging.info("")
-    logging.info("2.) Eigenvalues for each internal coordiante per normal-coordinate ")
+    logging.info("2.) Eigenvalues for each internal coordinate per normal-coordinate ")
     logging.info("")
     logging.info(Results2.to_string(index=False))
     

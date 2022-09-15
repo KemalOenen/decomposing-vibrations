@@ -95,9 +95,14 @@ def main():
     
     #TODO: selection scheme for the IC sets
     
+    idof = 0
+    if (linear_angles and not angles) or (not linear_angles and not angles):
+        idof = 3*n_atoms-5
+    else:
+        idof = 3*n_atoms-6
     
     n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
-    red = n_internals - (3*n_atoms-6)
+    red = n_internals - idof
     
     # Computation of the diagonal mass matrices with 
     # the reciprocal and square root reciprocal masses
@@ -116,12 +121,12 @@ def main():
 
     # Determination of the normal modes of zero and low Frequencies
 
-    rottra = L[:,0:6]
+    rottra = L[:,0:(3*n_atoms-idof)]
     
     # Augmenting the B-Matrix with rottra, calculating 
     # and printing the final B-Matrix
 
-    B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, out_of_plane,  dihedrals),
+    B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
                         np.transpose(rottra)),axis=0)
          
     # Calculating the G-Matrix
