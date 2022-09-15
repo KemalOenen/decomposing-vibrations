@@ -32,7 +32,7 @@ def oop_directive() -> string:
     else:
         return "no specification"
     
-def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals, B, B_inv, CartesianF_Matrix, InternalF_Matrix, Results1, Results2, Contribution_Table1, Contribution_Table2):
+def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals, idof, B, B_inv, CartesianF_Matrix, InternalF_Matrix, Results1, Results2, Contribution_Table1, Contribution_Table2):
     args = get_args()
     with open(args.output) as inputfile:
         outputfile = create_new_filename(inputfile.name)
@@ -63,7 +63,7 @@ def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_o
     logging.info("out-of-plane angles: %s", out_of_plane)
     logging.info("dihedrals: %s", dihedrals)
     logging.info("")
-    logging.info("%s internal coordinates are at least needed for the decomposition scheme.".center(50), 3*n_atoms-6)
+    logging.info("%s internal coordinates are at least needed for the decomposition scheme.".center(50), idof)
     logging.info("%s Internal Coordinates are used in your analysis.".center(50),n_internals)
     logging.info("")
     if red == 1:

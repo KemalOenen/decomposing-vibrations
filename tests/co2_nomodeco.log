@@ -18,18 +18,20 @@ useful for planar systems.
 
 The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
 bonds: [('O1', 'C'), ('C', 'O2')]
-in-plane angles: [('O2', 'C', 'O1')]
-linear valence-angles: [('O1', 'C', 'O2')]
+in-plane angles: []
+linear valence-angles: [('O1', 'C', 'O2'), ('O2', 'C', 'O1')]
 out-of-plane angles: []
 dihedrals: []
 
-3 internal coordinates are at least needed for the decomposition scheme.
+4 internal coordinates are at least needed for the decomposition scheme.
 4 Internal Coordinates are used in your analysis.
 
-There is 1 redundant internal coordinates used.
+There are 0 redundant internal coordinates used.
 
 The condition numbers of the B-Matrix are given by:
-The condition number can not be calculated as B is not quadratic!
+Sum-Norm of B: inf
+Eucledian-Norm of B: 4.5936962653847935e+32
+Infinity-Norm of B: inf
 
 
 Testing if the Internal Coordinate Set is complete ...
@@ -41,35 +43,35 @@ No! The double transformed f-matrix is NOT the same as in the input.
     diagonal elements of the vibrational density matrices at the following
     harmonic frequencies (all frequency values in cm-1):
 
-Internal Coordinate Intrinsic Frequencies  2.85 1346.14 2395.62
-            (O1, C)               1943.08 -0.00    0.00   -0.00
-            (C, O2)               1943.08 -0.00    0.00   -0.00
-        (O2, C, O1)                  0.00 -0.00    0.00   -0.00
-        (O1, C, O2)                  0.00 -0.00    0.00   -0.00
+Internal Coordinate Intrinsic Frequencies 2.85 1346.14 2395.62    3
+            (O1, C)               1943.08 0.00    0.00    0.47 0.54
+            (C, O2)               1943.08 0.00    0.00    0.47 0.54
+        (O1, C, O2)                  0.00 0.00    0.00    0.00 0.00
+        (O2, C, O1)                  0.00 0.00    0.00    0.00 0.00
 
 Contribution Table generated from the Vibrational Density Matrices (values in percent)
 
-Internal Coordinate  2.85 1346.14 2395.62
-            (O1, C) 62.26   48.94   50.00
-            (C, O2) 37.74   51.06   50.00
-        (O2, C, O1)  0.00    0.00    0.00
-        (O1, C, O2)  0.00    0.00    0.00
+Internal Coordinate  2.85 1346.14 2395.62     3
+            (O1, C) 72.43  100.00   50.00 50.00
+            (C, O2) 27.57    0.00   50.00 50.00
+        (O1, C, O2)  0.00    0.00    0.00  0.00
+        (O2, C, O1)  0.00    0.00    0.00  0.00
 
 --------------------------------------------------------------------------------------------------------------
 
 
 2.) Eigenvalues for each internal coordinate per normal-coordinate 
 
-Internal Coordinate 2.85 1346.14 2395.62
-            (O1, C) 0.00    0.03    0.11
-            (C, O2) 0.00    0.03    0.11
-        (O2, C, O1) 0.00    0.00    0.00
-        (O1, C, O2) 0.00    0.00    0.00
+Internal Coordinate 2.85 1346.14 2395.62    3
+            (O1, C) 0.00    0.00    0.03 0.11
+            (C, O2) 0.00    0.00    0.03 0.11
+        (O1, C, O2) 0.00    0.00    0.00 0.00
+        (O2, C, O1) 0.00    0.00    0.00 0.00
 
 Contribution Table generated from the eigenvalues per coordinate (values in percent)
 
-Internal Coordinate   2.85 1346.14 2395.62
-            (O1, C) 100.00   50.00   50.00
-            (C, O2)   0.00   50.00   50.00
-        (O2, C, O1)   0.00    0.00    0.00
-        (O1, C, O2)   0.00    0.00    0.00
+Internal Coordinate  2.85 1346.14 2395.62     3
+            (O1, C) 73.99  100.00   50.00 50.00
+            (C, O2) 26.01    0.00   50.00 50.00
+        (O1, C, O2)  0.00    0.00    0.00  0.00
+        (O2, C, O1)  0.00    0.00    0.00  0.00
