@@ -258,7 +258,7 @@ def main():
     Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
     Contribution_Table2 = Contribution_Table2.rename(columns=columns)
     
-    logfile.write_logfile(n_atoms, n_internals, red, bonds, angles,
+    logfile.write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles,
                   out_of_plane, dihedrals, B, B_inv, CartesianF_Matrix, InternalF_Matrix, Results1, Results2, 
                   Contribution_Table1, Contribution_Table2)
     
