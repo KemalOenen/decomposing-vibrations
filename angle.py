@@ -2,7 +2,16 @@ from __future__ import annotations
 
 from itertools import permutations, combinations
 import bond
+import numpy as np
 
+#TODO: clean bond_angle function
+def bond_angle(coord_a: Iterable, coord_b: Iterable, coord_c: Iterable) -> float: #RAD
+    coord_a = np.array(coord_a)
+    coord_b = np.array(coord_b)
+    coord_c = np.array(coord_c)
+    cosine_angle = np.clip((np.inner((coord_a - coord_b), (coord_c - coord_b)))/(
+    bond.actual_length(coord_a, coord_b)*(bond.actual_length(coord_c, coord_b))), -1.0, 1.0)
+    return np.arccos(cosine_angle)
 
 def is_valid(atom_a: Atom, atom_b: Atom, atom_c: Atom) -> bool:
     """returns True if any order of atoms is linked from 1->2->3 and if the the atoms do not form a

@@ -84,7 +84,7 @@ def main():
     #TODO: evaluate oop entries in bmatrix.py
     #TODO: introduce linear valence angles
     bonds = icgen.initialize_bonds(atoms)
-    angles = icgen.initialize_angles(atoms)
+    angles, linear_angles = icgen.initialize_angles(atoms)
     if oop_directive() == "oop":
         out_of_plane = icgen.initialize_oop(atoms)
     elif oop_directive() == "no-oop":
@@ -96,7 +96,7 @@ def main():
     #TODO: selection scheme for the IC sets
     
     
-    n_internals = len(bonds) + len(angles) + len(out_of_plane) + len(dihedrals)
+    n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
     red = n_internals - (3*n_atoms-6)
     
     # Computation of the diagonal mass matrices with 
@@ -201,7 +201,7 @@ def main():
     normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
     normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
 
-    all_internals = bonds + angles + out_of_plane + dihedrals
+    all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
 
     Results1 = pd.DataFrame()
     Results1['Internal Coordinate'] = all_internals
