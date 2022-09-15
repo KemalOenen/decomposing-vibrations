@@ -32,7 +32,7 @@ def oop_directive() -> string:
     else:
         return "no specification"
     
-def write_logfile(n_atoms, n_internals, red, bonds, angles, out_of_plane, dihedrals, B, B_inv, CartesianF_Matrix, InternalF_Matrix, Results1, Results2, Contribution_Table1, Contribution_Table2):
+def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals, B, B_inv, CartesianF_Matrix, InternalF_Matrix, Results1, Results2, Contribution_Table1, Contribution_Table2):
     args = get_args()
     with open(args.output) as inputfile:
         outputfile = create_new_filename(inputfile.name)
@@ -59,7 +59,7 @@ def write_logfile(n_atoms, n_internals, red, bonds, angles, out_of_plane, dihedr
     logging.info("The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:".center(110))
     logging.info("bonds: %s", bonds)
     logging.info("in-plane angles: %s", angles)
-    logging.info("linear valence-angles: %s", angles)
+    logging.info("linear valence-angles: %s", linear_angles)
     logging.info("out-of-plane angles: %s", out_of_plane)
     logging.info("dihedrals: %s", dihedrals)
     logging.info("")
