@@ -177,7 +177,7 @@ def main():
     for i in range(0,n_internals-red):
         for m in range(0,n_internals):
             for n in range(0,n_internals):
-                k = i + 6
+                k = i 
                 P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k]
                 
     ''''' 
@@ -197,7 +197,7 @@ def main():
     for n in range(0,n_internals):
         for m in range(0,n_internals):
             for i in range(0,n_internals-red):
-                k = i + 6
+                k = i + (3*n_atoms-idof)
                 nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
                 
     nu_final = np.sqrt(nu) *  5140.4981
@@ -226,7 +226,7 @@ def main():
     for n in range(0,n_internals):
         for i in range(0,n_internals-red):
             for m in range(0,n_internals):
-                k = i + 6
+                k = i + (3*n_atoms-idof)
                 nu_perNormalCoordinate[n][i] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
 
     Results2 = pd.DataFrame()

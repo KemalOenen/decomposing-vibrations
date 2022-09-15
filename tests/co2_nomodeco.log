@@ -1,0 +1,77 @@
+ .__   __.   ______   .___  ___.   ______    _______   _______   ______   ______      .______   ____    ____ 
+ |  \ |  |  /  __  \  |   \/   |  /  __  \  |       \ |   ____| /      | /  __  \     |   _  \  \   \  /   / 
+ |   \|  | |  |  |  | |  \  /  | |  |  |  | |  .--.  ||  |__   |  ,----'|  |  |  |    |  |_)  |  \   \/   /  
+ |  . `  | |  |  |  | |  |\/|  | |  |  |  | |  |  |  ||   __|  |  |     |  |  |  |    |   ___/    \_    _/   
+ |  |\   | |  `--'  | |  |  |  | |  `--'  | |  '--'  ||  |____ |  `----.|  `--'  |  __|  |          |  |     
+ |__| \__|  \______/  |__|  |__|  \______/  |_______/ |_______| \______| \______/  (__) _|          |__|     
+                                                                                                             
+
+
+**************************************************************************************************************
+                                  Kemal Önen, Dennis F. Dinu, Klaus R. Liedl                                  
+                                      Liedl Lab, University of Innsbruck                                      
+**************************************************************************************************************
+
+You did NOT include the consideration of out-of-plane angles. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
+bonds: [('O1', 'O2'), ('O2', 'C')]
+in-plane angles: []
+linear valence-angles: [('O1', 'O2', 'C'), ('C', 'O2', 'O1')]
+out-of-plane angles: []
+dihedrals: []
+
+3 internal coordinates are at least needed for the decomposition scheme.
+4 Internal Coordinates are used in your analysis.
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: inf
+Eucledian-Norm of B: 8.698618370033441e+31
+Infinity-Norm of B: inf
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+-------------------------------------Results of the Decomposition Scheme--------------------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 1.92 1444.2 2232.97    3
+           (O1, O2)               1804.30 0.00   0.00   -0.00 0.00
+            (O2, C)               1953.55 0.00   0.00   -0.00 0.00
+        (O1, O2, C)                  0.00 0.00   0.00   -0.00 0.00
+        (C, O2, O1)                  0.00 0.00   0.00   -0.00 0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate  1.92 1444.2 2232.97     3
+           (O1, O2) 37.00   0.48   62.12 44.88
+            (O2, C) 63.00  99.52   37.88 55.12
+        (O1, O2, C)  0.00   0.00    0.00  0.00
+        (C, O2, O1)  0.00   0.00    0.00  0.00
+
+--------------------------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 1.92 1444.2 2232.97    3
+           (O1, O2) 0.00   0.00    0.05 0.08
+            (O2, C) 0.00   0.00    0.03 0.11
+        (O1, O2, C) 0.00   0.00    0.00 0.00
+        (C, O2, O1) 0.00   0.00    0.00 0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate  1.92 1444.2 2232.97     3
+           (O1, O2) 95.44 100.00   59.67 40.33
+            (O2, C)  4.56   0.00   40.33 59.67
+        (O1, O2, C)  0.00   0.00    0.00  0.00
+        (C, O2, O1)  0.00   0.00    0.00  0.00
