@@ -11,6 +11,7 @@ import bond
 import angle
 import oop
 import dihedral
+import bmatrix
 
 class Atom(NamedTuple):
     symbol: str
@@ -57,10 +58,14 @@ def initialize_bonds(atoms):
 
 def initialize_angles(atoms):
     hits = []
+    linear_hits = []
     for a,b,c in itertools.permutations(atoms, 3):
         if angle.is_valid(a, b, c) and not (c.symbol, b.symbol, a.symbol) in hits:
-            hits.append((a.symbol, b.symbol, c.symbol))
-    return hits
+            if np.isclose(bmatrix.bond_angle(a.coordinates, b.coordinates, c.coordinates), np.pi):
+                linear_hits.append((a.symbol, b.symbol, c.symbol))
+            else:
+                hits.append((a.symbol, b.symbol, c.symbol))
+    return hits, linear_hits
 
 def initialize_oop(atoms):
     hits = []
