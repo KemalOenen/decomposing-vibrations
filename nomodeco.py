@@ -177,7 +177,7 @@ def main():
     for i in range(0,n_internals-red):
         for m in range(0,n_internals):
             for n in range(0,n_internals):
-                k = i 
+                k = i + (3*n_atoms-idof)
                 P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k]
                 
     ''''' 
