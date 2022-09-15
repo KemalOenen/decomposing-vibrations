@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 # General Chemistry-related functions
 
@@ -67,21 +68,65 @@ def B_Matrix_Entry_Angle_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordinates_A
     return -(B_Matrix_Entry_Angle_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC) + 
              B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC))
 
+''''' 
+Note: For the Entries of the linear bending-part of the B-Matrix entries, we define the following geometry:
+C-A-B or with vectors: C <- A -> B
 
+There are two different linear angle bendings, i.e., one on the xz plane and one on the yz plane
+The unitary vector u is obtained via rotating the vector A -> B counterclockweise by 90 degrees 
+to the right and then dividing through
+''''' 
+#TODO: current linear valence angles only useful for degenerate linear valence angle modes - make more generic
 
+def B_Matrix_Entry_LinearAngleFirstPlane_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    rotation_radians = np.pi/2
+    rotation_axis = np.array([0,1,0])
+    rotation_vector = rotation_radians * rotation_axis
+    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
+    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+    u = rotation.apply(u)
+    return -(u/bond_length(Coordinates_AtomA, Coordinates_AtomB))
 
-def B_Matrix_Entry_LinearAngle_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
-    return 0
+def B_Matrix_Entry_LinearAngleFirstPlane_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    rotation_radians = np.pi/2
+    rotation_axis = np.array([0,1,0])
+    rotation_vector = rotation_radians * rotation_axis
+    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
+    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+    u = rotation.apply(u)
+    return -(u/bond_length(Coordinates_AtomA, Coordinates_AtomC))
 
-def B_Matrix_Entry_LinearAngle_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
-    return 0
+def B_Matrix_Entry_LinearAngleFirstPlane_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    return -(B_Matrix_Entry_LinearAngleFirstPlane_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC) +
+    B_Matrix_Entry_LinearAngleFirstPlane_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC))
 
-def B_Matrix_Entry_LinearAngle_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
-    return 0
+def B_Matrix_Entry_LinearAngleSecondPlane_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    rotation_radians = np.pi/2
+    rotation_axis = np.array([0,1,0])
+    rotation_vector = rotation_radians * rotation_axis
+    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
+    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+    u = rotation.apply(u)
+    up = np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB), u)
+    return -(up/bond_length(Coordinates_AtomA, Coordinates_AtomB))
+
+def B_Matrix_Entry_LinearAngleSecondPlane_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    rotation_radians = np.pi/2
+    rotation_axis = np.array([0,1,0])
+    rotation_vector = rotation_radians * rotation_axis
+    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
+    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+    u = rotation.apply(u)
+    up = np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB), u)
+    return -(up/bond_length(Coordinates_AtomA, Coordinates_AtomC))
+
+def B_Matrix_Entry_LinearAngleSecondPlane_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
+    return -(B_Matrix_Entry_LinearAngleSecondPlane_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC) +
+    B_Matrix_Entry_LinearAngleSecondPlane_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC))
 
 ''''' 
 Note: For the Entries of the torsion-part of the B-Matrix entry, we define the following geometry:
-B-A-C-D or with vectors: B <- A <-> C -> DCoordinates_AtomC
+B-A-C-D or with vectors: B <- A <-> C -> D
 
 Important the entries are different for the 'Central Atoms' (A,C) and the 'Side Atoms' (B,D)
 
@@ -220,7 +265,7 @@ def B_Matrix_Entry_OutOfPlane_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordina
                                                Coordinates_AtomC,Coordinates_AtomD) 
              + B_Matrix_Entry_OutOfPlane_AtomD(Coordinates_AtomA,Coordinates_AtomB,
                                                Coordinates_AtomC,Coordinates_AtomD))
-
+#TODO: current linear valence angles only useful for degenerate linear valence angle modes - make more generic
 def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof):
     n_atoms = len(atoms)
     coordinates = np.array([a.coordinates for a in atoms])
@@ -230,6 +275,7 @@ def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
         f"Wrong number of internal coordinates, n_internal ({n_internal}) should be >= {idof}."
     matrix = np.zeros((n_internal, 3*n_atoms))
     i_internal = 0
+    n_used_linear_angles = 0
     for bond in bonds:
         index = [atom_index[a] * 3 for a in bond]
         coord = [coordinates[atom_index[a]] for a in bond]
@@ -246,10 +292,18 @@ def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
     for linear_angle in linear_angles:
         index = [atom_index[a] * 3 for a in linear_angle]
         coord = [coordinates[atom_index[a]] for a in linear_angle]
-        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngle_AtomB(coord[1], coord[0], coord[2])
-        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngle_AtomA(coord[1], coord[0], coord[2])
-        matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngle_AtomC(coord[1], coord[0], coord[2])
-        i_internal += 1
+        if (n_used_linear_angles %2) == 0:
+            matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomB(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomA(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomC(coord[1], coord[0], coord[2])
+            i_internal += 1
+            n_used_linear_angles += 1
+        else:
+            matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomB(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomA(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomC(coord[1], coord[0], coord[2])
+            i_internal += 1
+            n_used_linear_angles += 1
     for outofplane in out_of_plane:
         index = [atom_index[a] * 3 for a in outofplane]
         coord = [coordinates[atom_index[a]] for a in outofplane]

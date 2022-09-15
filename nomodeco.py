@@ -79,10 +79,9 @@ def main():
         n_atoms = len(atoms) 
     with open(args.output) as inputfile:
         CartesianF_Matrix = parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
-        
+
     # Generation of all possible internal coordinates
     #TODO: evaluate oop entries in bmatrix.py
-    #TODO: introduce linear valence angles
     bonds = icgen.initialize_bonds(atoms)
     angles, linear_angles = icgen.initialize_angles(atoms)
     if oop_directive() == "oop":
@@ -116,9 +115,8 @@ def main():
     # via the diagonalization of the mass-weighted Cartesian F Matrix
     
     Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
-
+    
     Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
-
     # Determination of the normal modes of zero and low Frequencies
 
     rottra = L[:,0:(3*n_atoms-idof)]
@@ -128,7 +126,7 @@ def main():
 
     B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
                         np.transpose(rottra)),axis=0)
-         
+
     # Calculating the G-Matrix
 
     G = B @ reciprocal_massmatrix @ np.transpose(B)
@@ -202,7 +200,7 @@ def main():
                 
     nu_final = np.sqrt(nu) *  5140.4981
 
-    normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[6:3*n_atoms]) * 5140.4981
+    normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981
     normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
     normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
 
@@ -214,7 +212,7 @@ def main():
     Results1 = Results1.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
 
     columns = {}
-    keys = range(3*n_atoms-6)
+    keys = range(3*n_atoms-((3*n_atoms-idof)))
     for i in keys:
         columns[i] = normal_coord_harmonic_frequencies_string[i]
 
