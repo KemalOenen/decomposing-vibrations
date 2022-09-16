@@ -1,3 +1,4 @@
+from cmath import isclose
 import numpy as np
 import scipy
 
@@ -194,69 +195,54 @@ It can be calculated by calculating the angle between:
     A-B and the normal vector (i.e. the cross product) of A-C and A-D
 
 When handing in the out-of-plane: then do it in the Form (A,B,C,D)
-
-phi = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
-
-theta = np.arccos(np.clip(np.inner((Coordinates_AtomB-Coordinates_AtomA),np.cross((Coordinates_AtomC-Coordinates_AtomA), 
-                                                                (Coordinates_AtomD-Coordinates_AtomA))) /
-bond_length((Coordinates_AtomB-Coordinates_AtomA), np.cross((Coordinates_AtomC-Coordinates_AtomA), 
-                                                                (Coordinates_AtomD-Coordinates_AtomA))),-1.0,1.0))
-
-
-
+The expressions are simplified for planar wages (i.e. theta = 0 degrees)
 ''''' 
 
-
-
 def B_Matrix_Entry_OutOfPlane_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC,Coordinates_AtomD):
-    phi = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
-    sin_theta = np.inner((np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD), normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC))/(np.sin(phi))), 
-            (normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)))
+    r_ab = bond_length(Coordinates_AtomA, Coordinates_AtomB)
+    e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+    e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
+    e_ad = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD)
+    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
+    sin_theta = np.inner(e_ab, (np.cross(e_ac, e_ad)/np.sin(phi_b)))
     theta = np.arcsin(np.clip(sin_theta, 0, 1.0))
-   # theta = np.arccos(np.clip(np.inner(
-   #     (Coordinates_AtomB-Coordinates_AtomA),np.cross(
-   #         (Coordinates_AtomC-Coordinates_AtomA), (Coordinates_AtomD-Coordinates_AtomA))) /
-   # bond_length((Coordinates_AtomB-Coordinates_AtomA), 
-   #             np.cross((Coordinates_AtomC-Coordinates_AtomA), 
-   #                      (Coordinates_AtomD-Coordinates_AtomA))),-1.0,1.0))
-    return (1/bond_length(Coordinates_AtomA, Coordinates_AtomB)) * ((((1/np.cos(theta)*np.sin(phi))) * np.cross(
-        normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD),
-                    normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
-                    )) - (np.tan(theta) * normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)))
+    
+    if np.isclose(theta, 0):
+        return np.cross(e_ac, e_ad)/(np.sin(phi_b)*r_ab)
+    else:
+        return (1/r_ab)*((np.cross(e_ac, e_ad)/(np.cos(theta)*np.sin(phi_b))) - np.tan(theta)*e_ab)
 
 def B_Matrix_Entry_OutOfPlane_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC,Coordinates_AtomD):
-    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD) 
+    r_ac = bond_length(Coordinates_AtomA, Coordinates_AtomC)
+    e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+    e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
+    e_ad = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD)
+    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
     phi_c = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomD)
     phi_d = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC)
-    sin_theta = np.inner((np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD), normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC))/(np.sin(phi_b))), 
-            (normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)))
+    sin_theta = np.inner(e_ab, (np.cross(e_ac, e_ad)/np.sin(phi_b)))
     theta = np.arcsin(np.clip(sin_theta, 0, 1.0))
-   # theta = np.arccos(np.clip(np.inner(
-   #     (Coordinates_AtomB-Coordinates_AtomA),np.cross(
-   #         (Coordinates_AtomC-Coordinates_AtomA), (Coordinates_AtomD-Coordinates_AtomA))) /
-   # bond_length((Coordinates_AtomB-Coordinates_AtomA), 
-   #             np.cross((Coordinates_AtomC-Coordinates_AtomA), 
-   #                      (Coordinates_AtomD-Coordinates_AtomA))),-1.0,1.0))
-    return  (1/bond_length(Coordinates_AtomA, Coordinates_AtomC)) * ((
-            np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD), normalized_bond_vector(
-                Coordinates_AtomA, Coordinates_AtomC))/(np.sin(phi_b))) * ((np.cos(phi_b)*np.cos(phi_c)-np.cos(phi_d))/(np.cos(theta) * np.square(np.sin(phi_b)))))
-
+    
+    if np.isclose(theta, 0):
+        return (1/r_ac)*((np.cross(e_ac, e_ad)/(np.sin(phi_b))) * (np.sin(phi_c)/np.sin(phi_b)))
+    else:
+        return (1/r_ac)*((np.cross(e_ac, e_ad)/(np.sin(phi_b))) * ((np.cos(phi_b)*np.cos(phi_c) - np.cos(phi_d))/(np.cos(theta)*np.square(np.sin(phi_b)))))
+   
 def B_Matrix_Entry_OutOfPlane_AtomD(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC,Coordinates_AtomD):
-    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD) 
+    r_ad = bond_length(Coordinates_AtomA, Coordinates_AtomD)
+    e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+    e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
+    e_ad = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD)
+    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
     phi_c = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomD)
     phi_d = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC)
-    sin_theta = np.inner((np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD), normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC))/(np.sin(phi_b))), 
-            (normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)))
+    sin_theta = np.inner(e_ab, (np.cross(e_ac, e_ad)/np.sin(phi_b)))
     theta = np.arcsin(np.clip(sin_theta, 0, 1.0))
-   # theta = np.arccos(np.clip(np.inner(
-   #     (Coordinates_AtomB-Coordinates_AtomA),np.cross(
-   #         (Coordinates_AtomC-Coordinates_AtomA), (Coordinates_AtomD-Coordinates_AtomA))) /
-   # bond_length((Coordinates_AtomB-Coordinates_AtomA), 
-   #             np.cross((Coordinates_AtomC-Coordinates_AtomA), 
-   #                      (Coordinates_AtomD-Coordinates_AtomA))),-1.0,1.0))
-    return  (1/bond_length(Coordinates_AtomA, Coordinates_AtomD)) * ((
-            np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD), normalized_bond_vector(
-                Coordinates_AtomA, Coordinates_AtomC))/(np.sin(phi_b))) * ((np.cos(phi_b)*np.cos(phi_d)-np.cos(phi_c))/(np.cos(theta) * np.square(np.sin(phi_b)))))
+    
+    if np.isclose(theta, 0):
+        return (1/r_ad)*((np.cross(e_ac, e_ad)/(np.sin(phi_b))) * (np.sin(phi_d)/np.sin(phi_b)))
+    else:
+        return (1/r_ad)*((np.cross(e_ac, e_ad)/(np.sin(phi_b))) * ((np.cos(phi_b)*np.cos(phi_d) - np.cos(phi_c))/(np.cos(theta)*np.square(np.sin(phi_b)))))
 
 def B_Matrix_Entry_OutOfPlane_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC,Coordinates_AtomD):
     return -(B_Matrix_Entry_OutOfPlane_AtomB(Coordinates_AtomA,Coordinates_AtomB,
@@ -265,6 +251,7 @@ def B_Matrix_Entry_OutOfPlane_AtomA(Coordinates_AtomA,Coordinates_AtomB,Coordina
                                                Coordinates_AtomC,Coordinates_AtomD) 
              + B_Matrix_Entry_OutOfPlane_AtomD(Coordinates_AtomA,Coordinates_AtomB,
                                                Coordinates_AtomC,Coordinates_AtomD))
+
 #TODO: current linear valence angles only useful for degenerate linear valence angle modes - make more generic
 def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof):
     n_atoms = len(atoms)
