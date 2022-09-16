@@ -81,7 +81,6 @@ def main():
         CartesianF_Matrix = parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
 
     # Generation of all possible internal coordinates
-    #TODO: evaluate oop entries in bmatrix.py
     bonds = icgen.initialize_bonds(atoms)
     angles, linear_angles = icgen.initialize_angles(atoms)
     if oop_directive() == "oop":
@@ -91,15 +90,16 @@ def main():
     else:
         return logging.error("You need to specify the oop or no-oop directive!")
     dihedrals = icgen.initialize_dihedrals(atoms)
-    
-    #TODO: selection scheme for the IC sets
-    
+
     idof = 0
     if (linear_angles and not angles) or (not linear_angles and not angles):
         idof = 3*n_atoms-5
     else:
         idof = 3*n_atoms-6
     
+    #TODO: selection scheme for the IC sets
+    icsel.generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
+
     n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
     red = n_internals - idof
     
