@@ -96,7 +96,7 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
     logging.info("")
 
 def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2):
-    logging.info("Results of the Decomposition Scheme".center(110, "-"))
+    logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
     logging.info("")
     logging.info("1.) Intrinsic Frequencies for all normal-coordinate frequencies and")
     logging.info("    diagonal elements of the vibrational density matrices at the following")
@@ -110,7 +110,7 @@ def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_
     logging.info(Contribution_Table1.to_string(index=False))
     
     logging.info("")
-    logging.info("-".center(110, "-"))
+    logging.info("-".center(90, "-"))
     logging.info("")
     
     logging.info("")

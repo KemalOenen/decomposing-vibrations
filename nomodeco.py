@@ -106,7 +106,7 @@ def main():
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
     #TODO: selection scheme for the IC sets
-    icsel.generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
+    ic_dict = icsel.generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
 
     n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
     red = n_internals - idof
