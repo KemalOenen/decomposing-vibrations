@@ -79,7 +79,13 @@ def main():
         n_atoms = len(atoms) 
     with open(args.output) as inputfile:
         CartesianF_Matrix = parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
-
+        outputfile = logfile.create_new_filename(inputfile.name)
+    
+    # initialize log file
+    logging.basicConfig(filename=outputfile, filemode='w', format='%(message)s', level=logging.DEBUG)
+    logfile.write_logfile_header()
+    logfile.write_logfile_oop_treatment()
+    
     # Generation of all possible internal coordinates
     bonds = icgen.initialize_bonds(atoms)
     angles, linear_angles = icgen.initialize_angles(atoms)
@@ -97,6 +103,8 @@ def main():
     else:
         idof = 3*n_atoms-6
     
+    logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
+
     #TODO: selection scheme for the IC sets
     icsel.generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
 
@@ -151,7 +159,11 @@ def main():
 
     B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
     InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
-    test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix)
+    if test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+        logging.error("Chosen set is not complete")
+
+    logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
+    angles, linear_angles, out_of_plane, dihedrals)
         
     ''''' 
     --------------------------- Main-Calculation ------------------------------
@@ -261,9 +273,7 @@ def main():
     Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
     Contribution_Table2 = Contribution_Table2.rename(columns=columns)
     
-    logfile.write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles,
-                  out_of_plane, dihedrals, idof, B, B_inv, CartesianF_Matrix, InternalF_Matrix, Results1, Results2, 
-                  Contribution_Table1, Contribution_Table2)
+    logfile.write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2)
     
     print("--- %s seconds ---" % (time.time() - start_time))
 

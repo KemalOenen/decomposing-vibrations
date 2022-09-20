@@ -31,14 +31,8 @@ def oop_directive() -> string:
         return "no-oop"
     else:
         return "no specification"
-    
-def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals, idof, B, B_inv, CartesianF_Matrix, InternalF_Matrix, Results1, Results2, Contribution_Table1, Contribution_Table2):
-    args = get_args()
-    with open(args.output) as inputfile:
-        outputfile = create_new_filename(inputfile.name)
-    
-    logging.basicConfig(filename=outputfile, filemode='w', format='%(message)s', level=logging.DEBUG)
-    
+
+def write_logfile_header():
     header=pyfiglet.figlet_format("NOMODECO.PY", font="starwars", width = 110, justify="center")
     logging.info(header)
     logging.info("")
@@ -47,6 +41,8 @@ def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_o
     logging.info("Liedl Lab, University of Innsbruck".center(110))
     logging.info("*".center(110,"*"))
     logging.info("")
+
+def write_logfile_oop_treatment():
     if oop_directive() == "oop":
         logging.info("You have included the consideration of out-of-plane angles. Note that out-of-plane angles tend to perform worse")
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
@@ -56,6 +52,8 @@ def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_o
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
         logging.info("useful for planar systems.")
     logging.info("")
+
+def write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof):
     logging.info("The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:".center(110))
     logging.info("bonds: %s", bonds)
     logging.info("in-plane angles: %s", angles)
@@ -64,7 +62,17 @@ def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_o
     logging.info("dihedrals: %s", dihedrals)
     logging.info("")
     logging.info("%s internal coordinates are at least needed for the decomposition scheme.".center(50), idof)
-    logging.info("%s Internal Coordinates are used in your analysis.".center(50),n_internals)
+    logging.info("")
+
+def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals):
+    logging.info(" Initialization of an internal coordinate set ".center(110, "-"))
+    logging.info("")
+    logging.info("The following %s Internal Coordinates are used in your analysis:".center(50), n_internals)
+    logging.info("bonds: %s", bonds)
+    logging.info("in-plane angles: %s", angles)
+    logging.info("linear valence-angles: %s", linear_angles)
+    logging.info("out-of-plane angles: %s", out_of_plane)
+    logging.info("dihedrals: %s", dihedrals)
     logging.info("")
     if red == 1:
         logging.info('There is %s redundant internal coordinates used.', red)
@@ -86,6 +94,8 @@ def write_logfile(n_atoms, n_internals, red, bonds, angles, linear_angles, out_o
     logging.info("")
     test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix)
     logging.info("")
+
+def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2):
     logging.info("Results of the Decomposition Scheme".center(110, "-"))
     logging.info("")
     logging.info("1.) Intrinsic Frequencies for all normal-coordinate frequencies and")

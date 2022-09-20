@@ -24,7 +24,15 @@ out-of-plane angles: []
 dihedrals: []
 
 9 internal coordinates are at least needed for the decomposition scheme.
-10 Internal Coordinates are used in your analysis.
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 10 Internal Coordinates are used in your analysis:
+bonds: [('C', 'H1'), ('C', 'H2'), ('C', 'H3'), ('C', 'H4')]
+in-plane angles: [('H1', 'C', 'H2'), ('H1', 'C', 'H3'), ('H1', 'C', 'H4'), ('H2', 'C', 'H3'), ('H2', 'C', 'H4'), ('H3', 'C', 'H4')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: []
 
 There is 1 redundant internal coordinates used.
 
