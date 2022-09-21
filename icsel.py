@@ -1,5 +1,6 @@
 import itertools
 import numpy as np
+import pprint
 import nomodeco
 
 """""
@@ -18,16 +19,20 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
     num_dihedrals = len(dihedrals)
 
     ic_dict = dict()
+
+    # TODO: approach to update angles, linear_angles etc. and then feed to the dictionary
     for i in range(0, (3*n_atoms) - idof):
         k = 0
         for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
+            ic_subset = list(ic_subset)
+
             ic_dict[k] = {
                 "bonds" : bonds,
-                "angles" : list(ic_subset),
+                "angles" : angles,
                 "linear valence angles" : linear_angles,
                 "out of plane angles" : out_of_plane,
                 "dihedrals" : dihedrals
             }
             k +=1
-    print(ic_dict)
+    pprint.pprint(ic_dict)
     return ic_dict
