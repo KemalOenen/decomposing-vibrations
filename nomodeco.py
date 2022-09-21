@@ -5,7 +5,7 @@ from typing import NamedTuple
 from typing import Iterable
 
 import string
-import pprint
+import os
 import numpy as np
 import pandas as pd
 import argparse
@@ -82,7 +82,9 @@ def main():
         outputfile = logfile.create_new_filename(inputfile.name)
     
     # initialize log file
-    logging.basicConfig(filename=outputfile, filemode='w', format='%(message)s', level=logging.DEBUG)
+    if os.path.exists(outputfile):
+        os.remove(outputfile)
+    logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
     logfile.write_logfile_header()
     logfile.write_logfile_oop_treatment()
     
@@ -108,174 +110,181 @@ def main():
     #TODO: selection scheme for the IC sets
     ic_dict = icsel.generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
 
-    n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
-    red = n_internals - idof
-    
-    # Computation of the diagonal mass matrices with 
-    # the reciprocal and square root reciprocal masses
-    
-    diag_reciprocal_square = reciprocal_square_massvector(atoms)
-    reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
-    diag_reciprocal = reciprocal_massvector(atoms)
-    reciprocal_massmatrix = np.diag(diag_reciprocal)
-    
-    # Determination of the Normal Modes and eigenvalues 
-    # via the diagonalization of the mass-weighted Cartesian F Matrix
-    
-    Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
-    
-    Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
-    # Determination of the normal modes of zero and low Frequencies
+    for i in ic_dict.keys():
+        bonds = ic_dict[i]["bonds"]
+        angles = ic_dict[i]["angles"]
+        linear_angles = ic_dict[i]["linear valence angles"]
+        out_of_plane = ic_dict[i]["out of plane angles"]
+        dihedrals = ic_dict[i]["dihedrals"]
 
-    rottra = L[:,0:(3*n_atoms-idof)]
-    
-    # Augmenting the B-Matrix with rottra, calculating 
-    # and printing the final B-Matrix
-
-    B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
-                        np.transpose(rottra)),axis=0)
-
-    # Calculating the G-Matrix
-
-    G = B @ reciprocal_massmatrix @ np.transpose(B)
-    e,K = np.linalg.eigh(G)
-
-    # Sorting eigenvalues and eigenvectors (just for the case)
-    # Sorting highest eigenvalue/eigenvector to lowest!
-
-    idx = e.argsort()[::-1]   
-    e = e[idx]
-    K = K[:,idx]
-
-    # if redundancies are present, then approximate the inverse of the G-Matrix
-    if red > 0:
-        K = np.delete(K, -red, axis=1)
-        e = np.delete(e, -red, axis=0)
-
-    e = np.diag(e)
-    G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
-
-    # Calculating the inverse augmented B-Matrix
-
-    B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
-    InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
-    if test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
-        logging.error("Chosen set is not complete")
-
-    logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
-    angles, linear_angles, out_of_plane, dihedrals)
+        n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
+        red = n_internals - idof
         
-    ''''' 
-    --------------------------- Main-Calculation ------------------------------
-    ''''' 
+        # Computation of the diagonal mass matrices with 
+        # the reciprocal and square root reciprocal masses
+        
+        diag_reciprocal_square = reciprocal_square_massvector(atoms)
+        reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
+        diag_reciprocal = reciprocal_massvector(atoms)
+        reciprocal_massmatrix = np.diag(diag_reciprocal)
+        
+        # Determination of the Normal Modes and eigenvalues 
+        # via the diagonalization of the mass-weighted Cartesian F Matrix
+        
+        Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
+        
+        Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
+        # Determination of the normal modes of zero and low Frequencies
 
-    # Calculation of the mass-weighted normal modes in Cartesian Coordinates
+        rottra = L[:,0:(3*n_atoms-idof)]
+        
+        # Augmenting the B-Matrix with rottra, calculating 
+        # and printing the final B-Matrix
 
-    l = reciprocal_square_massmatrix @ L
+        B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
+                            np.transpose(rottra)),axis=0)
 
-    # Calculation of the mass-weighted normal modes in Internal Coordinates
+        # Calculating the G-Matrix
 
-    D = B @ l
+        G = B @ reciprocal_massmatrix @ np.transpose(B)
+        e,K = np.linalg.eigh(G)
 
-    # Calculation of the Vibrational Density Matrices
-    
-    eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
-    eigenvalues = np.diag(eigenvalues)
+        # Sorting eigenvalues and eigenvectors (just for the case)
+        # Sorting highest eigenvalue/eigenvector to lowest!
 
-    P = np.zeros((n_internals-red,n_internals,n_internals))
+        idx = e.argsort()[::-1]   
+        e = e[idx]
+        K = K[:,idx]
 
-    for i in range(0,n_internals-red):
-        for m in range(0,n_internals):
-            for n in range(0,n_internals):
-                k = i + (3*n_atoms-idof)
-                P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k]
-                
-    ''''' 
-    ------------------------------- Results --------------------------------------
-    ''''' 
+        # if redundancies are present, then approximate the inverse of the G-Matrix
+        if red > 0:
+            K = np.delete(K, -red, axis=1)
+            e = np.delete(e, -red, axis=0)
 
-    # Results part 1 
-    Diag_elements = np.zeros((n_internals-red,n_internals))
-    for i in range(0,n_internals-red):
-        for n in range (0,n_internals):
-            Diag_elements[i][n] = np.diag(P[i])[n]
+        e = np.diag(e)
+        G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
 
-    Diag_elements = np.transpose(Diag_elements)
+        # Calculating the inverse augmented B-Matrix
 
+        B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
+        InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
+        if test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+            logging.error("Chosen set is not complete")
 
-    nu = np.zeros(n_internals) 
-    for n in range(0,n_internals):
-        for m in range(0,n_internals):
-            for i in range(0,n_internals-red):
-                k = i + (3*n_atoms-idof)
-                nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
-                
-    nu_final = np.sqrt(nu) *  5140.4981
+        logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
+        angles, linear_angles, out_of_plane, dihedrals)
+            
+        ''''' 
+        --------------------------- Main-Calculation ------------------------------
+        ''''' 
 
-    normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981
-    normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
-    normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
+        # Calculation of the mass-weighted normal modes in Cartesian Coordinates
 
-    all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
+        l = reciprocal_square_massmatrix @ L
 
-    Results1 = pd.DataFrame()
-    Results1['Internal Coordinate'] = all_internals
-    Results1['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-    Results1 = Results1.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
+        # Calculation of the mass-weighted normal modes in Internal Coordinates
 
-    columns = {}
-    keys = range(3*n_atoms-((3*n_atoms-idof)))
-    for i in keys:
-        columns[i] = normal_coord_harmonic_frequencies_string[i]
+        D = B @ l
 
-    Results1 = Results1.rename(columns=columns)
-    
-    # Results part 2
-    
-    nu_perNormalCoordinate = np.zeros((n_internals,n_internals-red)) 
-    for n in range(0,n_internals):
+        # Calculation of the Vibrational Density Matrices
+        
+        eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
+        eigenvalues = np.diag(eigenvalues)
+
+        P = np.zeros((n_internals-red,n_internals,n_internals))
+
         for i in range(0,n_internals-red):
             for m in range(0,n_internals):
-                k = i + (3*n_atoms-idof)
-                nu_perNormalCoordinate[n][i] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
+                for n in range(0,n_internals):
+                    k = i + (3*n_atoms-idof)
+                    P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k]
+                    
+        ''''' 
+        ------------------------------- Results --------------------------------------
+        ''''' 
 
-    Results2 = pd.DataFrame()
-    Results2['Internal Coordinate'] = all_internals
-    Results2 = Results2.join(pd.DataFrame(nu_perNormalCoordinate).applymap("{0:.2f}".format))
-    Results2 = Results2.rename(columns=columns)
-
-    sum_array1 = np.zeros(n_internals)
-
-    for n in range(0,n_internals):
-        for i in range(0, n_internals-red):
-            sum_array1[i] += Diag_elements[n][i]
-
-    Contribution_Matrix1 = np.zeros((n_internals, n_internals-red))
-    for i in range(0, n_internals-red):
-        Contribution_Matrix1[:,i] =((Diag_elements[:,i] / sum_array1[i]) * 100).astype(float)
-    Contribution_Table1 = pd.DataFrame()
-    Contribution_Table1['Internal Coordinate'] = all_internals
-    Contribution_Table1 = Contribution_Table1.join(pd.DataFrame(Contribution_Matrix1).applymap("{0:.2f}".format))
-    Contribution_Table1 = Contribution_Table1.rename(columns=columns)
-
-    sum_array2 = np.zeros(n_internals)
-
-    for n in range(0,n_internals):
+        # Results part 1 
+        Diag_elements = np.zeros((n_internals-red,n_internals))
         for i in range(0,n_internals-red):
-            sum_array2[i] += nu_perNormalCoordinate[n][i]
+            for n in range (0,n_internals):
+                Diag_elements[i][n] = np.diag(P[i])[n]
 
-    Contribution_Matrix2 = np.zeros((n_internals,n_internals-red))
-    for i in range(0, n_internals-red):
-        Contribution_Matrix2[:,i] = (nu_perNormalCoordinate[:,i] / sum_array2[i]) * 100
+        Diag_elements = np.transpose(Diag_elements)
 
-    Contribution_Table2 = pd.DataFrame()
-    Contribution_Table2['Internal Coordinate'] = all_internals
-    Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
-    Contribution_Table2 = Contribution_Table2.rename(columns=columns)
-    
-    logfile.write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2)
-    
-    print("--- %s seconds ---" % (time.time() - start_time))
+
+        nu = np.zeros(n_internals) 
+        for n in range(0,n_internals):
+            for m in range(0,n_internals):
+                for i in range(0,n_internals-red):
+                    k = i + (3*n_atoms-idof)
+                    nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
+                    
+        nu_final = np.sqrt(nu) *  5140.4981
+
+        normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981
+        normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
+        normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
+
+        all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
+
+        Results1 = pd.DataFrame()
+        Results1['Internal Coordinate'] = all_internals
+        Results1['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
+        Results1 = Results1.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
+
+        columns = {}
+        keys = range(3*n_atoms-((3*n_atoms-idof)))
+        for i in keys:
+            columns[i] = normal_coord_harmonic_frequencies_string[i]
+
+        Results1 = Results1.rename(columns=columns)
+        
+        # Results part 2
+        
+        nu_perNormalCoordinate = np.zeros((n_internals,n_internals-red)) 
+        for n in range(0,n_internals):
+            for i in range(0,n_internals-red):
+                for m in range(0,n_internals):
+                    k = i + (3*n_atoms-idof)
+                    nu_perNormalCoordinate[n][i] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
+
+        Results2 = pd.DataFrame()
+        Results2['Internal Coordinate'] = all_internals
+        Results2 = Results2.join(pd.DataFrame(nu_perNormalCoordinate).applymap("{0:.2f}".format))
+        Results2 = Results2.rename(columns=columns)
+
+        sum_array1 = np.zeros(n_internals)
+
+        for n in range(0,n_internals):
+            for i in range(0, n_internals-red):
+                sum_array1[i] += Diag_elements[n][i]
+
+        Contribution_Matrix1 = np.zeros((n_internals, n_internals-red))
+        for i in range(0, n_internals-red):
+            Contribution_Matrix1[:,i] =((Diag_elements[:,i] / sum_array1[i]) * 100).astype(float)
+        Contribution_Table1 = pd.DataFrame()
+        Contribution_Table1['Internal Coordinate'] = all_internals
+        Contribution_Table1 = Contribution_Table1.join(pd.DataFrame(Contribution_Matrix1).applymap("{0:.2f}".format))
+        Contribution_Table1 = Contribution_Table1.rename(columns=columns)
+
+        sum_array2 = np.zeros(n_internals)
+
+        for n in range(0,n_internals):
+            for i in range(0,n_internals-red):
+                sum_array2[i] += nu_perNormalCoordinate[n][i]
+
+        Contribution_Matrix2 = np.zeros((n_internals,n_internals-red))
+        for i in range(0, n_internals-red):
+            Contribution_Matrix2[:,i] = (nu_perNormalCoordinate[:,i] / sum_array2[i]) * 100
+
+        Contribution_Table2 = pd.DataFrame()
+        Contribution_Table2['Internal Coordinate'] = all_internals
+        Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
+        Contribution_Table2 = Contribution_Table2.rename(columns=columns)
+        
+        logfile.write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2)
+        
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == '__main__':
     main()

@@ -17,10 +17,17 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
     num_out_of_plane = len(out_of_plane)
     num_dihedrals = len(dihedrals)
 
-    all_non_bond_coordinates = angles + linear_angles + out_of_plane + dihedrals
-    ic_dict = {}
+    ic_dict = dict()
     for i in range(0, (3*n_atoms) - idof):
-        for ic_subsets in itertools.combinations(all_non_bond_coordinates, idof - num_bonds + i):
-            ic_dict = bonds + list(ic_subsets)
+        k = 0
+        for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
+            ic_dict[k] = {
+                "bonds" : bonds,
+                "angles" : list(ic_subset),
+                "linear valence angles" : linear_angles,
+                "out of plane angles" : out_of_plane,
+                "dihedrals" : dihedrals
+            }
+            k +=1
     print(ic_dict)
     return ic_dict
