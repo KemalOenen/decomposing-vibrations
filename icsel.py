@@ -21,8 +21,8 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
     ic_dict = dict()
 
     # TODO: make approach more elegant?
+    k = 0
     for i in range(0, (3*n_atoms) - idof):
-        k = 0
         for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
             ic_subset = list(ic_subset)
             print(ic_subset)
@@ -45,5 +45,5 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
             }
             k +=1
             used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
-    #pprint.pprint(ic_dict)
+    pprint.pprint(ic_dict)
     return ic_dict
