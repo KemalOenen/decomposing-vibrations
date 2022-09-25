@@ -15,14 +15,6 @@ def create_new_filename(old_filename):
     pieces = old_filename.split(".")
     return "_".join([pieces[0], "nomodeco"]) +  ".log"
 
-def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix):
-    logging.info("Testing if the Internal Coordinate Set is complete ...")
-    CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
-    if (np.allclose(CartesianF_Matrix_check, CartesianF_Matrix)) == True:
-        logging.info('Yes! The double transformed f-matrix is the same as in the input.')
-    else:
-        logging.error('No! The double transformed f-matrix is NOT the same as in the input.')
-
 def oop_directive() -> string:
     args = get_args()
     if args.oop_directive == "oop":
@@ -93,8 +85,7 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
         logging.warning("The condition number can not be calculated as B is not quadratic!")
     logging.info("")
     logging.info("")
-    test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix)
-    logging.info("")
+    logging.info("Testing if the Internal Coordinate Set is complete ...")
 
 def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))

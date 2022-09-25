@@ -47,13 +47,6 @@ def reciprocal_massvector(atoms):
         diag_reciprocal[3*i:3*i+3] = 1/(MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
     return diag_reciprocal
 
-def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
-    CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
-    if (np.allclose(CartesianF_Matrix_check, CartesianF_Matrix)) == True:
-        return True
-    else:
-        return False
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
@@ -171,9 +164,16 @@ def main():
         logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
         angles, linear_angles, out_of_plane, dihedrals)
 
-        if test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
-            logging.error("This set is not complete and will not be computed!")
-            continue
+        if icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+             logging.error('No! The double transformed f-matrix is NOT the same as in the input.')
+             logging.info("")
+             logging.error("This set is not complete and will not be computed!")
+             logging.info("")
+             continue
+        else:
+             logging.info('Yes! The double transformed f-matrix is the same as in the input.')
+             logging.info("")
+       
             
         ''''' 
         --------------------------- Main-Calculation ------------------------------

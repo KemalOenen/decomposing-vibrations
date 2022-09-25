@@ -11,6 +11,13 @@ step 3: compute the B-Matrix for all possibilites and check for completeness, if
 step 4: order the decomposition according to new metric - NOT DONE
 """""
 
+def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
+    CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
+    if (np.allclose(CartesianF_Matrix_check, CartesianF_Matrix)) == True:
+        return True
+    else:
+        return False
+
 def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals):
     num_bonds = len(bonds)
     num_angles = len(angles)
