@@ -24,7 +24,15 @@ out-of-plane angles: []
 dihedrals: []
 
 3 internal coordinates are at least needed for the decomposition scheme.
-3 Internal Coordinates are used in your analysis.
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 3 Internal Coordinates are used in your analysis:
+bonds: [('H1', 'O'), ('O', 'H2')]
+in-plane angles: [('H1', 'O', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: []
 
 There are 0 redundant internal coordinates used.
 
@@ -37,7 +45,7 @@ Infinity-Norm of B: 10.981910668556118
 Testing if the Internal Coordinate Set is complete ...
 Yes! The double transformed f-matrix is the same as in the input.
 
--------------------------------------Results of the Decomposition Scheme--------------------------------------
+-------------------------- Results of the Decomposition Scheme ---------------------------
 
 1.) Intrinsic Frequencies for all normal-coordinate frequencies and
     diagonal elements of the vibrational density matrices at the following
@@ -55,7 +63,7 @@ Internal Coordinate 1668.46 3840.89 3945.47
             (O, H2)    1.31   50.00   50.00
         (H1, O, H2)   97.38    0.00    0.00
 
---------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 
 
 2.) Eigenvalues for each internal coordinate per normal-coordinate 
