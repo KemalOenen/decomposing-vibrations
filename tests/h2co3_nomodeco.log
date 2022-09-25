@@ -8,18 +8,2343 @@
 
 
 **************************************************************************************************************
-                                          Kemal Önen, Dennis F. Dinu                                          
+                                  Kemal Önen, Dennis F. Dinu, Klaus R. Liedl                                  
                                       Liedl Lab, University of Innsbruck                                      
 **************************************************************************************************************
 
-The following primitive internals (bonds, (in-plane) angles, out-of-plane angles and torsions) were generated:
+You did NOT include the consideration of out-of-plane angles. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
 bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
 in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
 out-of-plane angles: []
 dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
 
 12 internal coordinates are at least needed for the decomposition scheme.
-14 Internal Coordinates are used in your analysis.
+
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 1.5689529302230162e+33
+Eucledian-Norm of B: 2.8513993710878925e+19
+Infinity-Norm of B: 1.1147688583433489e+33
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O2', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 1.0196290484321388e+34
+Eucledian-Norm of B: 1.0004642432935051e+17
+Infinity-Norm of B: 8.637890840159009e+33
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 1.2315424319938276e+33
+Eucledian-Norm of B: 7.243977571117325e+16
+Infinity-Norm of B: 1.6121439191923418e+33
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 2.759521950969003e+33
+Eucledian-Norm of B: 1.0865966356668502e+17
+Infinity-Norm of B: 3.61233719404218e+33
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 1.8992382732283882e+33
+Eucledian-Norm of B: 1.0248658102029214e+17
+Infinity-Norm of B: 1.608958955104815e+33
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 3.379318603206212e+33
+Eucledian-Norm of B: 8.716528116729293e+16
+Infinity-Norm of B: 1.8617628854584903e+33
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.76801214780258
+Eucledian-Norm of B: 5.39265097687844
+Infinity-Norm of B: 19.453924726270984
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (O1, C, O3)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+    (O1, C, O2, H1)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+        (O1, C, O2)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (O1, C, O3)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (C, O2, H1)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+    (O1, C, O2, H1)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00  -0.00  0.00   -0.00    0.01   -0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00  -0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.01   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.01   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01   0.00   0.01  -0.00 -0.00    0.00   -0.00   -0.00    0.00   -0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.02   0.00  -0.00   0.02 -0.00    0.00   -0.00    0.00    0.00   -0.00    0.00
+    (O2, C, O3, H2)  -0.00  -0.01  -0.00   0.01   0.00  0.00   -0.00    0.00    0.00    0.00    0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00  -0.00  7.19   -0.00   14.33   -0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05  -0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  46.45   0.00  41.89   0.00   0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (O1, C, O3)  46.45   0.00  41.89   0.00   0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72  -0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+    (O1, C, O2, H1)   0.00  55.85   0.00  56.86  -3.58 -0.00    0.00   -0.00   -0.00    0.00   -0.00   -0.00
+    (O1, C, O3, H2)   0.00  90.26   0.00 -15.96  85.54 -0.00    0.00   -0.00    0.00    0.00   -0.00    0.00
+    (O2, C, O3, H2)  -0.00 -46.10  -0.00  59.10  18.04  0.00   -0.00    0.00    0.00    0.00    0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.76801214780258
+Eucledian-Norm of B: 5.392650976878438
+Infinity-Norm of B: 19.45392472627099
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (O1, C, O3)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+    (O1, C, O2, H1)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+        (O1, C, O2)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (O1, C, O3)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (C, O2, H1)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+    (O1, C, O2, H1)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00    0.01   -0.00    0.10   -0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.01   0.00   0.01   0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.01   0.00   0.01   0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.02   0.00  -0.00   0.02 -0.00    0.00   -0.00   -0.00   -0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00   0.01   0.00   0.01  -0.00  0.00    0.00    0.00    0.00    0.00   -0.00    0.00
+    (H1, O2, C, O3)  -0.00  -0.01   0.00   0.01   0.00  0.00   -0.00   -0.00    0.00    0.00    0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19    0.00   14.33   -0.00   77.67   -0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00  -0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  46.45   0.00  41.89   0.00  -0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (O1, C, O3)  46.45   0.00  41.89   0.00  -0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+    (O1, C, O2, H1)   0.00  90.26   0.00 -15.96  85.54 -0.00    0.00   -0.00   -0.00   -0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00  55.85   0.00  56.86  -3.58  0.00    0.00    0.00    0.00    0.00   -0.00    0.00
+    (H1, O2, C, O3)  -0.00 -46.10   0.00  59.10  18.04  0.00   -0.00   -0.00    0.00    0.00    0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.768012147802583
+Eucledian-Norm of B: 5.374580704771044
+Infinity-Norm of B: 19.453924726270987
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (O1, C, O3)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+    (O1, C, O2, H1)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+        (O1, C, O2)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (O1, C, O3)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (C, O2, H1)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+    (O1, C, O2, H1)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00   0.00  -0.00  0.00   -0.00    0.01    0.00    0.10   -0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.01   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.01   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01   0.00   0.01   0.02 -0.00   -0.00   -0.00    0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00   0.01  -0.00   0.01   0.00  0.00   -0.00    0.00    0.00   -0.00    0.00    0.00
+    (H1, O2, C, O3)  -0.00  -0.00  -0.00   0.00   0.00  0.00    0.00    0.00   -0.00    0.00   -0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00   0.00  -0.00  7.19   -0.00   14.33    0.00   77.67   -0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  46.45   0.00  41.89   0.00   0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (O1, C, O3)  46.45   0.00  41.89   0.00   0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+    (O1, C, O2, H1)   0.00  59.75   0.00  40.90  81.96 -0.00   -0.00   -0.00    0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  42.36  -0.00  46.15   0.73  0.00   -0.00    0.00    0.00   -0.00    0.00    0.00
+    (H1, O2, C, O3)  -0.00  -2.11  -0.00  12.95  17.32  0.00    0.00    0.00   -0.00    0.00   -0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.768012147802583
+Eucledian-Norm of B: 5.374580704771045
+Infinity-Norm of B: 19.453924726270987
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (O1, C, O3)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+    (O1, C, O3, H2)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+        (O1, C, O2)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (O1, C, O3)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (C, O2, H1)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+    (O1, C, O3, H2)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00   -0.00    0.01    0.00    0.10   -0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.01   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.01   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.01   0.00   0.01   0.02  0.00    0.00    0.00    0.00    0.00   -0.00    0.00
+    (O2, C, O3, H2)  -0.00  -0.00   0.00   0.00   0.00 -0.00   -0.00    0.00    0.00   -0.00    0.00   -0.00
+    (H1, O2, C, O3)   0.00   0.01   0.00   0.01   0.00  0.00   -0.00   -0.00    0.00    0.00   -0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19   -0.00   14.33    0.00   77.67   -0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  46.45   0.00  41.89   0.00   0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (O1, C, O3)  46.45   0.00  41.89   0.00   0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+    (O1, C, O3, H2)   0.00  59.75   0.00  40.90  81.96  0.00    0.00    0.00    0.00    0.00   -0.00    0.00
+    (O2, C, O3, H2)  -0.00  -2.11   0.00  12.95  17.32 -0.00   -0.00    0.00    0.00   -0.00    0.00   -0.00
+    (H1, O2, C, O3)   0.00  42.36   0.00  46.15   0.73  0.00   -0.00   -0.00    0.00    0.00   -0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.4692503977544376e+18
+Eucledian-Norm of B: 1.130863742589191e+17
+Infinity-Norm of B: 4.220123838625237e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.4692503977544387e+18
+Eucledian-Norm of B: 8.818923143408962e+16
+Infinity-Norm of B: 4.220123838625238e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.4692503977544387e+18
+Eucledian-Norm of B: 3.0814820296412224e+16
+Infinity-Norm of B: 4.220123838625238e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.4692503977544376e+18
+Eucledian-Norm of B: 1.2864174031400478e+16
+Infinity-Norm of B: 4.220123838625238e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 2.2870052209816836e+16
+Eucledian-Norm of B: 1.490977429702064e+16
+Infinity-Norm of B: 2.5541293161495156e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.469250397754368e+18
+Eucledian-Norm of B: 2.0051811831050156e+16
+Infinity-Norm of B: 4.2201238386251704e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.4692503977543685e+18
+Eucledian-Norm of B: 3.9055534869747496e+16
+Infinity-Norm of B: 4.2201238386251715e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.4692503977543695e+18
+Eucledian-Norm of B: 1.7176400271640462e+16
+Infinity-Norm of B: 4.2201238386251715e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 4.4692503977543685e+18
+Eucledian-Norm of B: 7.91491418409005e+16
+Infinity-Norm of B: 4.2201238386251715e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 5.500915356718095e+16
+Eucledian-Norm of B: 2.647045994025565e+16
+Infinity-Norm of B: 6.143426805217282e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 9.688616427805768e+18
+Eucledian-Norm of B: 1.3738652946805325e+18
+Infinity-Norm of B: 7.025879734385584e+18
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.96295198329974
+Eucledian-Norm of B: 5.1134934190811006
+Infinity-Norm of B: 19.839394296535396
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O2)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00  -0.00   0.00  -0.00  0.00   -0.00    0.01   -0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.00   0.00   0.01   0.00  -0.00 -0.00   -0.00   -0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00  -0.00   0.00   0.00 -0.00   -0.00    0.00   -0.00    0.01    0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01   0.00   0.01  -0.00 -0.00   -0.00    0.00   -0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00   0.02   0.00  -0.00   0.02 -0.00    0.00   -0.00    0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)  -0.00  -0.01  -0.00   0.01   0.00 -0.00   -0.00    0.00   -0.00   -0.00    0.00    0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00  -0.00   0.00  -0.00  7.19   -0.00   14.33   -0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)   0.00   0.00  83.78   0.00  -0.00 -0.00   -1.14   -0.00   17.39    0.00   -0.03   -0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00  -0.00   0.00   0.00 -0.77   -0.00    3.06   -0.00    4.82    0.00   -0.00
+    (O1, C, O2, H1)   0.00  55.85   0.00  56.86  -3.58 -0.00   -0.00    0.00   -0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  90.26   0.00 -15.96  85.54 -0.00    0.00   -0.00    0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)  -0.00 -46.10  -0.00  59.10  18.04 -0.00   -0.00    0.00   -0.00   -0.00    0.00    0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.962951983299742
+Eucledian-Norm of B: 5.113493419081094
+Infinity-Norm of B: 19.839394296535403
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O2)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00  -0.00   0.00  -0.00  0.00    0.00    0.01    0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)  -0.00   0.00   0.01  -0.00   0.00 -0.00   -0.00   -0.00    0.01    0.00   -0.00    0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00  -0.00   0.00   0.00 -0.00   -0.00    0.00   -0.00    0.01    0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.02   0.00  -0.00   0.02 -0.00    0.00   -0.00    0.00    0.00   -0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.01   0.00   0.01  -0.00  0.00   -0.00   -0.00   -0.00   -0.00   -0.00    0.00
+    (H1, O2, C, O3)  -0.00  -0.01  -0.00   0.01   0.00  0.00   -0.00    0.00   -0.00   -0.00    0.00    0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00  -0.00   0.00  -0.00  7.19    0.00   14.33    0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00  -0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  -0.00   0.00  83.78  -0.00   0.00 -0.00   -1.14   -0.00   17.39    0.00   -0.03    0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00  -0.00   0.00   0.00 -0.77   -0.00    3.06   -0.00    4.82    0.00   -0.00
+    (O1, C, O2, H1)   0.00  90.26   0.00 -15.96  85.54 -0.00    0.00   -0.00    0.00    0.00   -0.00   -0.00
+    (O1, C, O3, H2)   0.00  55.85   0.00  56.86  -3.58  0.00   -0.00   -0.00   -0.00   -0.00   -0.00    0.00
+    (H1, O2, C, O3)  -0.00 -46.10  -0.00  59.10  18.04  0.00   -0.00    0.00   -0.00   -0.00    0.00    0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.962951983299742
+Eucledian-Norm of B: 5.096358577998605
+Infinity-Norm of B: 19.8393942965354
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O2)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00  -0.00  -0.00   0.00  0.00    0.00    0.01   -0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)  -0.00   0.00   0.01   0.00  -0.00 -0.00   -0.00   -0.00    0.01    0.00   -0.00    0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00  -0.00   0.00   0.00 -0.00   -0.00    0.00   -0.00    0.01    0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01   0.00   0.01   0.02 -0.00   -0.00   -0.00    0.00    0.00    0.00   -0.00
+    (O2, C, O3, H2)   0.00   0.01   0.00   0.01   0.00 -0.00    0.00    0.00   -0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)  -0.00  -0.00  -0.00   0.00   0.00 -0.00   -0.00   -0.00    0.00    0.00    0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00  -0.00  -0.00   0.00  7.19    0.00   14.33   -0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  -0.00   0.00  83.78   0.00  -0.00 -0.00   -1.14   -0.00   17.39    0.00   -0.03    0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00  -0.00   0.00   0.00 -0.77   -0.00    3.06   -0.00    4.82    0.00   -0.00
+    (O1, C, O2, H1)   0.00  59.75   0.00  40.90  81.96 -0.00   -0.00   -0.00    0.00    0.00    0.00   -0.00
+    (O2, C, O3, H2)   0.00  42.36   0.00  46.15   0.73 -0.00    0.00    0.00   -0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)  -0.00  -2.11  -0.00  12.95  17.32 -0.00   -0.00   -0.00    0.00    0.00    0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.962951983299742
+Eucledian-Norm of B: 5.096358577998604
+Infinity-Norm of B: 19.8393942965354
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O3, H2)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O2)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O3, H2)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00   -0.00    0.01    0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)  -0.00   0.00   0.01  -0.00   0.00 -0.00   -0.00   -0.00    0.01   -0.00   -0.00    0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00  -0.00   0.00   0.00 -0.00   -0.00    0.00   -0.00    0.01    0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.01   0.00   0.01   0.02  0.00   -0.00    0.00   -0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  -0.00   0.00   0.00   0.00 -0.00    0.00    0.00    0.00    0.00   -0.00   -0.00
+    (H1, O2, C, O3)   0.00   0.01   0.00   0.01   0.00  0.00   -0.00   -0.00   -0.00    0.00    0.00    0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19   -0.00   14.33    0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  -0.00   0.00  83.78  -0.00   0.00 -0.00   -1.14   -0.00   17.39   -0.00   -0.03    0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00  -0.00   0.00   0.00 -0.77   -0.00    3.06   -0.00    4.82    0.00   -0.00
+    (O1, C, O3, H2)   0.00  59.75   0.00  40.90  81.96  0.00   -0.00    0.00   -0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  -2.11   0.00  12.95  17.32 -0.00    0.00    0.00    0.00    0.00   -0.00   -0.00
+    (H1, O2, C, O3)   0.00  42.36   0.00  46.15   0.73  0.00   -0.00   -0.00   -0.00    0.00    0.00    0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 2.251852125763868e+16
+Eucledian-Norm of B: 6859877241241217.0
+Infinity-Norm of B: 1.3782653371205146e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O2', 'H1'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 2.2870052210546556e+16
+Eucledian-Norm of B: 1.0554137190625812e+16
+Infinity-Norm of B: 2.5541293162310108e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 5.500915356916997e+16
+Eucledian-Norm of B: 9000831486674660.0
+Infinity-Norm of B: 6.143426805439417e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.962951983299742
+Eucledian-Norm of B: 5.113493419081093
+Infinity-Norm of B: 19.8393942953226
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O3)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O3)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00    0.01    0.00    0.10   -0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00  -0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O3)   0.00  -0.00   0.01   0.00   0.00 -0.00   -0.00   -0.00    0.01    0.00   -0.00    0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00   0.00 -0.00    0.00    0.00    0.00    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01   0.00   0.01  -0.00 -0.00    0.00   -0.00   -0.00    0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00   0.02   0.00  -0.00   0.02  0.00    0.00    0.00    0.00   -0.00   -0.00    0.00
+    (O2, C, O3, H2)  -0.00  -0.01  -0.00   0.01   0.00 -0.00   -0.00    0.00    0.00    0.00    0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19    0.00   14.33    0.00   77.67   -0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05  -0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O3)   0.00  -0.00  83.78   0.00   0.00 -0.00   -1.14   -0.00   17.39    0.00   -0.03    0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00   0.00   0.00   0.00 -0.77    0.00    3.06    0.00    4.82   -0.00   -0.00
+    (O1, C, O2, H1)   0.00  55.85   0.00  56.86  -3.58 -0.00    0.00   -0.00   -0.00    0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00  90.26   0.00 -15.96  85.54  0.00    0.00    0.00    0.00   -0.00   -0.00    0.00
+    (O2, C, O3, H2)  -0.00 -46.10  -0.00  59.10  18.04 -0.00   -0.00    0.00    0.00    0.00    0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.962951983299742
+Eucledian-Norm of B: 5.113493419081094
+Infinity-Norm of B: 19.839394295322602
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O3)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O3)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00  -0.00   0.00  -0.00  0.00    0.00    0.01    0.00    0.10   -0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O3)   0.00  -0.00   0.01  -0.00  -0.00 -0.00   -0.00    0.00    0.01   -0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00  -0.00 -0.00    0.00    0.00    0.00    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.02   0.00  -0.00   0.02 -0.00    0.00    0.00    0.00   -0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00   0.01   0.00   0.01  -0.00 -0.00    0.00    0.00    0.00   -0.00   -0.00    0.00
+    (H1, O2, C, O3)  -0.00  -0.01  -0.00   0.01   0.00  0.00   -0.00    0.00    0.00   -0.00    0.00    0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00  -0.00   0.00  -0.00  7.19    0.00   14.33    0.00   77.67   -0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O3)   0.00  -0.00  83.78  -0.00  -0.00 -0.00   -1.14    0.00   17.39   -0.00   -0.03   -0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72  -0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00   0.00   0.00  -0.00 -0.77    0.00    3.06    0.00    4.82   -0.00   -0.00
+    (O1, C, O2, H1)   0.00  90.26   0.00 -15.96  85.54 -0.00    0.00    0.00    0.00   -0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00  55.85   0.00  56.86  -3.58 -0.00    0.00    0.00    0.00   -0.00   -0.00    0.00
+    (H1, O2, C, O3)  -0.00 -46.10  -0.00  59.10  18.04  0.00   -0.00    0.00    0.00   -0.00    0.00    0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.962951983299742
+Eucledian-Norm of B: 5.0963585779986005
+Infinity-Norm of B: 19.839394295322602
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O3)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O3)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00   0.00  -0.00  0.00    0.00    0.01    0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O3)  -0.00  -0.00   0.01   0.00   0.00  0.00   -0.00   -0.00    0.01   -0.00   -0.00    0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00   0.00 -0.00    0.00    0.00    0.00    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01   0.00   0.01   0.02  0.00    0.00    0.00    0.00   -0.00   -0.00   -0.00
+    (O2, C, O3, H2)   0.00   0.01   0.00   0.01   0.00  0.00    0.00    0.00    0.00    0.00    0.00   -0.00
+    (H1, O2, C, O3)  -0.00  -0.00   0.00   0.00   0.00 -0.00   -0.00    0.00   -0.00   -0.00    0.00    0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00   0.00  -0.00  7.19    0.00   14.33    0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00  -0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O3)  -0.00  -0.00  83.78   0.00   0.00  0.00   -1.14   -0.00   17.39   -0.00   -0.03    0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00   0.00   0.00   0.00 -0.77    0.00    3.06    0.00    4.82   -0.00   -0.00
+    (O1, C, O2, H1)   0.00  59.75   0.00  40.90  81.96  0.00    0.00    0.00    0.00   -0.00   -0.00   -0.00
+    (O2, C, O3, H2)   0.00  42.36   0.00  46.15   0.73  0.00    0.00    0.00    0.00    0.00    0.00   -0.00
+    (H1, O2, C, O3)  -0.00  -2.11   0.00  12.95  17.32 -0.00   -0.00    0.00   -0.00   -0.00    0.00    0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 20.962951983299742
+Eucledian-Norm of B: 5.096358577998604
+Infinity-Norm of B: 19.839394295322602
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O3)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O3, H2)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O3)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O3, H2)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00  -0.00   0.00  -0.00  0.00   -0.00    0.01    0.00    0.10   -0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O3)   0.00  -0.00   0.01  -0.00   0.00 -0.00   -0.00    0.00    0.01   -0.00   -0.00    0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00  -0.00 -0.00    0.00    0.00    0.00    0.01   -0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.01   0.00   0.01   0.02 -0.00    0.00   -0.00    0.00    0.00   -0.00   -0.00
+    (O2, C, O3, H2)  -0.00  -0.00   0.00   0.00   0.00  0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+    (H1, O2, C, O3)   0.00   0.01   0.00   0.01   0.00 -0.00    0.00    0.00    0.00   -0.00   -0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00  -0.00   0.00  -0.00  7.19   -0.00   14.33    0.00   77.67   -0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O3)   0.00  -0.00  83.78  -0.00   0.00 -0.00   -1.14    0.00   17.39   -0.00   -0.03    0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00   0.00   0.00  -0.00 -0.77    0.00    3.06    0.00    4.82   -0.00   -0.00
+    (O1, C, O3, H2)   0.00  59.75   0.00  40.90  81.96 -0.00    0.00   -0.00    0.00    0.00   -0.00   -0.00
+    (O2, C, O3, H2)  -0.00  -2.11   0.00  12.95  17.32  0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+    (H1, O2, C, O3)   0.00  42.36   0.00  46.15   0.73 -0.00    0.00    0.00    0.00   -0.00   -0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 5.364527680461617e+16
+Eucledian-Norm of B: 4.1826227516492904e+16
+Infinity-Norm of B: 3.283405010218269e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 2.287005221567863e+16
+Eucledian-Norm of B: 1.4206464745178606e+16
+Infinity-Norm of B: 2.5541293168041616e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 5.500915354029214e+16
+Eucledian-Norm of B: 1.4402623689077302e+16
+Infinity-Norm of B: 6.143426802214337e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 12 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There are 0 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+Sum-Norm of B: 3.1791024953718892e+16
+Eucledian-Norm of B: 6812956007472164.0
+Infinity-Norm of B: 1.893802401904054e+16
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (O1, C, O3)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                571.41   0.44   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.04    0.00    0.00
+    (O1, C, O2, H1)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+        (O1, C, O2)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (O1, C, O3)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (C, O2, H1)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (O2, C, O3)  55.88   0.00   0.00   0.00   0.00  0.56    0.00    0.41    0.00    3.43    0.00    0.03
+    (O1, C, O2, H1)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00   -0.00    0.01    0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00  -0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00  -0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.00   0.00   0.01  -0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.00   0.00   0.01   0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00  -0.00 -0.00    0.00    0.00   -0.00    0.00   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01   0.00   0.01  -0.00  0.00    0.00   -0.00    0.00    0.00   -0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.02   0.00  -0.00   0.02 -0.00    0.00    0.00   -0.00    0.00   -0.00   -0.00
+    (O2, C, O3, H2)  -0.00  -0.01  -0.00   0.01   0.00  0.00   -0.00   -0.00   -0.00   -0.00    0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19   -0.00   14.33    0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05  -0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05  -0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  15.48   0.00  41.89  -0.00  -0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (O1, C, O3)  15.48   0.00  41.89   0.00  -0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  61.93   0.00   0.00   0.00  -0.00 -0.51    0.00    2.04   -0.00    3.21   -0.00   -0.00
+    (O1, C, O2, H1)   0.00  55.85   0.00  56.86  -3.58  0.00    0.00   -0.00    0.00    0.00   -0.00   -0.00
+    (O1, C, O3, H2)   0.00  90.26   0.00 -15.96  85.54 -0.00    0.00    0.00   -0.00    0.00   -0.00   -0.00
+    (O2, C, O3, H2)  -0.00 -46.10  -0.00  59.10  18.04  0.00   -0.00   -0.00   -0.00   -0.00    0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (O1, C, O3)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                571.41   0.44   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.04    0.00    0.00
+    (O1, C, O2, H1)                999.14   0.00   3.42   0.00   2.27   0.93  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                689.87   0.00   0.86   0.00   0.57   0.23  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                318.07   0.00   2.66   0.00   1.94   0.05  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+        (O1, C, O2)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (O1, C, O3)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (C, O2, H1)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (O2, C, O3)  55.88   0.00   0.00   0.00   0.00  0.56    0.00    0.41    0.00    3.43    0.00    0.03
+    (O1, C, O2, H1)   0.00  49.33   0.00  47.49  76.67  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  12.38   0.00  11.92  19.25  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  38.29   0.00  40.58   4.08  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00   0.00  -0.00  0.00   -0.00    0.01   -0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.00   0.00   0.01  -0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.00   0.00   0.01   0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00   0.00 -0.00   -0.00    0.00   -0.00    0.00    0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.02   0.00  -0.00   0.02 -0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.01   0.00   0.01  -0.00 -0.00    0.00   -0.00   -0.00   -0.00    0.00    0.00
+    (H1, O2, C, O3)  -0.00  -0.01  -0.00   0.01   0.00  0.00   -0.00    0.00    0.00   -0.00   -0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00   0.00  -0.00  7.19   -0.00   14.33   -0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  15.48   0.00  41.89  -0.00  -0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (O1, C, O3)  15.48   0.00  41.89   0.00  -0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  61.93   0.00   0.00   0.00   0.00 -0.51   -0.00    2.04   -0.00    3.21    0.00   -0.00
+    (O1, C, O2, H1)   0.00  90.26   0.00 -15.96  85.54 -0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+    (O1, C, O3, H2)   0.00  55.85   0.00  56.86  -3.58 -0.00    0.00   -0.00   -0.00   -0.00    0.00    0.00
+    (H1, O2, C, O3)  -0.00 -46.10  -0.00  59.10  18.04  0.00   -0.00    0.00    0.00   -0.00   -0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (O1, C, O3)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                571.41   0.44   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.04    0.00    0.00
+    (O1, C, O2, H1)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+        (O1, C, O2)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (O1, C, O3)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (C, O2, H1)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (O2, C, O3)  55.88   0.00   0.00   0.00   0.00  0.56    0.00    0.41    0.00    3.43    0.00    0.03
+    (O1, C, O2, H1)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.00    0.01   -0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.00   0.00   0.01   0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.00   0.00   0.01  -0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00   0.00 -0.00   -0.00    0.00    0.00    0.00    0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.01  -0.00   0.01   0.02 -0.00   -0.00    0.00    0.00   -0.00   -0.00    0.00
+    (O2, C, O3, H2)   0.00   0.01   0.00   0.01   0.00 -0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+    (H1, O2, C, O3)  -0.00  -0.00   0.00   0.00   0.00 -0.00   -0.00   -0.00   -0.00    0.00    0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00  -0.00  7.19    0.00   14.33   -0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  15.48   0.00  41.89   0.00  -0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (O1, C, O3)  15.48   0.00  41.89  -0.00  -0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  61.93   0.00   0.00   0.00   0.00 -0.51   -0.00    2.04    0.00    3.21    0.00   -0.00
+    (O1, C, O2, H1)   0.00  59.75  -0.00  40.90  81.96 -0.00   -0.00    0.00    0.00   -0.00   -0.00    0.00
+    (O2, C, O3, H2)   0.00  42.36   0.00  46.15   0.73 -0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+    (H1, O2, C, O3)  -0.00  -2.11   0.00  12.95  17.32 -0.00   -0.00   -0.00   -0.00    0.00    0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (O1, C, O3)                646.89   0.10   0.00   0.28   0.00   0.00  0.00    0.01    0.00    0.07    0.01    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                571.41   0.44   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.04    0.00    0.00
+    (O1, C, O3, H2)                948.24   0.00   2.66   0.00   1.77   0.73  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                399.89   0.00   2.05   0.00   1.50   0.04  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                554.19   0.00   0.51   0.00   0.38   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   4.45   0.00   0.00 46.69   21.84    0.44   27.64    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.21    0.03   49.99   49.96
+        (O1, C, O2)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (O1, C, O3)  13.10   0.00  39.90   0.00   0.00  0.13    0.80    0.10    7.25    0.80    0.01    0.01
+        (C, O2, H1)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   5.65   0.00   0.00  0.53   27.17   41.67   14.90    3.62    0.00    0.00
+        (O2, C, O3)  55.88   0.00   0.00   0.00   0.00  0.56    0.00    0.41    0.00    3.43    0.00    0.03
+    (O1, C, O3, H2)   0.00  50.98   0.00  48.58  93.82  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  39.18   0.00  41.10   4.94  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00   9.84   0.00  10.32   1.24  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.00    0.01   -0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.00   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.00   0.00   0.01   0.00   0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00   0.00 -0.00    0.00    0.00   -0.00    0.00   -0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.01  -0.00   0.01   0.02  0.00   -0.00   -0.00   -0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)  -0.00  -0.00   0.00   0.00   0.00  0.00    0.00    0.00   -0.00    0.00   -0.00    0.00
+    (H1, O2, C, O3)   0.00   0.01   0.00   0.01   0.00  0.00    0.00   -0.00    0.00    0.00   -0.00    0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00  -0.00  7.19    0.00   14.33   -0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  15.48   0.00  41.89   0.00   0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (O1, C, O3)  15.48   0.00  41.89   0.00   0.00 -0.13   -0.57    0.51    8.69    0.80   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  61.93   0.00   0.00   0.00   0.00 -0.51    0.00    2.04   -0.00    3.21   -0.00   -0.00
+    (O1, C, O3, H2)   0.00  59.75  -0.00  40.90  81.96  0.00   -0.00   -0.00   -0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)  -0.00  -2.11   0.00  12.95  17.32  0.00    0.00    0.00   -0.00    0.00   -0.00    0.00
+    (H1, O2, C, O3)   0.00  42.36   0.00  46.15   0.73  0.00    0.00   -0.00    0.00    0.00   -0.00    0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (O1, C, O3)                762.71   0.33   0.00   0.88   0.00   0.00  0.00    0.03    0.00    0.22    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+    (O1, C, O2, H1)                640.83   0.00   0.70   0.00   0.46   0.19  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                640.83   0.00   0.70   0.00   0.46   0.19  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                524.37   0.00   0.78   0.00   0.57   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                524.37   0.00   0.78   0.00   0.57   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.26   0.00   0.00   0.00   0.00  4.71    0.00   14.30    0.00   72.85    0.00    0.00
+            (C, O2)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+            (C, O3)   0.07   0.00   1.65   0.00   0.00 46.69   21.11    0.44   21.11    7.40    0.01    0.02
+           (O2, H1)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+           (O3, H2)   0.07   0.00   0.00   0.00   0.00  0.01    0.18    0.43    0.16    0.03   49.97   49.96
+        (O1, C, O2)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (O1, C, O3)  41.03   0.00  46.26   0.00   0.00  0.41    2.44    0.30   17.35    2.52    0.02    0.02
+        (C, O2, H1)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+        (C, O3, H2)   8.69   0.00   2.09   0.00   0.00  0.53   26.27   41.67   11.38    3.62    0.00    0.00
+    (O1, C, O2, H1)   0.00  23.66   0.00  22.47  46.46  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  23.66   0.00  22.47  46.46  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  26.34   0.00  27.53   3.54  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  26.34   0.00  27.53   3.54  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00   -0.00    0.01    0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00  -0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.01   0.00   0.01   0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (O1, C, O3)   0.01   0.00   0.01   0.00  -0.00 -0.00   -0.00    0.00    0.01    0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.00   0.00   0.00   0.01  0.00    0.00   -0.00   -0.00    0.00    0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.00   0.00   0.00   0.01  0.00    0.00   -0.00    0.00   -0.00    0.00   -0.00
+    (O2, C, O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00   -0.00   -0.00
+    (H1, O2, C, O3)   0.00   0.00   0.00   0.00   0.00  0.00   -0.00    0.00    0.00    0.00   -0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19   -0.00   14.33    0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05  -0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)  46.45   0.00  41.89   0.00  -0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (O1, C, O3)  46.45   0.00  41.89   0.00  -0.00 -0.38   -0.57    1.53    8.69    2.41   -0.02   -0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+    (O1, C, O2, H1)   0.00  17.13   0.00  20.45  40.98  0.00    0.00   -0.00   -0.00    0.00    0.00   -0.00
+    (O1, C, O3, H2)   0.00  17.13   0.00  20.45  40.98  0.00    0.00   -0.00    0.00   -0.00    0.00   -0.00
+    (O2, C, O3, H2)   0.00  32.87   0.00  29.55   9.02  0.00    0.00    0.00    0.00    0.00   -0.00   -0.00
+    (H1, O2, C, O3)   0.00  32.87   0.00  29.55   9.02  0.00   -0.00    0.00    0.00    0.00   -0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+No! The double transformed f-matrix is NOT the same as in the input.
+
+This set is not complete and will not be computed!
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O2)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                640.83   0.00   0.70   0.00   0.46   0.19  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                640.83   0.00   0.70   0.00   0.46   0.19  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                524.37   0.00   0.78   0.00   0.57   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                524.37   0.00   0.78   0.00   0.57   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O2)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  23.66   0.00  22.47  46.46  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  23.66   0.00  22.47  46.46  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  26.34   0.00  27.53   3.54  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  26.34   0.00  27.53   3.54  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00    0.01   -0.00    0.10    0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00  -0.00   0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00   0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O2)   0.00   0.00   0.01  -0.00   0.00  0.00   -0.00    0.00    0.01   -0.00   -0.00   -0.00
+        (C, O2, H1)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00   0.00  -0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00  -0.00   0.00  -0.00 -0.00   -0.00    0.00   -0.00    0.01    0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.00   0.00   0.00   0.01 -0.00    0.00   -0.00    0.00    0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00   0.00   0.00   0.00   0.01  0.00    0.00    0.00    0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00   -0.00    0.00    0.00    0.00   -0.00    0.00
+    (H1, O2, C, O3)   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19    0.00   14.33   -0.00   77.67    0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39  -0.00   0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00   0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00   0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O2)   0.00   0.00  83.78  -0.00   0.00  0.00   -1.14    0.00   17.39   -0.00   -0.03   -0.00
+        (C, O2, H1)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72   0.00  -0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00  -0.00   0.00  -0.00 -0.77   -0.00    3.06   -0.00    4.82    0.00   -0.00
+    (O1, C, O2, H1)   0.00  17.13   0.00  20.45  40.98 -0.00    0.00   -0.00    0.00    0.00   -0.00    0.00
+    (O1, C, O3, H2)   0.00  17.13   0.00  20.45  40.98  0.00    0.00    0.00    0.00   -0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  32.87   0.00  29.55   9.02  0.00   -0.00    0.00    0.00    0.00   -0.00    0.00
+    (H1, O2, C, O3)   0.00  32.87   0.00  29.55   9.02  0.00    0.00    0.00   -0.00   -0.00    0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 13 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
+
+There is 1 redundant internal coordinates used.
+
+The condition numbers of the B-Matrix are given by:
+The condition number can not be calculated as B is not quadratic!
+
+
+Testing if the Internal Coordinate Set is complete ...
+Yes! The double transformed f-matrix is the same as in the input.
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the vibrational density matrices at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)               1733.38   0.00   0.00   0.00   0.00   0.00  0.04    0.00    0.14    0.00    0.87    0.00    0.00
+            (C, O2)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+            (C, O3)               1195.76   0.00   0.00   0.03   0.00   0.00  0.40    0.29    0.00    0.27    0.09    0.00    0.00
+           (O2, H1)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+           (O3, H2)               3828.75   0.00   0.00   0.00   0.00   0.00  0.00    0.00    0.00    0.00    0.00    0.50    0.50
+        (O1, C, O3)                820.78   0.31   0.00   0.83   0.00   0.00  0.00    0.03    0.00    0.21    0.03    0.00    0.00
+        (C, O2, H1)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (C, O3, H2)               1306.39   0.07   0.00   0.04   0.00   0.00  0.00    0.37    0.40    0.14    0.04    0.00    0.00
+        (O2, C, O3)                699.83   1.30   0.00   0.00   0.00   0.00  0.01    0.00    0.01    0.00    0.12    0.00    0.00
+    (O1, C, O2, H1)                640.83   0.00   0.70   0.00   0.46   0.19  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)                640.83   0.00   0.70   0.00   0.46   0.19  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)                524.37   0.00   0.78   0.00   0.57   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)                524.37   0.00   0.78   0.00   0.57   0.01  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Contribution Table generated from the Vibrational Density Matrices (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.12   0.00   0.00   0.00   0.00  4.66    0.00   14.18    0.00   67.83    0.00    0.00
+            (C, O2)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+            (C, O3)   0.03   0.00   3.24   0.00   0.00 46.14   21.67    0.44   25.89    6.89    0.01    0.02
+           (O2, H1)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+           (O3, H2)   0.03   0.00   0.00   0.00   0.00  0.01    0.19    0.43    0.20    0.03   49.98   49.92
+        (O1, C, O3)  17.42   0.00  85.28   0.00   0.00  0.38    2.34    0.28   19.92    2.20    0.02    0.02
+        (C, O2, H1)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (C, O3, H2)   3.94   0.00   4.12   0.00   0.00  0.52   26.96   41.31   13.95    3.37    0.00    0.00
+        (O2, C, O3)  74.44   0.00   0.00   0.00   0.00  1.61    0.00    1.18    0.00    9.38    0.00    0.10
+    (O1, C, O2, H1)   0.00  23.66   0.00  22.47  46.46  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O1, C, O3, H2)   0.00  23.66   0.00  22.47  46.46  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (O2, C, O3, H2)   0.00  26.34   0.00  27.53   3.54  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  26.34   0.00  27.53   3.54  0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+------------------------------------------------------------------------------------------
+
+
+2.) Eigenvalues for each internal coordinate per normal-coordinate 
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.00   0.00   0.00  -0.00   0.00  0.00   -0.00    0.01    0.00    0.10   -0.00   -0.00
+            (C, O2)   0.00  -0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+            (C, O3)   0.00   0.00   0.00   0.00  -0.00  0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
+           (O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+           (O3, H2)   0.00   0.00   0.00  -0.00  -0.00  0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
+        (O1, C, O3)  -0.00  -0.00   0.01  -0.00  -0.00  0.00   -0.00   -0.00    0.01    0.00   -0.00    0.00
+        (C, O2, H1)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (C, O3, H2)   0.00   0.00   0.00  -0.00   0.00  0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
+        (O2, C, O3)   0.01   0.00   0.00   0.00  -0.00 -0.00    0.00    0.00    0.00    0.01   -0.00   -0.00
+    (O1, C, O2, H1)   0.00   0.00   0.00   0.00   0.01  0.00   -0.00   -0.00   -0.00    0.00    0.00   -0.00
+    (O1, C, O3, H2)   0.00   0.00   0.00   0.00   0.01 -0.00    0.00    0.00    0.00    0.00   -0.00   -0.00
+    (O2, C, O3, H2)   0.00   0.00   0.00   0.00   0.00  0.00   -0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00   0.00   0.00   0.00   0.00 -0.00    0.00   -0.00    0.00   -0.00   -0.00   -0.00
+
+Contribution Table generated from the eigenvalues per coordinate (values in percent)
+
+Internal Coordinate 547.39 555.87 604.74 623.47 805.09 984.1 1182.04 1312.56 1493.74 1859.61 3827.66 3829.56
+            (O1, C)   0.81   0.00   0.00  -0.00   0.00  7.19   -0.00   14.33    0.00   77.67   -0.00   -0.00
+            (C, O2)   0.27  -0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+            (C, O3)   0.27   0.00   5.39   0.00  -0.00 45.59   20.99   -0.12   23.62    4.23   -0.00    0.02
+           (O2, H1)   0.05   0.00   0.00  -0.00   0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+           (O3, H2)   0.05   0.00   0.00  -0.00  -0.00  0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
+        (O1, C, O3)  -0.00  -0.00  83.78  -0.00  -0.00  0.00   -1.14   -0.00   17.39    0.00   -0.03    0.00
+        (C, O2, H1)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (C, O3, H2)   2.83   0.00   2.72  -0.00   0.00  1.18   29.56   41.48   17.73    4.52   -0.01   -0.01
+        (O2, C, O3)  92.90   0.00   0.00   0.00  -0.00 -0.77    0.00    3.06    0.00    4.82   -0.00   -0.00
+    (O1, C, O2, H1)   0.00  17.13   0.00  20.45  40.98  0.00   -0.00   -0.00   -0.00    0.00    0.00   -0.00
+    (O1, C, O3, H2)   0.00  17.13   0.00  20.45  40.98 -0.00    0.00    0.00    0.00    0.00   -0.00   -0.00
+    (O2, C, O3, H2)   0.00  32.87   0.00  29.55   9.02  0.00   -0.00    0.00    0.00    0.00    0.00    0.00
+    (H1, O2, C, O3)   0.00  32.87   0.00  29.55   9.02 -0.00    0.00   -0.00    0.00   -0.00   -0.00   -0.00
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 14 Internal Coordinates are used in your analysis:
+bonds: [('O1', 'C'), ('C', 'O2'), ('C', 'O3'), ('O2', 'H1'), ('O3', 'H2')]
+in-plane angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O3'), ('C', 'O2', 'H1'), ('C', 'O3', 'H2'), ('O2', 'C', 'O3')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C', 'O2', 'H1'), ('O1', 'C', 'O3', 'H2'), ('O2', 'C', 'O3', 'H2'), ('H1', 'O2', 'C', 'O3')]
 
 There are 2 redundant internal coordinates used.
 
@@ -30,81 +2355,4 @@ The condition number can not be calculated as B is not quadratic!
 Testing if the Internal Coordinate Set is complete ...
 No! The double transformed f-matrix is NOT the same as in the input.
 
--------------------------------------Results of the Decomposition Scheme--------------------------------------
-
-1.) Intrinsic Frequencies for all normal-coordinate frequencies and
-    diagonal elements of the vibrational density matrices at the following
-    harmonic frequencies (all frequency values in cm-1):
-
-Internal Coordinate Intrinsic Frequencies 548.76 580.43 603.86 525.42 774.43 983.45 1181.68 1312.14 1490.12 1860.04 3827.45 3829.61
-            (O1, C)               1734.34   0.00   0.00   0.00   0.00   0.00   0.04    0.00    0.14    0.00    0.87    0.00    0.00
-            (C, O2)               1197.56   0.00   0.00   0.03   0.00   0.00   0.40    0.29    0.00    0.27    0.09    0.00    0.00
-            (C, O3)               1191.16   0.00   0.00   0.03   0.00   0.00   0.40    0.29    0.00    0.27    0.09    0.00    0.00
-           (O2, H1)               3828.71   0.00   0.00   0.00   0.00   0.00   0.00    0.00    0.00    0.00    0.00    0.50    0.50
-           (O3, H2)               3828.69   0.00   0.00   0.00   0.00   0.00   0.00    0.00    0.00    0.00    0.00    0.50    0.50
-        (O1, C, O2)                815.44   0.21   0.00   0.56   0.00   0.00   0.00    0.02    0.00    0.14    0.02    0.00    0.00
-        (O1, C, O3)                419.80   0.06   0.00   0.16   0.00   0.00   0.00    0.01    0.00    0.04    0.01    0.00    0.00
-        (C, O2, H1)               1305.40   0.07   0.00   0.04   0.00   0.00   0.00    0.37    0.40    0.15    0.04    0.00    0.00
-        (C, O3, H2)               1307.01   0.07   0.00   0.04   0.00   0.00   0.00    0.37    0.40    0.15    0.04    0.00    0.00
-        (O2, C, O3)                560.51   0.62   0.00   0.00   0.00   0.00   0.01    0.00    0.01    0.00    0.06    0.00    0.00
-    (O1, C, O2, H1)                544.96   0.00   1.00   0.00   1.02   0.32   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-    (O1, C, O3, H2)                806.50   0.00   1.87   0.00   1.91   0.60   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-    (O2, C, O3, H2)                370.30   0.00   1.44   0.00   1.61   0.03   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-    (H1, O2, C, O3)                446.09   0.00   1.03   0.00   1.16   0.02   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-
-Contribution Table generated from the Vibrational Density Matrices (values in percent)
-
-Internal Coordinate 548.76 580.43 603.86 525.42 774.43 983.45 1181.68 1312.14 1490.12 1860.04 3827.45 3829.61
-            (O1, C)   0.20   0.00   0.00   0.00   0.00   4.70    0.00   14.27    0.00   71.53    0.00    0.00
-            (C, O2)   0.05   0.00   3.64   0.00   0.00  46.55   21.74    0.44   26.56    7.27    0.01    0.02
-            (C, O3)   0.05   0.00   3.64   0.00   0.00  46.55   21.74    0.44   26.56    7.27    0.01    0.02
-           (O2, H1)   0.06   0.00   0.00   0.00   0.00   0.01    0.19    0.43    0.21    0.03   49.98   49.95
-           (O3, H2)   0.06   0.00   0.00   0.00   0.00   0.01    0.19    0.43    0.21    0.03   49.98   49.95
-        (O1, C, O2)  19.97   0.00  64.70   0.00   0.00   0.26    1.59    0.19   13.82    1.57    0.01    0.02
-        (O1, C, O3)   5.80   0.00  18.78   0.00   0.00   0.07    0.46    0.05    4.01    0.45    0.00    0.00
-        (C, O2, H1)   6.68   0.00   4.62   0.00   0.00   0.53   27.05   41.58   14.32    3.55    0.00    0.00
-        (C, O3, H2)   6.68   0.00   4.62   0.00   0.00   0.53   27.05   41.58   14.32    3.55    0.00    0.00
-        (O2, C, O3)  60.44   0.00   0.00   0.00   0.00   0.78    0.00    0.57    0.00    4.74    0.00    0.05
-    (O1, C, O2, H1)   0.00  18.79   0.00  17.96  32.97   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-    (O1, C, O3, H2)   0.00  35.04   0.00  33.48  61.48   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-    (O2, C, O3, H2)   0.00  26.90   0.00  28.29   3.23   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-    (H1, O2, C, O3)   0.00  19.27   0.00  20.27   2.32   0.00    0.00    0.00    0.00    0.00    0.00    0.00
-
---------------------------------------------------------------------------------------------------------------
-
-
-2.) Eigenvalues for each internal coordiante per normal-coordinate 
-
-Internal Coordinate 548.76 580.43 603.86 525.42 774.43 983.45 1181.68 1312.14 1490.12 1860.04 3827.45 3829.61
-            (O1, C)   0.00  -0.00  -0.00  -0.00   0.00   0.00   -0.00    0.01   -0.00    0.10    0.00   -0.00
-            (C, O2)   0.00   0.00   0.00   0.00   0.00   0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
-            (C, O3)   0.00   0.00   0.00  -0.00   0.00   0.02    0.01   -0.00    0.02    0.01   -0.00    0.00
-           (O2, H1)   0.00  -0.00   0.00  -0.00  -0.00   0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
-           (O3, H2)   0.00   0.00   0.00   0.00  -0.00   0.00    0.00   -0.00   -0.00    0.00    0.28    0.28
-        (O1, C, O2)   0.00  -0.00   0.01  -0.00  -0.00   0.00    0.00    0.00    0.01    0.00    0.00    0.00
-        (O1, C, O3)   0.00   0.00   0.00  -0.00   0.00   0.00   -0.00    0.00    0.00    0.00   -0.00    0.00
-        (C, O2, H1)   0.00  -0.00   0.00   0.00   0.00   0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
-        (C, O3, H2)   0.00  -0.00   0.00  -0.00   0.00   0.00    0.02    0.03    0.01    0.01   -0.00   -0.00
-        (O2, C, O3)   0.01   0.00   0.00   0.00   0.00  -0.00   -0.00    0.00    0.00    0.00    0.00   -0.00
-    (O1, C, O2, H1)  -0.00   0.01  -0.00  -0.00   0.01  -0.00    0.00   -0.00   -0.00   -0.00   -0.00    0.00
-    (O1, C, O3, H2)  -0.00   0.01  -0.00   0.00   0.01  -0.00    0.00   -0.00   -0.00    0.00    0.00    0.00
-    (O2, C, O3, H2)   0.00   0.00   0.00   0.00   0.00   0.00   -0.00    0.00    0.00    0.00   -0.00   -0.00
-    (H1, O2, C, O3)   0.00   0.00   0.00   0.00   0.00   0.00   -0.00    0.00    0.00    0.00    0.00    0.00
-
-Contribution Table generated from the eigenvalues per coordinate (values in percent)
-
-Internal Coordinate 548.76 580.43 603.86 525.42 774.43 983.45 1181.68 1312.14 1490.12 1860.04 3827.45 3829.61
-            (O1, C)   0.79  -0.00  -0.00  -0.00   0.00   7.19   -0.00   14.32   -0.00   77.74    0.00   -0.00
-            (C, O2)   0.23   0.00   5.46   0.00   0.00  45.77   20.97   -0.11   23.66    4.39   -0.00    0.02
-            (C, O3)   0.33   0.00   5.43  -0.00   0.00  45.48   20.99   -0.14   23.70    3.99   -0.00    0.02
-           (O2, H1)   0.05  -0.00   0.00  -0.00  -0.00   0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
-           (O3, H2)   0.05   0.00   0.00   0.00  -0.00   0.02    0.02   -0.05   -0.05    0.00   50.03   49.99
-        (O1, C, O2)  14.20  -0.00  61.49  -0.00  -0.00   0.25    0.71    0.37   14.44    0.55    0.17    0.10
-        (O1, C, O3)  15.27   0.00  22.12  -0.00   0.00   0.26   -1.89    0.38    2.72    0.62   -0.20    0.10
-        (C, O2, H1)   3.08  -0.00   2.74   0.00   0.00   1.19   29.59   41.45   17.80    4.45   -0.01   -0.01
-        (C, O3, H2)   2.60  -0.00   2.76  -0.00   0.00   1.17   29.60   41.56   17.79    4.57   -0.01   -0.01
-        (O2, C, O3)  63.40   0.00   0.00   0.00   0.00  -1.34   -0.00    2.27    0.00    3.68    0.00   -0.21
-    (O1, C, O2, H1)  -0.00  34.90  -0.00  -1.01  25.60  -0.00    0.00   -0.00   -0.00   -0.00   -0.00    0.00
-    (O1, C, O3, H2)  -0.00  50.02  -0.00  39.22  55.68  -0.00    0.00   -0.00   -0.00    0.00    0.00    0.00
-    (O2, C, O3, H2)   0.00   4.48   0.00  15.61  12.52   0.00   -0.00    0.00    0.00    0.00   -0.00   -0.00
-    (H1, O2, C, O3)   0.00  10.60   0.00  46.18   6.19   0.00   -0.00    0.00    0.00    0.00    0.00    0.00
+This set is not complete and will not be computed!
