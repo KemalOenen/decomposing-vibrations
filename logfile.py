@@ -65,6 +65,7 @@ def write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihed
     logging.info("")
 
 def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals):
+    logging.info("")
     logging.info(" Initialization of an internal coordinate set ".center(110, "-"))
     logging.info("")
     logging.info("The following %s Internal Coordinates are used in your analysis:".center(50), n_internals)

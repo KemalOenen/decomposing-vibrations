@@ -107,7 +107,6 @@ def main():
     
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
-    #TODO: selection scheme for the IC sets
     ic_dict = icsel.generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
 
     for i in ic_dict.keys():
@@ -168,11 +167,13 @@ def main():
 
         B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
         InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
-        if test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
-            logging.error("Chosen set is not complete")
 
         logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
         angles, linear_angles, out_of_plane, dihedrals)
+
+        if test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+            logging.error("This set is not complete and will not be computed!")
+            continue
             
         ''''' 
         --------------------------- Main-Calculation ------------------------------
