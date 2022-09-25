@@ -25,6 +25,7 @@ dihedrals: []
 
 3 internal coordinates are at least needed for the decomposition scheme.
 
+
 -------------------------------- Initialization of an internal coordinate set --------------------------------
 
 The following 3 Internal Coordinates are used in your analysis:

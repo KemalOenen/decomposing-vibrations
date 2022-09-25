@@ -165,15 +165,7 @@ def main():
         angles, linear_angles, out_of_plane, dihedrals)
 
         if icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
-             logging.error('No! The double transformed f-matrix is NOT the same as in the input.')
-             logging.info("")
-             logging.error("This set is not complete and will not be computed!")
-             logging.info("")
              continue
-        else:
-             logging.info('Yes! The double transformed f-matrix is the same as in the input.')
-             logging.info("")
-       
             
         ''''' 
         --------------------------- Main-Calculation ------------------------------

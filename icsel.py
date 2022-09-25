@@ -6,9 +6,10 @@ import nomodeco
 """""
 step 1: generate all IC sets that have 3N-6 ICs and have all bonds included - DONE
 step 2: do a calculation run for every possibiliy - DONE
-step 3: compute the B-Matrix for all possibilites and check for completeness, if not complete remove - NOT DONE
+step 3: compute the B-Matrix for all possibilites and check for completeness, if not complete remove - DONE
 
 step 4: order the decomposition according to new metric - NOT DONE
+step 5: think of more methods to reduce the high dimensionaliy of new IC sets - NOT DONEs
 """""
 
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
@@ -32,7 +33,6 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
     for i in range(0, (3*n_atoms) - idof):
         for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
             ic_subset = list(ic_subset)
-            print(ic_subset)
             used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
             for i in range(0, len(ic_subset)):
                 if ic_subset[i] in angles:

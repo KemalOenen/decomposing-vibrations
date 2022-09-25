@@ -3,6 +3,7 @@ import numpy as np
 import pyfiglet
 import string
 import logging
+import icsel
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -86,6 +87,14 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
     logging.info("")
     logging.info("")
     logging.info("Testing if the Internal Coordinate Set is complete ...")
+    if icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+        logging.error('No! The double transformed f-matrix is NOT the same as in the input.')
+        logging.info("")
+        logging.error("This set is not complete and will not be computed!")
+        logging.info("")
+    else:
+        logging.info('Yes! The double transformed f-matrix is the same as in the input.')
+        logging.info("")
 
 def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
