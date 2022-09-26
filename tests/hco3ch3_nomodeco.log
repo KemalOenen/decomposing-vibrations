@@ -1,0 +1,27 @@
+ .__   __.   ______   .___  ___.   ______    _______   _______   ______   ______      .______   ____    ____ 
+ |  \ |  |  /  __  \  |   \/   |  /  __  \  |       \ |   ____| /      | /  __  \     |   _  \  \   \  /   / 
+ |   \|  | |  |  |  | |  \  /  | |  |  |  | |  .--.  ||  |__   |  ,----'|  |  |  |    |  |_)  |  \   \/   /  
+ |  . `  | |  |  |  | |  |\/|  | |  |  |  | |  |  |  ||   __|  |  |     |  |  |  |    |   ___/    \_    _/   
+ |  |\   | |  `--'  | |  |  |  | |  `--'  | |  '--'  ||  |____ |  `----.|  `--'  |  __|  |          |  |     
+ |__| \__|  \______/  |__|  |__|  \______/  |_______/ |_______| \______| \______/  (__) _|          |__|     
+                                                                                                             
+
+
+**************************************************************************************************************
+                                  Kemal Önen, Dennis F. Dinu, Klaus R. Liedl                                  
+                                      Liedl Lab, University of Innsbruck                                      
+**************************************************************************************************************
+
+You did NOT include the consideration of out-of-plane angles. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
+bonds: [('O1', 'C1'), ('C1', 'O2'), ('C1', 'O3'), ('O2', 'H1'), ('O3', 'C2'), ('C2', 'H2'), ('C2', 'H3'), ('C2', 'H4')]
+in-plane angles: [('O1', 'C1', 'O2'), ('O1', 'C1', 'O3'), ('C1', 'O2', 'H1'), ('C1', 'O3', 'C2'), ('O2', 'C1', 'O3'), ('O3', 'C2', 'H2'), ('O3', 'C2', 'H3'), ('O3', 'C2', 'H4'), ('H2', 'C2', 'H3'), ('H2', 'C2', 'H4'), ('H3', 'C2', 'H4')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('O1', 'C1', 'O2', 'H1'), ('O1', 'C1', 'O3', 'C2'), ('C1', 'O3', 'C2', 'H2'), ('C1', 'O3', 'C2', 'H3'), ('C1', 'O3', 'C2', 'H4'), ('O2', 'C1', 'O3', 'C2'), ('H1', 'O2', 'C1', 'O3')]
+
+21 internal coordinates are at least needed for the decomposition scheme.
+
