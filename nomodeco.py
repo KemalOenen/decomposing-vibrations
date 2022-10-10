@@ -80,7 +80,25 @@ def main():
     logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
     logfile.write_logfile_header()
     logfile.write_logfile_oop_treatment()
+    
+    # Generation of all possible internal coordinates
+    bonds = icgen.initialize_bonds(atoms)
+    angles, linear_angles = icgen.initialize_angles(atoms)
+    if oop_directive() == "oop":
+        out_of_plane = icgen.initialize_oop(atoms)
+    elif oop_directive() == "no-oop":
+        out_of_plane = []
+    else:
+        return logging.error("You need to specify the oop or no-oop directive!")
+    dihedrals = icgen.initialize_dihedrals(atoms)
 
+    # determine internal degrees of freedom 
+    idof = 0
+    if (linear_angles and not angles) or (not linear_angles and not angles):
+        idof = 3*n_atoms-5
+    else:
+        idof = 3*n_atoms-6
+    
     # Computation of the diagonal mass matrices with 
     # the reciprocal and square root reciprocal masses
     diag_reciprocal_square = reciprocal_square_massvector(atoms)
@@ -94,26 +112,10 @@ def main():
     Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
     
     Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
+    
     # Determination of the normal modes of zero and low Frequencies
 
     rottra = L[:,0:(3*n_atoms-idof)]
-    
-    # Generation of all possible internal coordinates
-    bonds = icgen.initialize_bonds(atoms)
-    angles, linear_angles = icgen.initialize_angles(atoms)
-    if oop_directive() == "oop":
-        out_of_plane = icgen.initialize_oop(atoms)
-    elif oop_directive() == "no-oop":
-        out_of_plane = []
-    else:
-        return logging.error("You need to specify the oop or no-oop directive!")
-    dihedrals = icgen.initialize_dihedrals(atoms)
-
-    idof = 0
-    if (linear_angles and not angles) or (not linear_angles and not angles):
-        idof = 3*n_atoms-5
-    else:
-        idof = 3*n_atoms-6
     
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
