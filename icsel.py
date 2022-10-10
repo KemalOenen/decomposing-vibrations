@@ -30,6 +30,8 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
 
     # TODO: make approach more elegant?
     # TODO: remove calculations that have NAN intrinsic frequencies and also "double" out of plane angles
+    # TODO: remove calculations that do not include useful angle combinations
+    # TODO: remove calculations that have multiple dihedrals
     k = 0
     for i in range(0, (3*n_atoms) - idof):
         for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
