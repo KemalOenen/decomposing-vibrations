@@ -80,6 +80,23 @@ def main():
     logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
     logfile.write_logfile_header()
     logfile.write_logfile_oop_treatment()
+
+    # Computation of the diagonal mass matrices with 
+    # the reciprocal and square root reciprocal masses
+    diag_reciprocal_square = reciprocal_square_massvector(atoms)
+    reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
+    diag_reciprocal = reciprocal_massvector(atoms)
+    reciprocal_massmatrix = np.diag(diag_reciprocal)
+    
+    # Determination of the Normal Modes and eigenvalues 
+    # via the diagonalization of the mass-weighted Cartesian F Matrix
+    
+    Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
+    
+    Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
+    # Determination of the normal modes of zero and low Frequencies
+
+    rottra = L[:,0:(3*n_atoms-idof)]
     
     # Generation of all possible internal coordinates
     bonds = icgen.initialize_bonds(atoms)
@@ -111,24 +128,6 @@ def main():
 
         n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
         red = n_internals - idof
-        
-        # Computation of the diagonal mass matrices with 
-        # the reciprocal and square root reciprocal masses
-        
-        diag_reciprocal_square = reciprocal_square_massvector(atoms)
-        reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
-        diag_reciprocal = reciprocal_massvector(atoms)
-        reciprocal_massmatrix = np.diag(diag_reciprocal)
-        
-        # Determination of the Normal Modes and eigenvalues 
-        # via the diagonalization of the mass-weighted Cartesian F Matrix
-        
-        Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
-        
-        Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
-        # Determination of the normal modes of zero and low Frequencies
-
-        rottra = L[:,0:(3*n_atoms-idof)]
         
         # Augmenting the B-Matrix with rottra, calculating 
         # and printing the final B-Matrix
