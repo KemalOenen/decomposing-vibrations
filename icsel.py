@@ -19,6 +19,9 @@ def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
     else:
         return False
 
+def matrix_norm(matrix, matrix_inv, p):
+    return np.linalg.norm(matrix, p) * np.linalg.norm(matrix_inv, p) 
+
 def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals):
     num_bonds = len(bonds)
     num_angles = len(angles)
@@ -29,7 +32,7 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
     ic_dict = dict()
 
     # TODO: make approach more elegant?
-    # TODO: remove calculations that have NAN intrinsic frequencies and also "double" out of plane angles
+    # TODO: remove "double" out of plane angles
     # TODO: remove calculations that do not include useful angle combinations
     # TODO: remove calculations that have multiple dihedrals
     k = 0

@@ -213,6 +213,10 @@ def main():
                     k = i + (3*n_atoms-idof)
                     nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
                     
+        if np.any(nu < 0) == True:
+            logfile.write_logfile_nan_freq()
+            continue
+
         nu_final = np.sqrt(nu) *  5140.4981
 
         normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981

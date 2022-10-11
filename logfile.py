@@ -57,6 +57,12 @@ def write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihed
     logging.info("%s internal coordinates are at least needed for the decomposition scheme.".center(50), idof)
     logging.info("")
 
+def write_logfile_nan_freq():
+    logging.info("")
+    logging.error('Imaginary frequency values were detected for the intrinsic frequencies.')
+    logging.info("The compuation will be stopped")
+    logging.info("")
+
 def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals):
     logging.info("")
     logging.info(" Initialization of an internal coordinate set ".center(110, "-"))
@@ -73,17 +79,10 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
     else:
         logging.info('There are %s redundant internal coordinates used.', red)
     logging.info("")
-    l,c = B.shape
-    logging.info('The condition numbers of the B-Matrix are given by:')
-    if l == c:
-        B_Norm_1 = np.linalg.cond(B, 1)
-        B_Norm_2 = np.linalg.cond(B, 2)
-        B_Norm_inf = np.linalg.cond(B, np.inf)
-        logging.info('Sum-Norm of B: %s', B_Norm_1)
-        logging.info('Eucledian-Norm of B: %s', B_Norm_2)
-        logging.info('Infinity-Norm of B: %s', B_Norm_inf)
-    else:
-        logging.warning("The condition number can not be calculated as B is not quadratic!")
+    logging.info('The condition number of the B-Matrix is given by:')
+    logging.info('Sum-Norm of B: %s', icsel.matrix_norm(B, B_inv, 1))
+    logging.info('Eucledian-Norm of B: %s', icsel.matrix_norm(B, B_inv, 2))
+    logging.info('Maximum-Norm of B: %s', icsel.matrix_norm(B, B_inv, np.inf))
     logging.info("")
     logging.info("")
     logging.info("Testing if the Internal Coordinate Set is complete ...")
