@@ -65,6 +65,8 @@ def initialize_angles(atoms):
                 linear_hits.append((a.symbol, b.symbol, c.symbol))
             else:
                 hits.append((a.symbol, b.symbol, c.symbol))
+    if len(hits) != 0:
+        linear_hits = [*set(linear_hits)]
     return hits, linear_hits
 
 def initialize_oop(atoms):

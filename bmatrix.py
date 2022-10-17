@@ -279,18 +279,24 @@ def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
     for linear_angle in linear_angles:
         index = [atom_index[a] * 3 for a in linear_angle]
         coord = [coordinates[atom_index[a]] for a in linear_angle]
-        if (n_used_linear_angles %2) == 0:
+        if len(angles) == 0:
+            if (n_used_linear_angles %2) == 0:
+                matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomB(coord[1], coord[0], coord[2])
+                matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomA(coord[1], coord[0], coord[2])
+                matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomC(coord[1], coord[0], coord[2])
+                i_internal += 1
+                n_used_linear_angles += 1
+            else:
+                matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomB(coord[1], coord[0], coord[2])
+                matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomA(coord[1], coord[0], coord[2])
+                matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomC(coord[1], coord[0], coord[2])
+                i_internal += 1
+                n_used_linear_angles += 1
+        else:
             matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomB(coord[1], coord[0], coord[2])
             matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomA(coord[1], coord[0], coord[2])
             matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomC(coord[1], coord[0], coord[2])
             i_internal += 1
-            n_used_linear_angles += 1
-        else:
-            matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomB(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomA(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomC(coord[1], coord[0], coord[2])
-            i_internal += 1
-            n_used_linear_angles += 1
     for outofplane in out_of_plane:
         index = [atom_index[a] * 3 for a in outofplane]
         coord = [coordinates[atom_index[a]] for a in outofplane]
