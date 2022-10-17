@@ -153,7 +153,8 @@ def main():
         if red > 0:
             K = np.delete(K, -red, axis=1)
             e = np.delete(e, -red, axis=0)
-
+        
+        #TODO: e inv does not exist - make error handling
         e = np.diag(e)
         G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
 
