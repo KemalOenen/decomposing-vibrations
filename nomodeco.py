@@ -282,8 +282,8 @@ def main():
         Contribution_Table2 = Contribution_Table2.rename(columns=columns)
         
         logfile.write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2)
-        
-        print("--- %s seconds ---" % (time.time() - start_time))
+
+    print("Runtime: %s seconds" % (time.time() - start_time))
 
 if __name__ == '__main__':
     main()

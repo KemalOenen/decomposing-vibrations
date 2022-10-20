@@ -12,6 +12,18 @@ step 4: order the decomposition according to new metric - NOT DONE
 step 5: think of more methods to reduce the high dimensionaliy of new IC sets - NOT DONEs
 """""
 
+def Kemalian_metric():
+    return 0
+
+def avoid_double_oop(test_oop, used_out_of_plane) -> bool:
+    if len(used_out_of_plane) == 0:
+        return True
+    for i in range(0, len(used_out_of_plane)):
+        if set(test_oop).issubset(used_out_of_plane[i]):
+            return False
+    return True
+
+
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
     CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
     if (np.allclose(CartesianF_Matrix_check, CartesianF_Matrix)) == True:
@@ -33,7 +45,7 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
 
     # TODO: make approach more elegant?
     # TODO: remove "double" out of plane angles
-    # TODO: remove calculations that do not include useful angle combinations
+    # TODO: remove calculations that do not include useful angle combinations       
     # TODO: remove calculations that have multiple dihedrals
     k = 0
     for i in range(0, (3*n_atoms) - idof):
@@ -45,18 +57,19 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
                     used_angles.append(ic_subset[i])
                 if ic_subset[i] in linear_angles:
                     used_linear_angles.append(ic_subset[i])
-                if ic_subset[i] in out_of_plane:
+                if ic_subset[i] in out_of_plane and avoid_double_oop(ic_subset[i], used_out_of_plane):
                     used_out_of_plane.append(ic_subset[i])
                 if ic_subset[i] in dihedrals:
                     used_dihedrals.append(ic_subset[i])
-            ic_dict[k] = {
-                "bonds" : bonds,
-                "angles" : used_angles,
-                "linear valence angles" : used_linear_angles,
-                "out of plane angles" : used_out_of_plane,
-                "dihedrals" : used_dihedrals
-            }
-            k +=1
+            if (num_bonds + len(used_angles) + len(used_linear_angles) + len(used_out_of_plane) + len(used_dihedrals)) >= idof:
+                ic_dict[k] = {
+                    "bonds" : bonds,
+                    "angles" : used_angles,
+                    "linear valence angles" : used_linear_angles,
+                    "out of plane angles" : used_out_of_plane,
+                    "dihedrals" : used_dihedrals
+                }
+                k +=1
             used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
-    pprint.pprint(ic_dict)
+    print(len(ic_dict), "internal coordinate sets have been generated.")
     return ic_dict
