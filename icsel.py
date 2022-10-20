@@ -44,7 +44,6 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
     ic_dict = dict()
 
     # TODO: make approach more elegant?
-    # TODO: remove "double" out of plane angles
     # TODO: remove calculations that do not include useful angle combinations       
     # TODO: remove calculations that have multiple dihedrals
     k = 0
