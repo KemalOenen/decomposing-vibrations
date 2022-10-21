@@ -43,9 +43,11 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
 
     ic_dict = dict()
 
-    # TODO: make approach more elegant?
-    # TODO: remove calculations that do not include useful angle combinations       
-    # TODO: remove calculations that have multiple dihedrals
+    # TODO: make approach more elegant? -> include filter(), to have less but useful combinations
+    # more concrete: create IC subsets that are cleverly chosen; these criteria are:
+    # TODO: the used oop per IC set should not be just changed in order; 
+    # TODO: if there are angles that are the same, then they need to be included in the analysis       
+    # TODO: think of reasonable cut off for maximum relative value of used dihedrals
     k = 0
     for i in range(0, (3*n_atoms) - idof):
         for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
