@@ -36,11 +36,7 @@ def matrix_norm(matrix, matrix_inv, p):
 
 def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals):
     num_bonds = len(bonds)
-    num_angles = len(angles)
-    num_linear_angles = len(linear_angles)
-    num_out_of_plane = len(out_of_plane)
-    num_dihedrals = len(dihedrals)
-
+    
     ic_dict = dict()
 
     # TODO: make approach more elegant? -> include filter(), to have less but useful combinations
