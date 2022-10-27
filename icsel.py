@@ -1,5 +1,6 @@
 import itertools
 from os import remove
+from pickle import TRUE
 import numpy as np
 import pprint
 import nomodeco
@@ -31,7 +32,6 @@ def remove_enumeration(atom_list) -> list:
             atom_list[i][j] = ''.join(c for c in atom_list[i][j] if not c.isnumeric())
     return atom_list
 
-
 def ic_rules_angles(used_angles, angles) -> bool:
     used_angles = remove_enumeration(used_angles)
     angles = remove_enumeration(angles)
@@ -53,6 +53,10 @@ def ic_rules_angles(used_angles, angles) -> bool:
         return True
     else:
         return False
+
+def ic_rules(ic_subset):
+    ic_subset = list(ic_subset)
+    return True
 
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
     CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
@@ -76,8 +80,7 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
     # TODO: think of reasonable cut off for maximum relative value of used dihedrals
     k = 0
     for i in range(0, (3*n_atoms) - idof):
-        for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
-            ic_subset = list(ic_subset)
+        for ic_subset in filter(ic_rules,itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i)):
             used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
             for i in range(0, len(ic_subset)):
                 if ic_subset[i] in angles:
