@@ -11,7 +11,7 @@ step 2: do a calculation run for every possibiliy - DONE
 step 3: compute the B-Matrix for all possibilites and check for completeness, if not complete remove - DONE
 
 step 4: order the decomposition according to new metric - NOT DONE
-step 5: think of more methods to reduce the high dimensionaliy of new IC sets - NOT DONEs
+step 5: think of more methods to reduce the high dimensionaliy of new IC sets - NOT DONE
 """""
 
 def Kemalian_metric():
@@ -56,6 +56,7 @@ def ic_rules_angles(used_angles, angles) -> bool:
 
 def ic_rules(ic_subset):
     ic_subset = list(ic_subset)
+
     return True
 
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
@@ -70,7 +71,6 @@ def matrix_norm(matrix, matrix_inv, p):
 
 def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals):
     num_bonds = len(bonds)
-
     ic_dict = dict()
 
     # TODO: make approach more elegant? -> include filter(), to have less but useful combinations
@@ -102,5 +102,5 @@ def generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_
                     }
                     k +=1
             used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
-    print(len(ic_dict), "internal coordinate sets have been generated.")
+    print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
     return ic_dict
