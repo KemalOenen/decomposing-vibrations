@@ -60,7 +60,7 @@ def write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihed
 def write_logfile_nan_freq():
     logging.info("")
     logging.error('Imaginary frequency values were detected for the intrinsic frequencies.')
-    logging.info("The compuation will be stopped")
+    logging.info("The computation will be stopped")
     logging.info("")
 
 def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals):
