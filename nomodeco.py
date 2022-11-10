@@ -140,6 +140,7 @@ def main():
         # Calculating the G-Matrix
 
         G = B @ reciprocal_massmatrix @ np.transpose(B)
+        G_int = bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof) @ reciprocal_massmatrix @ np.transpose(bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof))
         e,K = np.linalg.eigh(G)
 
         # Sorting eigenvalues and eigenvectors (just for the case)
@@ -281,7 +282,7 @@ def main():
         Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
         Contribution_Table2 = Contribution_Table2.rename(columns=columns)
         
-        logfile.write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2)
+        logfile.write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2,G_int)
 
     print("Runtime: %s seconds" % (time.time() - start_time))
 

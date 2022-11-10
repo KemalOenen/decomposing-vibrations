@@ -8,6 +8,7 @@ class Atom(NamedTuple):
 
 #TODO: make a parse module
 #TODO: adaption for other output formats like Gaussian, Orca
+# idea for gaussian: https://github.com/mahyarmaz/Gaussian-Output-File
 def parse_xyz_from_inputfile(inputfile):
     bohr = constants.value(u'Bohr radius')
     angstrom = constants.value(u'Angstrom star')

@@ -1,4 +1,5 @@
 import argparse
+import pandas as pd
 import numpy as np
 import pyfiglet
 import string
@@ -95,7 +96,7 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
         logging.info('Yes! The double transformed f-matrix is the same as in the input.')
         logging.info("")
 
-def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2):
+def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2,G):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
     logging.info("")
     logging.info("1.) Intrinsic Frequencies for all normal-coordinate frequencies and")
@@ -122,5 +123,9 @@ def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_
     logging.info("Contribution Table generated from the eigenvalues per coordinate (values in percent)")
     logging.info("")
     logging.info(Contribution_Table2.to_string(index=False))
-    
+    logging.info("")
+    logging.info("The G-matrix is given as:")
+    logging.info("")
+    logging.info(pd.DataFrame(G).applymap("{0:.2f}".format))
+    logging.info("")
     logging.shutdown()
