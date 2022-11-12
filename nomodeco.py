@@ -119,6 +119,7 @@ def main():
     rottra = L[:,0:(3*n_atoms-idof)]
     
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
+    userinterface.write_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
     ic_dict = userinterface.generate_set(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
 
