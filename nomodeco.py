@@ -24,10 +24,12 @@ class Atom(NamedTuple):
     symbol: str
     coordinates: tuple
 
-
+#TODO: isotopes for all elements with command line input
 def get_mass_information() -> pd.DataFrame:
     df = fetch_table('elements')
     mass_info = df.loc[:, ['symbol', 'atomic_weight']]
+    deuterium_info = pd.DataFrame([['D', 2.014102]],columns=('symbol','atomic_weight'),index=['118'])
+    mass_info = pd.concat([mass_info, deuterium_info])
     mass_info.set_index("symbol", inplace=True)
     return mass_info
 
