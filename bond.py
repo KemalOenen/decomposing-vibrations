@@ -20,10 +20,17 @@ BOND_INFO = get_bond_information()
 def actual_length(coord_a: Iterable, coord_b: Iterable) -> float:
     return np.linalg.norm(np.array(coord_b) - np.array(coord_a))
 
-
+#TODO: remove this horrible if statement
 def theoretical_length(symbol_a: str, symbol_b: str) -> pd.Series:
-    rad_a = BOND_INFO.loc[symbol_a.strip(string.digits)]
-    rad_b = BOND_INFO.loc[symbol_b.strip(string.digits)]
+    if symbol_a.strip(string.digits) == 'D':
+        rad_a = BOND_INFO.loc['H']
+        rad_b = BOND_INFO.loc[symbol_b.strip(string.digits)]
+    elif symbol_b.strip(string.digits) == 'D':
+        rad_b = BOND_INFO.loc['H']
+        rad_a = BOND_INFO.loc[symbol_a.strip(string.digits)]
+    else:
+        rad_a = BOND_INFO.loc[symbol_a.strip(string.digits)]
+        rad_b = BOND_INFO.loc[symbol_b.strip(string.digits)]
     return  rad_a + rad_b 
 
 
