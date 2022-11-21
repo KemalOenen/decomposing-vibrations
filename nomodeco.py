@@ -28,7 +28,7 @@ class Atom(NamedTuple):
 def get_mass_information() -> pd.DataFrame:
     df = fetch_table('elements')
     mass_info = df.loc[:, ['symbol', 'atomic_weight']]
-    deuterium_info = pd.DataFrame([['D', 2.014102]],columns=('symbol','atomic_weight'),index=['118'])
+    deuterium_info = pd.DataFrame({'symbol': ['D'], 'atomic_weight': [2.014102]})
     mass_info = pd.concat([mass_info, deuterium_info])
     mass_info.set_index("symbol", inplace=True)
     return mass_info
