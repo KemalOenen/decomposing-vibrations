@@ -75,7 +75,6 @@ def reduce_dihedral_sets(symmetric_dihedrals):
     dihedrals = []
     for symm_dihedrals in symmetric_dihedrals.keys():
         dihedrals.append(symmetric_dihedrals[symm_dihedrals][0])
-        dihedrals.append(symmetric_dihedrals[symm_dihedrals][1])
     return dihedrals
 
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
