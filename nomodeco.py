@@ -121,7 +121,7 @@ def main():
     
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
-    ic_dict = icsel.generate_all_possible_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
+    ic_dict = icsel.get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
 
     for i in ic_dict.keys():
         bonds = ic_dict[i]["bonds"]
