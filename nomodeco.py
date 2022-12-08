@@ -52,22 +52,35 @@ def reciprocal_massvector(atoms):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
-    parser.add_argument("oop_directive")
+    parser.add_argument("specifications")
     args = parser.parse_args()
     return args
 
-def oop_directive() -> string:
+def calculation_specification():
     args = get_args()
-    if args.oop_directive == "oop":
-        return "oop"
-    elif args.oop_directive == "no-oop":
-        return "no-oop"
-    else:
-        return "no specification"
+    specification = dict()
+    with open(args.specifications) as inputfile:
+        for line in inputfile:
+            if line.strip().startswith('Out-of-plane angles specification'):
+                specification = {"out-of-plane_treatment" : next(inputfile, '').strip()}
+    with open(args.specifications) as inputfile:
+        for line in inputfile:
+            if line.strip().startswith('Symmetry specifications'):
+                specification.update({
+                    "angle_symmetry" :  next(inputfile, '').strip(),
+                    "out-of-plane angle_symmetry":  next(inputfile, '').strip(),
+                    "dihedral_reduction":  next(inputfile, '').strip()
+                })
+    if specification["dihedral_reduction"].startswith('dihedral_reduction'):
+        dihedral_specif = specification["dihedral_reduction"]
+        dihedral_specif = dihedral_specif.split('=')
+        specification.update({"dihedral_reduction": [dihedral_specif[0], int(dihedral_specif[1])]})
+    return specification
 
 start_time = time.time()
 
 def main():
+    # Reading Cartesian Coordinates and Hessian
     args = get_args()
     with open(args.output) as inputfile:
         atoms=parser.parse_xyz_from_inputfile(inputfile)
@@ -76,19 +89,25 @@ def main():
         CartesianF_Matrix = parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
         outputfile = logfile.create_new_filename(inputfile.name)
     
+    # Setting specifications for calculation
+    specification = calculation_specification()
+
+
     # initialize log file
     if os.path.exists(outputfile):
         os.remove(outputfile)
     logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
     logfile.write_logfile_header()
-    logfile.write_logfile_oop_treatment()
+    logfile.write_logfile_oop_treatment(specification["out-of-plane_treatment"])
+    logfile.write_logfile_symmetry_treatment(specification)
     
+
     # Generation of all possible internal coordinates
     bonds = icgen.initialize_bonds(atoms)
     angles, linear_angles = icgen.initialize_angles(atoms)
-    if oop_directive() == "oop":
+    if specification["out-of-plane_treatment"] == "oop":
         out_of_plane = icgen.initialize_oop(atoms)
-    elif oop_directive() == "no-oop":
+    elif specification["out-of-plane_treatment"] == "no-oop":
         out_of_plane = []
     else:
         return logging.error("You need to specify the oop or no-oop directive!")
@@ -121,7 +140,7 @@ def main():
     
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
-    ic_dict = icsel.get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals)
+    ic_dict = icsel.get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
 
     for i in ic_dict.keys():
         bonds = ic_dict[i]["bonds"]

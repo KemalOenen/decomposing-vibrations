@@ -71,10 +71,11 @@ def get_symm_dihedrals(dihedrals):
     return symmetric_dihedrals
 
 
-def reduce_dihedral_sets(symmetric_dihedrals):
+def reduce_dihedral_sets(symmetric_dihedrals, n_repr):
     dihedrals = []
     for symm_dihedrals in symmetric_dihedrals.keys():
-        dihedrals.append(symmetric_dihedrals[symm_dihedrals][0])
+        for i in range(0,n_repr):
+            dihedrals.append(symmetric_dihedrals[symm_dihedrals][i])
     return dihedrals
 
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
@@ -87,72 +88,68 @@ def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
 def matrix_norm(matrix, matrix_inv, p):
     return np.linalg.norm(matrix, p) * np.linalg.norm(matrix_inv, p) 
 
-    # TODO: make approach more elegant? -> include filter(), to have less but useful combinations
-    # more concrete: create IC subsets that are cleverly chosen; these criteria are:
-    # TODO: the used oop per IC set should not be just changed in order; 
-    # TODO: if there are angles that are the same, then they need to be included in the analysis       
-    # TODO: think of reasonable cut off for maximum relative value of used dihedrals
 
-def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals):
+# TODO: the used oop per IC set should not be just changed in order;    
+def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
     num_bonds = len(bonds)
     num_angles = len(angles)
     ic_dict = dict()
 
     k = 0
-    symmetric_angles = get_symm_angles(angles)
-    angle_subsets = get_angle_subsets(symmetric_angles, num_bonds, num_angles,idof)
-
-    #TODO: think of this empirical value!!!!!!! make it relatve to the IC 
-    if (len(dihedrals)/(num_bonds+num_angles+len(linear_angles))) > 0.40:
+ 
+    if specification["dihedral_reduction"][0] == "dihedral_reduction":
         symmetric_dihedrals = get_symm_dihedrals(dihedrals)
-        dihedrals = reduce_dihedral_sets(symmetric_dihedrals)
-
-    for i in range(0, (3*n_atoms) - idof):
-        for j in range(0, len(angle_subsets)):
-            for ic_subset in itertools.combinations(linear_angles + out_of_plane + dihedrals, idof - num_bonds - len(angle_subsets[j]) + i):
+        dihedrals = reduce_dihedral_sets(symmetric_dihedrals,specification["dihedral_reduction"][1])
+    
+    if specification["angle_symmetry"] == "angle_symmetry":
+        symmetric_angles = get_symm_angles(angles)
+        angle_subsets = get_angle_subsets(symmetric_angles, num_bonds, num_angles,idof)
+        for i in range(0, (3*n_atoms) - idof):
+            for j in range(0, len(angle_subsets)):
+                for ic_subset in itertools.combinations(linear_angles + out_of_plane + dihedrals, idof - num_bonds - len(angle_subsets[j]) + i):
+                    used_linear_angles, used_out_of_plane, used_dihedrals = [], [], []
+                    for i in range(0, len(ic_subset)):
+                        if ic_subset[i] in linear_angles:
+                            used_linear_angles.append(ic_subset[i])
+                        if ic_subset[i] in out_of_plane and avoid_double_oop(ic_subset[i], used_out_of_plane):
+                            used_out_of_plane.append(ic_subset[i])
+                        if ic_subset[i] in dihedrals:
+                            used_dihedrals.append(ic_subset[i])
+                    if (num_bonds + len(angle_subsets[j]) + len(used_linear_angles) + len(used_out_of_plane) + len(used_dihedrals)) >= idof:
+                            ic_dict[k] = {
+                                "bonds" : bonds,
+                                "angles" : angle_subsets[j],
+                                "linear valence angles" : used_linear_angles,
+                                "out of plane angles" : used_out_of_plane,
+                                "dihedrals" : used_dihedrals
+                            }
+                            k +=1
                 used_linear_angles, used_out_of_plane, used_dihedrals = [], [], []
-                for i in range(0, len(ic_subset)):
-                    if ic_subset[i] in linear_angles:
-                        used_linear_angles.append(ic_subset[i])
-                    if ic_subset[i] in out_of_plane and avoid_double_oop(ic_subset[i], used_out_of_plane):
-                        used_out_of_plane.append(ic_subset[i])
-                    if ic_subset[i] in dihedrals:
-                        used_dihedrals.append(ic_subset[i])
-                if (num_bonds + len(angle_subsets[j]) + len(used_linear_angles) + len(used_out_of_plane) + len(used_dihedrals)) >= idof:
-                        ic_dict[k] = {
-                            "bonds" : bonds,
-                            "angles" : angle_subsets[j],
-                            "linear valence angles" : used_linear_angles,
-                            "out of plane angles" : used_out_of_plane,
-                            "dihedrals" : used_dihedrals
-                        }
-                        k +=1
-            used_linear_angles, used_out_of_plane, used_dihedrals = [], [], []
-    print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
-    return ic_dict
+        print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
+        return ic_dict
 
-"""
-for i in range(0, (3*n_atoms) - idof):
-            for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
-                used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
-                for i in range(0, len(ic_subset)):
-                    if ic_subset[i] in angles:
-                        used_angles.append(ic_subset[i])
-                    if ic_subset[i] in linear_angles:
-                        used_linear_angles.append(ic_subset[i])
-                    if ic_subset[i] in out_of_plane and avoid_double_oop(ic_subset[i], used_out_of_plane):
-                        used_out_of_plane.append(ic_subset[i])
-                    if ic_subset[i] in dihedrals:
-                        used_dihedrals.append(ic_subset[i])
-                if (num_bonds + len(used_angles) + len(used_linear_angles) + len(used_out_of_plane) + len(used_dihedrals)) >= idof:
-                        ic_dict[k] = {
-                            "bonds" : bonds,
-                            "angles" : used_angles,
-                            "linear valence angles" : used_linear_angles,
-                            "out of plane angles" : used_out_of_plane,
-                            "dihedrals" : used_dihedrals
-                        }
-                        k +=1
-                used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
-    print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
-"""
+    elif specification["angle_symmetry"] == "no-angle_symmetry":
+        for i in range(0, (3*n_atoms) - idof):
+                for ic_subset in itertools.combinations(angles + linear_angles + out_of_plane + dihedrals, idof - num_bonds + i):
+                    used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
+                    for i in range(0, len(ic_subset)):
+                        if ic_subset[i] in angles:
+                            used_angles.append(ic_subset[i])
+                        if ic_subset[i] in linear_angles:
+                            used_linear_angles.append(ic_subset[i])
+                        if ic_subset[i] in out_of_plane and avoid_double_oop(ic_subset[i], used_out_of_plane):
+                            used_out_of_plane.append(ic_subset[i])
+                        if ic_subset[i] in dihedrals:
+                            used_dihedrals.append(ic_subset[i])
+                    if (num_bonds + len(used_angles) + len(used_linear_angles) + len(used_out_of_plane) + len(used_dihedrals)) >= idof:
+                            ic_dict[k] = {
+                                "bonds" : bonds,
+                                "angles" : used_angles,
+                                "linear valence angles" : used_linear_angles,
+                                "out of plane angles" : used_out_of_plane,
+                                "dihedrals" : used_dihedrals
+                            }
+                            k +=1
+                    used_angles, used_linear_angles, used_out_of_plane, used_dihedrals = [], [], [], []
+        print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
+        return ic_dict
