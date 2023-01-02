@@ -54,7 +54,7 @@ def initialize_bonds(atoms):
         if bond.is_valid(atom_a, atom_b):
             hits.append((atom_a.symbol, atom_b.symbol))
     return hits
-
+# for delocalized internal coordinates the linear valence angle is expressed via the coplanar and perpendicular plane
 def initialize_angles(atoms):
     hits = []
     linear_hits = []
@@ -65,8 +65,6 @@ def initialize_angles(atoms):
                 linear_hits.append((a.symbol, b.symbol, c.symbol))
             else:
                 hits.append((a.symbol, b.symbol, c.symbol))
-    if len(hits) != 0:
-        linear_hits = [*set(linear_hits)]
     return hits, linear_hits
 
 def initialize_oop(atoms):
