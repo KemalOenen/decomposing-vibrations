@@ -41,14 +41,6 @@ def reciprocal_square_massvector(atoms):
         diag_reciprocal_square[3*i:3*i+3] = 1/np.sqrt(MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
     return diag_reciprocal_square
 
-def reciprocal_massvector(atoms):
-    n_atoms = len(atoms)
-    diag_reciprocal = np.zeros(3*n_atoms)
-    MASS_INFO = get_mass_information()
-    for i in range(0, n_atoms):
-        diag_reciprocal[3*i:3*i+3] = 1/(MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
-    return diag_reciprocal
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
@@ -111,11 +103,9 @@ def main():
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals)
 
     # Computation of the diagonal mass matrices with 
-    # the reciprocal and square root reciprocal masses
+    # the square root reciprocal masses
     diag_reciprocal_square = reciprocal_square_massvector(atoms)
     reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
-    diag_reciprocal = reciprocal_massvector(atoms)
-    reciprocal_massmatrix = np.diag(diag_reciprocal)
     
     # Determination of the Normal Modes and eigenvalues 
     # via the diagonalization of the mass-weighted Cartesian F Matrix
