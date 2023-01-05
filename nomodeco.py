@@ -150,8 +150,15 @@ def main():
     R = np.transpose(R)
     U = np.transpose(U)
 
-    logfile.write_logfile_results(full_eigenvalues, full_eigenvectors, U, R)
+    B_act = np.transpose(U)@B
 
+    print("Original B-Matrix for primitive internal coordinates")
+    print(pd.DataFrame(B))
+
+    print("Active B-Matrix for active (delocalized) internal coordinates")
+    print(pd.DataFrame(B_act))
+
+    logfile.write_logfile_results(full_eigenvalues, full_eigenvectors, U, R)
 
 
     
