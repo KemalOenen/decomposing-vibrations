@@ -1,0 +1,22 @@
+***, ch4 (methane) vibrational spectrum
+memory,256,m
+
+orient,mass
+geometry={
+C
+H1,C,B1              
+H2,C,B1,H1,A1
+H3,C,B1,H2,A1,H1,120.0
+H4,C,B1,H2,A1,H1,-120.0
+}
+ B1=                  1.08617963 ANG
+ A1=                109.47122029 DEGREE
+
+mass,iso
+basis=vtz
+{hf
+start,atden}
+mp2
+optg
+{frequencies, symm=auto, print=0}
+put,molden,ch4_molden.dat

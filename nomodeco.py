@@ -18,7 +18,7 @@ import icgen
 import icsel
 import bmatrix
 import logfile
-import parser
+import molpro_parser
 
 class Atom(NamedTuple):
     symbol: str
@@ -83,12 +83,11 @@ def main():
     # Reading Cartesian Coordinates and Hessian
     args = get_args()
     with open(args.output) as inputfile:
-        atoms=parser.parse_xyz_from_inputfile(inputfile)
+        atoms=molpro_parser.parse_xyz_from_inputfile(inputfile)
         n_atoms = len(atoms) 
     with open(args.output) as inputfile:
-        CartesianF_Matrix = parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
+        CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
         outputfile = logfile.create_new_filename(inputfile.name)
-    
     # Setting specifications for calculation
     specification = calculation_specification()
 
