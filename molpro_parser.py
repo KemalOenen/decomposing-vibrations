@@ -1,11 +1,28 @@
 import numpy as np
 from typing import NamedTuple
 from scipy import constants
+from collections import Counter
 
 class Atom(NamedTuple):
     symbol: str
     coordinates: tuple
 
+def numerate_strings(string_list):
+    string_counts = Counter(string_list)
+    numeration = {}
+    for string, count in string_counts.items():
+        if count > 1:
+            numeration[string] = 1
+        else:
+            numeration[string] = 0
+    numerated_strings = []
+    for string in string_list:
+        if numeration[string] > 0:
+            numerated_strings.append(f"{string}{numeration[string]}")
+            numeration[string] += 1
+        else:
+            numerated_strings.append(string)
+    return numerated_strings
 
 #TODO: make a parse module
 #TODO: adaption for other output formats like Gaussian, Orca
@@ -25,6 +42,7 @@ def parse_xyz_from_inputfile(inputfile):
         if len(entries) == 0:
             break
         names.append(entries[1])
+    names = numerate_strings(names)
     for line in inputfile:
         if line.strip().startswith('FREQUENCIES * CALCULATION OF NORMAL MODES'):
             break
