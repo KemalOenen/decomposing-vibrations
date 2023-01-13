@@ -1,0 +1,29 @@
+***, c2h3f (fluoroethylene) - electronic structure and normal modes for comparison with delocalized internal coordinates
+memory,256,M
+
+orient,mass
+geometry={
+C1
+C2,C1,rcc
+F,C1,rcf,C2,ccf
+H1,C1,rch,C2,cch,F,180.0
+H2,C2,rch,C1,cch,F,180.0
+h3,C2,rch,C1,cch,H2,180.0
+}
+rcc= 1.4000 ANG
+rcf= 1.4000 ANG
+ccf= 118.00 DEGREE
+rch= 1.0000 ANG 
+cch= 120.00 DEGREE
+
+mass,iso
+basis=vtz
+
+{hf
+start,atden}
+
+{optg, GRADIENT=3.0D-8, ENERGY=1.0D-10, STEP=3.0D-8}
+{frequencies,symm=auto,print=0, analytical}
+
+put,molden,c2h3f.molden
+

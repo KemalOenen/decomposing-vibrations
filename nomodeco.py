@@ -67,7 +67,7 @@ def main():
         n_atoms = len(atoms) 
     with open(args.output) as inputfile:
         CartesianF_Matrix = parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
-        outputfile = inputfile.name + "_generalized_internal_coordinates.log"
+        outputfile = inputfile.name.replace(".out", "") + "_del_ic.log"
     
     # Setting specifications for calculation
     specification = calculation_specification()

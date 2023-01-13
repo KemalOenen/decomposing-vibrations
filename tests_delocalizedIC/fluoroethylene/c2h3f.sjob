@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --partition=CPU_rune
+#SBATCH -J c2h3f
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=10
+#SBATCH --cpus-per-task=1
+
+source /usr/local/_tci_software_environment_.sh
+module purge
+module load rune/molpro/2022.1
+
+mkdir -p /scratch/$USER/tmpdir_$SLURM_JOBID
+molpro -n $SLURM_NTASKS_PER_NODE -d /scratch/$USER/tmpdir_$SLURM_JOBID -I $PWD -W $PWD -a -t 1 c2h3f.inp
+rm -rf /scratch/$USER/tmpdir_$SLURM_JOBID
