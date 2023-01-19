@@ -1,2 +1,3 @@
-tests/
-nomodeco.inp
+*.out
+*.log
+*.inp
