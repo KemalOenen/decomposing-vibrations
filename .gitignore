@@ -1,1 +1,5 @@
-tests/
+*.log
+*.log_1
+tests_delocalizedIC/*
+*.out
+*.inp
