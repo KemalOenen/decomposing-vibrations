@@ -3,8 +3,4 @@ no-oop
 Symmetry specifications: #first line: angles, second line: out-of-plane angles, third line: dihedrals
 angle_symmetry
 no-out-of-plane_symmetry
-<<<<<<< Updated upstream
-dihedral_reduction=3
-=======
 no-dihedral_reduction
->>>>>>> Stashed changes
