@@ -1,1 +1,4 @@
-tests/
+*.log
+*.log_1
+*.out
+*.inp
