@@ -1,6 +1,0 @@
-Out-of-plane angles specification:
-no-oop
-Symmetry specifications: #first line: angles, second line: out-of-plane angles, third line: dihedrals
-angle_symmetry
-no-out-of-plane_symmetry
-no-dihedral_reduction
