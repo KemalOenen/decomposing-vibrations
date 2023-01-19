@@ -16,6 +16,18 @@ You did NOT include the consideration of out-of-plane angles. Note that out-of-p
 than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
 useful for planar systems.
 
+You have included symmetry considerations for angles. This can be useful for larger systems
+to reduce the number of generally not useful possibilites. Note that for some systems, 
+it is still advisable to not include symmetry considerations for angles with the keyword 'no-angle_symmetry'.
+
+You have NOT included symmetry considerations for out-of-plane angles. Note that for some systems, 
+symmetry considerations shrink down the computational runtime considerably, while only removing chemically
+uninteristing coordinate sets. If you want to use out-of-plane angle symmetry, use the keyword 'out-of-plane_symmetry'.
+
+You have included the sampling of symmetric dihedrals (3 dihedrals per symmetry). This can be useful for larger systems
+to reduce the number of generally not useful possibilites. Note that for some systems, it is still advisable
+to not sample symmetric dihedrals with the keyword 'no-dihedral_reduction'.
+
 The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
 bonds: [('H1', 'O'), ('O', 'H2')]
 in-plane angles: [('H1', 'O', 'H2')]
@@ -37,10 +49,10 @@ dihedrals: []
 
 There are 0 redundant internal coordinates used.
 
-The condition numbers of the B-Matrix are given by:
-Sum-Norm of B: 9.814528910386572
-Eucledian-Norm of B: 3.0878141314634187
-Infinity-Norm of B: 10.981910668556118
+The condition number of the B-Matrix is given by:
+Sum-Norm of B: 9.814528910386576
+Eucledian-Norm of B: 3.0878141314634218
+Maximum-Norm of B: 10.981910668556129
 
 
 Testing if the Internal Coordinate Set is complete ...
