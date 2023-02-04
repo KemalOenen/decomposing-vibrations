@@ -31,31 +31,21 @@ def parse_xyz_from_inputfile(inputfile):
     angstrom = constants.value(u'Angstrom star')
     BOHR_PER_ANGSTROM = angstrom/bohr 
     for line in inputfile:
-        if line.strip().startswith('ATOMIC COORDINATES'):
-            break
-    next(inputfile)
-    next(inputfile)
-    next(inputfile)
-    names = []
-    for line in inputfile:
-        entries = line.strip().split()
-        if len(entries) == 0:
-            break
-        names.append(entries[1])
-    names = numerate_strings(names)
-    for line in inputfile:
         if line.strip().startswith('FREQUENCIES * CALCULATION OF NORMAL MODES'):
             break
     for _ in range(6):
         next(inputfile)
+    names = []
     coordinates = []
     for line in inputfile:
         entries = line.strip().split()
         if len(entries) == 0:
             break
+        names.append(entries[1])
         xyz = [float(f) / BOHR_PER_ANGSTROM for f in entries[3:]]
         coordinates.append(xyz)
-
+    
+    names = numerate_strings(names)
     return [Atom(name, tuple(coordinate)) for name, coordinate in zip(names, coordinates)]
 
 #TODO: general parsing
