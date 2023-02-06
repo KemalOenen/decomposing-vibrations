@@ -28,43 +28,19 @@ def write_logfile_header():
 
 def write_logfile_oop_treatment(oop_directive):
     if oop_directive == "oop":
-        logging.info("You have included the consideration of out-of-plane angles. Note that out-of-plane angles tend to perform worse")
+        logging.info("Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane angles tend to perform worse")
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
         logging.info("useful for planar systems.")
     elif oop_directive == "no-oop":
-        logging.info("You did NOT include the consideration of out-of-plane angles. Note that out-of-plane angles tend to perform worse")
+        logging.info("Non-planar system detected. Therefore out-of-plane angles are NOT used in your analysis. Note that out-of-plane angles tend to perform worse")
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
         logging.info("useful for planar systems.")
     logging.info("")
 
-def write_logfile_symmetry_treatment(specification):
-    if specification["angle_symmetry"] == "angle_symmetry":
-        logging.info("You have included symmetry considerations for angles. This can be useful for larger systems")
-        logging.info("to reduce the number of generally not useful possibilites. Note that for some systems, ")
-        logging.info("it is still advisable to not include symmetry considerations for angles with the keyword 'no-angle_symmetry'.")
-    if specification["angle_symmetry"] == "no-angle_symmetry":
-        logging.info("You have NOT included symmetry considerations for angles. Note that for some systems, ")
-        logging.info("symmetry considerations shrink down the computational runtime considerably, while only removing chemically")
-        logging.info("uninteristing coordinate sets. If you want to use angle symmetry, use the keyword 'angle_symmetry'.")
+def write_logfile_symmetry_treatment(specification, point_group_sch):
     logging.info("")
-    if specification["out-of-plane angle_symmetry"] == "out-of-plane_symmetry":
-        logging.info("You have included symmetry considerations for out-of-plane angles. This can be useful for larger systems")
-        logging.info("to reduce the number of generally not useful possibilites. Note that for some systems, it is still advisable")
-        logging.info("to not include symmetry considerations for out-of-plane angles with the keyword 'no-out-of-plane_symmetry'.")
-    if specification["out-of-plane angle_symmetry"] == "no-out-of-plane_symmetry":
-        logging.info("You have NOT included symmetry considerations for out-of-plane angles. Note that for some systems, ")
-        logging.info("symmetry considerations shrink down the computational runtime considerably, while only removing chemically")
-        logging.info("uninteristing coordinate sets. If you want to use out-of-plane angle symmetry, use the keyword 'out-of-plane_symmetry'.")
-    logging.info("")
-    if specification["dihedral_reduction"] == "no-dihedral_reduction":
-        logging.info("You have NOT included the sampling of symmetric dihedrals. Note that for some systems, the reduction of dihedrals")
-        logging.info("shrinks down the computational runtime considerably, while only removing chemically uninteristing coordinate sets.")
-        logging.info("If you want to reduce dihedral dimensions, use the keyword 'dihedral_reduction = n' with n being the number of")
-        logging.info("dihedral representatives per symmetric dihedral.")
-    if specification["dihedral_reduction"][0] == "dihedral_reduction":
-        logging.info("You have included the sampling of symmetric dihedrals (%s dihedrals per symmetry). This can be useful for larger systems",specification["dihedral_reduction"][1])
-        logging.info("to reduce the number of generally not useful possibilites. Note that for some systems, it is still advisable")
-        logging.info("to not sample symmetric dihedrals with the keyword 'no-dihedral_reduction'.")
+    logging.info("The detected point group is %s", point_group_sch)
+    logging.info("The following equivalent atoms were found: %s ", specification["equivalent_atoms"])
     logging.info("")
 
 def write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof):

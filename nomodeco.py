@@ -11,6 +11,8 @@ import pandas as pd
 import argparse
 import logging
 import time
+import pymatgen.core as mg
+from pymatgen.symmetry.analyzer import PointGroupAnalyzer
 from mendeleev.fetch import fetch_table
 
 
@@ -49,32 +51,36 @@ def reciprocal_massvector(atoms):
         diag_reciprocal[3*i:3*i+3] = 1/(MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
     return diag_reciprocal
 
+def strip_numbers(string):
+    return ''.join([char for char in string if not char.isdigit()])
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
-    parser.add_argument("specifications")
     args = parser.parse_args()
     return args
 
-def calculation_specification():
-    args = get_args()
+def calculation_specification(atoms, molecule_pg):
     specification = dict()
-    with open(args.specifications) as inputfile:
-        for line in inputfile:
-            if line.strip().startswith('Out-of-plane angles specification'):
-                specification = {"out-of-plane_treatment" : next(inputfile, '').strip()}
-    with open(args.specifications) as inputfile:
-        for line in inputfile:
-            if line.strip().startswith('Symmetry specifications'):
-                specification.update({
-                    "angle_symmetry" :  next(inputfile, '').strip(),
-                    "out-of-plane angle_symmetry":  next(inputfile, '').strip(),
-                    "dihedral_reduction":  next(inputfile, '').strip()
-                })
-    if specification["dihedral_reduction"].startswith('dihedral_reduction'):
-        dihedral_specif = specification["dihedral_reduction"]
-        dihedral_specif = dihedral_specif.split('=')
-        specification.update({"dihedral_reduction": [dihedral_specif[0], int(dihedral_specif[1])]})
+    if all(x==0 or y == 0 or z == 0 for x,y,z in [atom.coordinates for atom in atoms]):
+        specification = {"out-of-plane_treatment": "oop"}
+    else:
+        specification = {"out-of-plane_treatment": "no-oop"}
+    
+    equivalent_atoms = molecule_pg.get_equivalent_atoms()
+    atom_names = [atom.symbol for atom in atoms]
+    equivalent_atoms_list = []
+    
+    for atom_number_set in equivalent_atoms["eq_sets"].values():
+        equivalent_atoms_list.append(list(atom_number_set))
+
+    for i, sublist in enumerate(equivalent_atoms_list):
+        for j, element in enumerate(sublist):
+            equivalent_atoms_list[i][j] = atom_names[element]
+    
+    specification.update({
+        "equivalent_atoms": equivalent_atoms_list 
+        })
     return specification
 
 start_time = time.time()
@@ -88,17 +94,30 @@ def main():
     with open(args.output) as inputfile:
         CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
         outputfile = logfile.create_new_filename(inputfile.name)
+   
+    # Determining molecular symmetry
+    molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in atoms], [atom.coordinates for atom in atoms])
+    molecule_pg = PointGroupAnalyzer(molecule)
+    point_group_sch = molecule_pg.sch_symbol
+
     # Setting specifications for calculation
-    specification = calculation_specification()
+    specification = calculation_specification(atoms, molecule_pg)
 
 
     # initialize log file
     if os.path.exists(outputfile):
-        os.remove(outputfile)
+        i = 1
+        while True:
+            new_outputfile_name = f"{outputfile}_{i}"
+            if not os.path.exists(new_outputfile_name):
+                os.rename(outputfile, new_outputfile_name)
+                break
+            i +=1
+   
     logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
-    logfile.write_logfile_header()
+    logfile.write_logfile_header() 
     logfile.write_logfile_oop_treatment(specification["out-of-plane_treatment"])
-    logfile.write_logfile_symmetry_treatment(specification)
+    logfile.write_logfile_symmetry_treatment(specification, point_group_sch)
     
 
     # Generation of all possible internal coordinates
@@ -173,10 +192,12 @@ def main():
         if red > 0:
             K = np.delete(K, -red, axis=1)
             e = np.delete(e, -red, axis=0)
-        
-        #TODO: e inv does not exist - make error handling
+
         e = np.diag(e)
-        G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
+        try:
+            G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
+        except np.linalg.LinAlgError:
+            G_inv = K @ np.linalg.pinv(e) @ np.transpose(K)
 
         # Calculating the inverse augmented B-Matrix
 
