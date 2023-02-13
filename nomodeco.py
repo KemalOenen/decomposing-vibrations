@@ -103,7 +103,6 @@ def main():
     # Setting specifications for calculation
     specification = calculation_specification(atoms, molecule_pg)
 
-
     # initialize log file
     if os.path.exists(outputfile):
         i = 1

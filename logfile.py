@@ -38,7 +38,6 @@ def write_logfile_oop_treatment(oop_directive):
     logging.info("")
 
 def write_logfile_symmetry_treatment(specification, point_group_sch):
-    logging.info("")
     logging.info("The detected point group is %s", point_group_sch)
     logging.info("The following equivalent atoms were found: %s ", specification["equivalent_atoms"])
     logging.info("")
