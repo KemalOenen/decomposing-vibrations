@@ -117,6 +117,8 @@ def get_symm_angles2(angles,specification):
 #e.g.: make test if set has to many redundancies and if so -> break symmetry
 def get_angle_subsets(symmetric_angles,num_bonds,num_angles,idof) -> list:
     symmetric_angles_list, angles = [], []
+    #TODO: check for special case if numbond+numangle > idof, then break symmetry
+
     for ind_angle in symmetric_angles.keys():
         if symmetric_angles[ind_angle] not in symmetric_angles_list:
             symmetric_angles_list.append(symmetric_angles[ind_angle])
@@ -153,7 +155,7 @@ def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
 def matrix_norm(matrix, matrix_inv, p):
     return np.linalg.norm(matrix, p) * np.linalg.norm(matrix_inv, p) 
 
-#TODO:check if this does the right stuff with the angles
+#TODO:remove stupid angle subsets maybe even before
 def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
     num_bonds = len(bonds)
     num_angles = len(angles)
@@ -172,17 +174,17 @@ def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedral
      #    symmetric_dihedrals = get_symm_dihedrals(dihedrals)
      #    dihedrals = reduce_dihedral_sets(symmetric_dihedrals,specification["dihedral_reduction"][1])
     
-    for i in range(0, (3*n_atoms) - idof+3):
+    for i in range(0, (3*n_atoms) - (idof+2)): # up to three reduncancies
         for j in range(0, len(angle_subsets)):
             for ic_subset in itertools.combinations(linear_angles + out_of_plane + dihedrals, idof - num_bonds - len(angle_subsets[j]) + i):
                 used_linear_angles, used_out_of_plane, used_dihedrals = [], [], []
-                for i in range(0, len(ic_subset)):
-                    if ic_subset[i] in linear_angles:
-                        used_linear_angles.append(ic_subset[i])
-                    if ic_subset[i] in out_of_plane and avoid_double_oop(ic_subset[i], used_out_of_plane):
-                        used_out_of_plane.append(ic_subset[i])
-                    if ic_subset[i] in dihedrals:
-                        used_dihedrals.append(ic_subset[i])
+                for l in range(0, len(ic_subset)):
+                    if ic_subset[l] in linear_angles:
+                        used_linear_angles.append(ic_subset[l])
+                    if ic_subset[l] in out_of_plane and avoid_double_oop(ic_subset[l], used_out_of_plane):
+                        used_out_of_plane.append(ic_subset[l])
+                    if ic_subset[l] in dihedrals:
+                        used_dihedrals.append(ic_subset[l])
                 if (num_bonds + len(angle_subsets[j]) + len(used_linear_angles) + len(used_out_of_plane) + len(used_dihedrals)) >= idof:
                         ic_dict[k] = {
                             "bonds" : bonds,
