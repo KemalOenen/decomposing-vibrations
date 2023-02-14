@@ -58,7 +58,7 @@ def remove_enumeration_tuple(atom_tuple) -> tuple:
 def check_in_nested_list(check_list, nested_list):
     check = False
     for single_list in nested_list:
-        if set(single_list) == set(check_list):
+        if set(check_list).issubset(set(single_list)):
             check = True
     return check
 
@@ -113,19 +113,15 @@ def get_symm_angles2(angles,specification):
 
     return symmetric_angles
 
-#TODO: until symmetric_angles_list everything should be now finished -> nested lists, which angles that are equal
-#NOW you need to think about how you combine this to useful angle subsets, which are then used in IC sets!
+#TODO: think about special case where num_bonds + num_angles > idof
+#e.g.: make test if set has to many redundancies and if so -> break symmetry
 def get_angle_subsets(symmetric_angles,num_bonds,num_angles,idof) -> list:
     symmetric_angles_list, angles = [], []
-    if (num_bonds + num_angles) <= idof:
-        k = 1
-    else:
-        k = 0
     for ind_angle in symmetric_angles.keys():
         if symmetric_angles[ind_angle] not in symmetric_angles_list:
             symmetric_angles_list.append(symmetric_angles[ind_angle])
-    #print(symmetric_angles_list)
-    for i in range(1, len(symmetric_angles_list)+k):
+    print(symmetric_angles_list)
+    for i in range(1,len(symmetric_angles_list)+1):
         for angle_subset in itertools.combinations(symmetric_angles_list,i):
             flat_angle_subset = [item for sublist in angle_subset for item in sublist]
             angles.append(list(flat_angle_subset))
@@ -168,7 +164,7 @@ def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedral
     print(specification["equivalent_atoms"])
     pprint.pprint(symmetric_angles)
     angle_subsets = get_angle_subsets(symmetric_angles, num_bonds, num_angles,idof)
-    #print(angle_subsets)
+   # print(angle_subsets)
 
     k = 0
  

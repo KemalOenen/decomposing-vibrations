@@ -3,7 +3,6 @@ from __future__ import annotations
 import itertools
 from typing import NamedTuple
 from typing import Iterable
-
 import string
 import os
 import numpy as np
@@ -62,7 +61,9 @@ def get_args():
 
 def calculation_specification(atoms, molecule_pg):
     specification = dict()
-    if all(x==0 or y == 0 or z == 0 for x,y,z in [atom.coordinates for atom in atoms]):
+    if all(x==0 for x,y,z in [atom.coordinates for atom in atoms]) or all(
+            y==0 for x,y,z in [atom.coordinates for atom in atoms]) or all(
+                    z==0 for x,y,z in [atom.coordinates for atom in atoms]):
         specification = {"out-of-plane_treatment": "oop"}
     else:
         specification = {"out-of-plane_treatment": "no-oop"}
