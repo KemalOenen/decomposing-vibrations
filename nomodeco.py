@@ -247,7 +247,6 @@ def main():
 
         Diag_elements = np.transpose(Diag_elements)
 
-
         nu = np.zeros(n_internals) 
         for n in range(0,n_internals):
             for m in range(0,n_internals):
@@ -278,20 +277,6 @@ def main():
             columns[i] = normal_coord_harmonic_frequencies_string[i]
 
         Results1 = Results1.rename(columns=columns)
-        
-        # Results part 2
-        
-        nu_perNormalCoordinate = np.zeros((n_internals,n_internals-red)) 
-        for n in range(0,n_internals):
-            for i in range(0,n_internals-red):
-                for m in range(0,n_internals):
-                    k = i + (3*n_atoms-idof)
-                    nu_perNormalCoordinate[n][i] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
-
-        Results2 = pd.DataFrame()
-        Results2['Internal Coordinate'] = all_internals
-        Results2 = Results2.join(pd.DataFrame(nu_perNormalCoordinate).applymap("{0:.2f}".format))
-        Results2 = Results2.rename(columns=columns)
 
         sum_array1 = np.zeros(n_internals)
 
@@ -307,22 +292,41 @@ def main():
         Contribution_Table1 = Contribution_Table1.join(pd.DataFrame(Contribution_Matrix1).applymap("{0:.2f}".format))
         Contribution_Table1 = Contribution_Table1.rename(columns=columns)
 
-        sum_array2 = np.zeros(n_internals)
+        mean_average_deviation = icsel.Kemalian_metric(Contribution_Matrix1/100,nu_final,normal_coord_harmonic_frequencies)
 
-        for n in range(0,n_internals):
-            for i in range(0,n_internals-red):
-                sum_array2[i] += nu_perNormalCoordinate[n][i]
+        # Results part 2
+# To be honest, I have never needed the results here, so I deactivated them
+# This is bascially calculation of the eigenvalues PER normal coordinate
 
-        Contribution_Matrix2 = np.zeros((n_internals,n_internals-red))
-        for i in range(0, n_internals-red):
-            Contribution_Matrix2[:,i] = (nu_perNormalCoordinate[:,i] / sum_array2[i]) * 100
-
-        Contribution_Table2 = pd.DataFrame()
-        Contribution_Table2['Internal Coordinate'] = all_internals
-        Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
-        Contribution_Table2 = Contribution_Table2.rename(columns=columns)
+#        nu_perNormalCoordinate = np.zeros((n_internals,n_internals-red)) 
+#        for n in range(0,n_internals):
+#            for i in range(0,n_internals-red):
+#                for m in range(0,n_internals):
+#                    k = i + (3*n_atoms-idof)
+#                    nu_perNormalCoordinate[n][i] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
+#
+#        Results2 = pd.DataFrame()
+#        Results2['Internal Coordinate'] = all_internals
+#        Results2 = Results2.join(pd.DataFrame(nu_perNormalCoordinate).applymap("{0:.2f}".format))
+#        Results2 = Results2.rename(columns=columns)
+#
+#
+#        sum_array2 = np.zeros(n_internals)
+#
+#        for n in range(0,n_internals):
+#            for i in range(0,n_internals-red):
+#                sum_array2[i] += nu_perNormalCoordinate[n][i]
+#
+#        Contribution_Matrix2 = np.zeros((n_internals,n_internals-red))
+#        for i in range(0, n_internals-red):
+#            Contribution_Matrix2[:,i] = (nu_perNormalCoordinate[:,i] / sum_array2[i]) * 100
+#
+#        Contribution_Table2 = pd.DataFrame()
+#        Contribution_Table2['Internal Coordinate'] = all_internals
+#        Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
+#        Contribution_Table2 = Contribution_Table2.rename(columns=columns)
         
-        logfile.write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2)
+        logfile.write_logfile_results(Results1, Contribution_Table1, mean_average_deviation)
 
     print("Runtime: %s seconds" % (time.time() - start_time))
 

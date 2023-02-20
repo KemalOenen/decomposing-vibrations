@@ -91,7 +91,7 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
         logging.info('Yes! The double transformed f-matrix is the same as in the input.')
         logging.info("")
 
-def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_Table2):
+def write_logfile_results(Results1, Contribution_Table1,mean_average_deviation):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
     logging.info("")
     logging.info("1.) Intrinsic Frequencies for all normal-coordinate frequencies and")
@@ -104,19 +104,24 @@ def write_logfile_results(Results1, Results2, Contribution_Table1, Contribution_
     logging.info("Contribution Table generated from the Vibrational Density Matrices (values in percent)")
     logging.info("")
     logging.info(Contribution_Table1.to_string(index=False))
-    
+
     logging.info("")
-    logging.info("-".center(90, "-"))
-    logging.info("")
-    
-    logging.info("")
-    logging.info("2.) Eigenvalues for each internal coordinate per normal-coordinate ")
-    logging.info("")
-    logging.info(Results2.to_string(index=False))
-    
-    logging.info("")
-    logging.info("Contribution Table generated from the eigenvalues per coordinate (values in percent)")
-    logging.info("")
-    logging.info(Contribution_Table2.to_string(index=False))
-    
+    logging.info("The mean average deviation (MAD) between computed contributions of intrinsic frequencies")
+    logging.info("to the harmonic frequency equals: %s", mean_average_deviation)
+
+# If you want to include the results part 2, just remove the comments below
+#    logging.info("")
+#    logging.info("-".center(90, "-"))
+#    logging.info("")
+#    
+#    logging.info("")
+#    logging.info("2.) Eigenvalues for each internal coordinate per normal-coordinate ")
+#    logging.info("")
+#    logging.info(Results2.to_string(index=False))
+#    
+#    logging.info("")
+#    logging.info("Contribution Table generated from the eigenvalues per coordinate (values in percent)")
+#    logging.info("")
+#    logging.info(Contribution_Table2.to_string(index=False))
+#    
     logging.shutdown()
