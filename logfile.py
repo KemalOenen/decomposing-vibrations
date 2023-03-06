@@ -59,6 +59,11 @@ def write_logfile_nan_freq():
     logging.info("The computation will be stopped")
     logging.info("")
 
+def write_logfile_nan_freq_debug():
+    logging.info("")
+    logging.error('Imaginary frequency values were detected for the intrinsic frequencies.')
+    logging.info("In debug mode intrinsic frequencies are set to 0")
+
 def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals):
     logging.info("")
     logging.info(" Initialization of an internal coordinate set ".center(110, "-"))

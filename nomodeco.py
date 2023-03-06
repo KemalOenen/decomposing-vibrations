@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 from typing import NamedTuple
 from typing import Iterable
+import pprint
 import string
 import os
 import numpy as np
@@ -56,6 +57,7 @@ def strip_numbers(string):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
+    parser.add_argument("debug")
     args = parser.parse_args()
     return args
 
@@ -95,7 +97,12 @@ def main():
     with open(args.output) as inputfile:
         CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
         outputfile = logfile.create_new_filename(inputfile.name)
-   
+
+    if args.debug == "debug":
+        DEBUG_MODE = True
+    else:
+        DEBUG_MODE = False
+
     # Determining molecular symmetry
     molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in atoms], [atom.coordinates for atom in atoms])
     molecule_pg = PointGroupAnalyzer(molecule)
@@ -158,14 +165,29 @@ def main():
     
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
-    ic_dict = icsel.get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+    #depending on redundancies internal coordinates are selected
 
-    for i in ic_dict.keys():
-        bonds = ic_dict[i]["bonds"]
-        angles = ic_dict[i]["angles"]
-        linear_angles = ic_dict[i]["linear valence angles"]
-        out_of_plane = ic_dict[i]["out of plane angles"]
-        dihedrals = ic_dict[i]["dihedrals"]
+#    n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
+#    red = n_internals - idof
+ 
+    #activate once new get_sets works!
+#    if red <= 3:
+#        ic_dict = icsel.get_sets_low_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+#    if red > 3:
+#        ic_dict = icsel.get_sets_high_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+
+    ic_dict = icsel.get_sets_low_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+    
+    if DEBUG_MODE:
+        debug_data = pd.DataFrame(index=range(len(ic_dict.keys())),
+                columns=["bonds","angles","linear angles","out-of-plane","dihedrals","red",
+                    "complete","imag. intr. freq","sum norm","eucledian norm","maximum norm","MAD"])
+    for num_of_set in ic_dict.keys():
+        bonds = ic_dict[num_of_set]["bonds"]
+        angles = ic_dict[num_of_set]["angles"]
+        linear_angles = ic_dict[num_of_set]["linear valence angles"]
+        out_of_plane = ic_dict[num_of_set]["out of plane angles"]
+        dihedrals = ic_dict[num_of_set]["dihedrals"]
 
         n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
         red = n_internals - idof
@@ -207,8 +229,12 @@ def main():
         logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
         angles, linear_angles, out_of_plane, dihedrals)
 
-        if icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+        if not DEBUG_MODE and icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
              continue
+        elif DEBUG_MODE and icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+            COMPLETE=False
+        elif DEBUG_MODE and icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) == True:
+            COMPLETE=True
             
         ''''' 
         --------------------------- Main-Calculation ------------------------------
@@ -234,7 +260,17 @@ def main():
                 for n in range(0,n_internals):
                     k = i + (3*n_atoms-idof)
                     P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k]
-                    
+
+
+#small testing for properties of P tensor
+
+#        sum_test = np.zeros((n_internals-red))
+#        for i in range(0,n_internals-red):
+#            for m in range(0,n_internals):
+#                for n in range(0,n_internals):
+#                    sum_test[i] += P[i][m][n]
+#        print(sum_test)
+
         ''''' 
         ------------------------------- Results --------------------------------------
         ''''' 
@@ -254,10 +290,16 @@ def main():
                     k = i + (3*n_atoms-idof)
                     nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
                     
-        if np.any(nu < 0) == True:
+        if not DEBUG_MODE and np.any(nu < 0) == True:
             logfile.write_logfile_nan_freq()
             continue
-
+        elif DEBUG_MODE and np.any(nu < 0) == True:
+            logfile.write_logfile_nan_freq_debug()
+            nu[nu<0] = 0
+            IMAGINARY=True
+        elif DEBUG_MODE and np.any(nu >= 0) == True:
+            IMAGINARY=False
+        
         nu_final = np.sqrt(nu) *  5140.4981
 
         normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981
@@ -292,7 +334,26 @@ def main():
         Contribution_Table1 = Contribution_Table1.join(pd.DataFrame(Contribution_Matrix1).applymap("{0:.2f}".format))
         Contribution_Table1 = Contribution_Table1.rename(columns=columns)
 
-        mean_average_deviation = icsel.Kemalian_metric(Contribution_Matrix1/100,nu_final,normal_coord_harmonic_frequencies)
+
+        #MAD is not computed between frequencies but force constants!
+        mean_average_deviation = icsel.Kemalian_metric(Contribution_Matrix1/100,nu,eigenvalues[(3*n_atoms-idof):3*n_atoms])
+        print(eigenvalues[(3*n_atoms-idof):3*n_atoms])
+
+        logfile.write_logfile_results(Results1, Contribution_Table1, mean_average_deviation)
+        if DEBUG_MODE:
+            debug_data.loc[num_of_set]=[len(bonds), len(angles), len(linear_angles), len(out_of_plane), len(dihedrals),
+                    red,COMPLETE,IMAGINARY,icsel.matrix_norm(B,B_inv,1),icsel.matrix_norm(B,B_inv,2),icsel.matrix_norm(B,B_inv,np.inf),
+                    mean_average_deviation]
+
+    if DEBUG_MODE:
+        print(debug_data)
+        csv_name = outputfile.replace("_nomodeco.log","") + "_debug.csv" 
+        debug_data.to_csv(csv_name)
+    print("Runtime: %s seconds" % (time.time() - start_time))
+
+if __name__ == '__main__':
+    main()
+
 
         # Results part 2
 # To be honest, I have never needed the results here, so I deactivated them
@@ -325,10 +386,3 @@ def main():
 #        Contribution_Table2['Internal Coordinate'] = all_internals
 #        Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
 #        Contribution_Table2 = Contribution_Table2.rename(columns=columns)
-        
-        logfile.write_logfile_results(Results1, Contribution_Table1, mean_average_deviation)
-
-    print("Runtime: %s seconds" % (time.time() - start_time))
-
-if __name__ == '__main__':
-    main()

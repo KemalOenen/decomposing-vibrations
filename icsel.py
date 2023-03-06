@@ -189,7 +189,7 @@ def matrix_norm(matrix, matrix_inv, p):
 
 #TODO:remove stupid angle subsets maybe even before
 #TODO:currently no symmetry breaking for angles and dihedrals is really possible -> change this
-def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
+def get_sets_low_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
     num_bonds = len(bonds)
     num_angles = len(angles)
     ic_dict = dict()
@@ -236,6 +236,106 @@ def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedral
                     used_linear_angles, used_out_of_plane = [], []
     print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
     return ic_dict
+
+#Potential new implementation of the get_sets algorithm
+#TODO: make work!!
+def get_sets_high_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
+    num_bonds = len(bonds)
+    num_angles = len(angles)
+    ic_dict = dict()
+
+    k = 0
+
+    symmetric_dihedrals = get_symm_dihedrals(dihedrals,specification)
+    dihedral_subsets = get_dihedral_subsets(symmetric_dihedrals, num_bonds, num_angles,idof)
+
+    #possible strategy for breaking symmetry
+    #dihedrals = reduce_dihedral_sets(symmetric_dihedrals,specification["dihedral_reduction"][1])
+    
+    #TODO: do something about this horrible for loop!!!!!!!!!!
+    for i in range(0, (3*n_atoms) - (idof+2)): # idof+2: up to three redundancies
+        for d in range(0, len(dihedral_subsets)):
+            if (0.4*num_angles >= len(dihedral_subsets[d])) and (idof - num_bonds - num_angles - len(dihedral_subsets[d]) + i) >= 0:
+                for ic_subset in itertools.combinations(linear_angles + out_of_plane, idof - num_bonds - num_angles - len(dihedral_subsets[d]) + i):
+                    used_linear_angles, used_out_of_plane = [], []
+                    for l in range(0, len(ic_subset)):
+                        if ic_subset[l] in linear_angles:
+                            used_linear_angles.append(ic_subset[l])
+                        if ic_subset[l] in out_of_plane and avoid_double_oop(ic_subset[l], used_out_of_plane):
+                            used_out_of_plane.append(ic_subset[l])
+                    if (num_bonds + num_angles + len(used_linear_angles) + len(used_out_of_plane) + len(dihedral_subsets[d]) >= idof):
+                            ic_dict[k] = {
+                                "bonds" : bonds,
+                                "angles" : angles,
+                                "linear valence angles" : used_linear_angles,
+                                "out of plane angles" : used_out_of_plane,
+                                "dihedrals" : dihedral_subsets[d]
+                            }
+                            k +=1
+                used_linear_angles, used_out_of_plane = [], []
+    print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
+    return ic_dict
+
+# The routine below includes new symmetry considerations but is non-adaptive; will be removed soon
+#def get_sets(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
+#    num_bonds = len(bonds)
+#    num_angles = len(angles)
+#    ic_dict = dict()
+#
+#    #use get_symm_angles2 as get_symm_angles has a "restricted" definition!
+#    #symmetric_angles = get_symm_angles(angles,specification)
+#    symmetric_angles = get_symm_angles2(angles,specification)
+#    angle_subsets = get_angle_subsets(symmetric_angles, num_bonds, num_angles,idof)
+#
+#    k = 0
+
+#    # Dihedrals are treated like this: the symmetric dihedrals are identified, then 
+#    # it is checked how big the subsets are; take only dihedrals in a new reduced set
+#    # which are included with their symmetrical counterparts or are together with the other IC's
+#    # under a certain threshold 
+#
+#    symmetric_dihedrals = get_symm_dihedrals(dihedrals,specification)
+#    dihedral_subsets = get_dihedral_subsets(symmetric_dihedrals, num_bonds, num_angles,idof)
+#
+#    #possible strategy for breaking symmetry
+#    #dihedrals = reduce_dihedral_sets(symmetric_dihedrals,specification["dihedral_reduction"][1])
+#    
+#    #TODO: do something about this horrible for loop!!!!!!!!!!
+#    for i in range(0, (3*n_atoms) - (idof+2)): # idof+2: up to three redundancies
+#        for j in range(0, len(angle_subsets)):
+#            for d in range(0, len(dihedral_subsets)):
+#                if (0.4*len(angle_subsets[j]) >= len(dihedral_subsets[d])) and (idof - num_bonds - len(angle_subsets[j]) - len(dihedral_subsets[d]) + i) >= 0:
+#                    for ic_subset in itertools.combinations(linear_angles + out_of_plane, idof - num_bonds - len(angle_subsets[j]) - len(dihedral_subsets[d]) + i):
+#                        used_linear_angles, used_out_of_plane = [], []
+#                        for l in range(0, len(ic_subset)):
+#                            if ic_subset[l] in linear_angles:
+#                                used_linear_angles.append(ic_subset[l])
+#                            if ic_subset[l] in out_of_plane and avoid_double_oop(ic_subset[l], used_out_of_plane):
+#                                used_out_of_plane.append(ic_subset[l])
+#                        if (num_bonds + len(angle_subsets[j]) + len(used_linear_angles) + len(used_out_of_plane) + len(dihedral_subsets[d]) >= idof):
+#                                ic_dict[k] = {
+#                                    "bonds" : bonds,
+#                                    "angles" : angle_subsets[j],
+#                                    "linear valence angles" : used_linear_angles,
+#                                    "out of plane angles" : used_out_of_plane,
+#                                    "dihedrals" : dihedral_subsets[d]
+#                                }
+#                                k +=1
+#                    used_linear_angles, used_out_of_plane = [], []
+#    print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
+#    return ic_dict
+
+
+
+
+
+
+
+
+
+
+
+
 
 # below are the OLD routines for get_sets, where symmetry was not determined group theoretically;
 # They are only here until the new routines are finished in implementation and tested, so don't use them!
