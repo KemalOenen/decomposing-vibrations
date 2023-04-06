@@ -337,7 +337,6 @@ def main():
 
         #MAD is not computed between frequencies but force constants!
         mean_average_deviation = icsel.Kemalian_metric(Contribution_Matrix1/100,nu,eigenvalues[(3*n_atoms-idof):3*n_atoms])
-        print(eigenvalues[(3*n_atoms-idof):3*n_atoms])
 
         logfile.write_logfile_results(Results1, Contribution_Table1, mean_average_deviation)
         if DEBUG_MODE:
