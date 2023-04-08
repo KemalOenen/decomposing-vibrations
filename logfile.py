@@ -27,11 +27,11 @@ def write_logfile_header():
     logging.info("")
 
 def write_logfile_oop_treatment(oop_directive):
-    if oop_directive == "oop":
+    if oop_directive == "yes":
         logging.info("Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane angles tend to perform worse")
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
         logging.info("useful for planar systems.")
-    elif oop_directive == "no-oop":
+    elif oop_directive == "no":
         logging.info("Non-planar system detected. Therefore out-of-plane angles are NOT used in your analysis. Note that out-of-plane angles tend to perform worse")
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
         logging.info("useful for planar systems.")

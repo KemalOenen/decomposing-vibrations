@@ -11,6 +11,7 @@ import bond
 import angle
 import oop
 import dihedral
+import molpro_parser
 
 class Atom(NamedTuple):
     symbol: str
@@ -92,7 +93,7 @@ def get_args():
 def main():
     args = get_args()
     with open(args.output) as outfile:
-        xyz=parse_xyz_from_outfile(outfile)
+        xyz=molpro_parser.parse_xyz_from_inputfile(outfile)
         n_atoms = len(xyz)
     bonds = initialize_bonds(xyz)
     print("The following", len(bonds), "bonds have been found:")
@@ -100,9 +101,9 @@ def main():
     angles = initialize_angles(xyz)
     print("The following", len(angles), "angles have been found:") 
     pprint.pprint(angles)
-    out_of_plane = initialize_oop(xyz)
-    print("The following possible", len(out_of_plane), "out of plane angle definitions have been found:") 
-    pprint.pprint(out_of_plane)
+#    out_of_plane = initialize_oop(xyz)
+#    print("The following possible", len(out_of_plane), "out of plane angle definitions have been found:") 
+#    pprint.pprint(out_of_plane)
     dihedrals = initialize_dihedrals(xyz) 
     print("The following", len(dihedrals), "dihedrals have been found:") 
     pprint.pprint(dihedrals)

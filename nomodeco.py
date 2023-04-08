@@ -61,15 +61,50 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def calculation_specification(atoms, molecule_pg):
+def calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles):
     specification = dict()
+
+    # check if molecule is planar or general
     if all(x==0 for x,y,z in [atom.coordinates for atom in atoms]) or all(
             y==0 for x,y,z in [atom.coordinates for atom in atoms]) or all(
                     z==0 for x,y,z in [atom.coordinates for atom in atoms]):
-        specification = {"out-of-plane_treatment": "oop"}
+        specification = {"planar": "yes"}
     else:
-        specification = {"out-of-plane_treatment": "no-oop"}
+        specification = {"planar": "no"}
+
+    # check if molecule is linear or has a linear submolecule
+    if (linear_angles and not angles) or (not linear_angles and not angles):
+        specification.update({"linearity": "fully linear"})
+    if (linear_angles and angles):
+        specification.update({"linearity": "linear submolecules found"})
+    if (not linear_angles and angles):
+        specification.update({"linearity": "not linear"})
+
+    # check if molecule is acyclic or cyclic 
+    mu = len(bonds) - len(atoms) + 1
+    if mu > 0: 
+        specification.update({"cyclic": "yes"})
+        specification.update({"mu": mu})
+
+    else:
+        specification.update({"cyclic": "no"})
+        specification.update({"mu": mu})
+
+    # map every atom on their multiplicity 
+    atoms_multiplicity = dict()
+    atoms_multiplicity_list = []
+    for bond_pair in bonds:
+        for atom in bond_pair:
+            if atom in atoms_multiplicity:
+                atoms_multiplicity[atom] += 1
+            else:
+                atoms_multiplicity[atom] = 1
+    for atom, multiplicity in atoms_multiplicity.items():
+        atoms_multiplicity_list.append((atom, multiplicity))
+
+    specification.update({"multiplicity": atoms_multiplicity_list})
     
+    # define which atoms are equal or not bases on group theory
     equivalent_atoms = molecule_pg.get_equivalent_atoms()
     atom_names = [atom.symbol for atom in atoms]
     equivalent_atoms_list = []
@@ -103,14 +138,6 @@ def main():
     else:
         DEBUG_MODE = False
 
-    # Determining molecular symmetry
-    molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in atoms], [atom.coordinates for atom in atoms])
-    molecule_pg = PointGroupAnalyzer(molecule)
-    point_group_sch = molecule_pg.sch_symbol
-
-    # Setting specifications for calculation
-    specification = calculation_specification(atoms, molecule_pg)
-
     # initialize log file
     if os.path.exists(outputfile):
         i = 1
@@ -123,28 +150,42 @@ def main():
    
     logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
     logfile.write_logfile_header() 
-    logfile.write_logfile_oop_treatment(specification["out-of-plane_treatment"])
-    logfile.write_logfile_symmetry_treatment(specification, point_group_sch)
     
 
-    # Generation of all possible internal coordinates
+    # Determining molecular symmetry
+    molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in atoms], [atom.coordinates for atom in atoms])
+    molecule_pg = PointGroupAnalyzer(molecule)
+    point_group_sch = molecule_pg.sch_symbol
+
+    # Generation of all possible bonding and bending internal coordinates
     bonds = icgen.initialize_bonds(atoms)
     angles, linear_angles = icgen.initialize_angles(atoms)
-    if specification["out-of-plane_treatment"] == "oop":
+
+    # Setting specifications for calculation: check if molecule is linear, planar or a general molecule
+    specification = calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles)
+
+    # Generation of all possible out-of-plane motions
+
+    if specification["planar"] == "yes":
         out_of_plane = icgen.initialize_oop(atoms)
-    elif specification["out-of-plane_treatment"] == "no-oop":
+    elif specification["planar"] == "no":
         out_of_plane = []
     else:
-        return logging.error("You need to specify the oop or no-oop directive!")
+        return logging.error("Determination of whether topology is planar or not could not be determined!")
     dihedrals = icgen.initialize_dihedrals(atoms)
 
     # determine internal degrees of freedom 
     idof = 0
-    if (linear_angles and not angles) or (not linear_angles and not angles):
+    if specification["linearity"] == "fully linear":
         idof = 3*n_atoms-5
     else:
         idof = 3*n_atoms-6
-    
+
+   # update log file
+
+    logfile.write_logfile_oop_treatment(specification["planar"])
+    logfile.write_logfile_symmetry_treatment(specification, point_group_sch)
+
     # Computation of the diagonal mass matrices with 
     # the reciprocal and square root reciprocal masses
     diag_reciprocal_square = reciprocal_square_massvector(atoms)
@@ -165,18 +206,7 @@ def main():
     
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
-    #depending on redundancies internal coordinates are selected
-
-#    n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
-#    red = n_internals - idof
- 
-    #activate once new get_sets works!
-#    if red <= 3:
-#        ic_dict = icsel.get_sets_low_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
-#    if red > 3:
-#        ic_dict = icsel.get_sets_high_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
-
-    ic_dict = icsel.get_sets_low_number_red(n_atoms, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+    ic_dict = icsel.get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
     
     if DEBUG_MODE:
         debug_data = pd.DataFrame(index=range(len(ic_dict.keys())),
