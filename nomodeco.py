@@ -211,7 +211,7 @@ def main():
     if DEBUG_MODE:
         debug_data = pd.DataFrame(index=range(len(ic_dict.keys())),
                 columns=["bonds","angles","linear angles","out-of-plane","dihedrals","red",
-                    "complete","imag. intr. freq","sum norm","eucledian norm","maximum norm","MAD"])
+                    "complete","imag. intr. freq","sum norm","eucledian norm","maximum norm","MAD", "EV f-matrix", "number of 0 EV f-matrix"])
     for num_of_set in ic_dict.keys():
         bonds = ic_dict[num_of_set]["bonds"]
         angles = ic_dict[num_of_set]["angles"]
@@ -370,9 +370,10 @@ def main():
 
         logfile.write_logfile_results(Results1, Contribution_Table1, mean_average_deviation)
         if DEBUG_MODE:
+            eval_double_f = np.round(icsel.check_evalue_f_matrix(CartesianF_Matrix, B, B_inv, InternalF_Matrix),2)
             debug_data.loc[num_of_set]=[len(bonds), len(angles), len(linear_angles), len(out_of_plane), len(dihedrals),
-                    red,COMPLETE,IMAGINARY,icsel.matrix_norm(B,B_inv,1),icsel.matrix_norm(B,B_inv,2),icsel.matrix_norm(B,B_inv,np.inf),
-                    mean_average_deviation]
+                    red,COMPLETE,IMAGINARY,np.round(icsel.matrix_norm(B,B_inv,1),2),np.round(icsel.matrix_norm(B,B_inv,2),2),np.round(icsel.matrix_norm(B,B_inv,np.inf),2),
+                    np.round(mean_average_deviation,4), eval_double_f, np.count_nonzero(eval_double_f == 0)]
 
     if DEBUG_MODE:
         print(debug_data)

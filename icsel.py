@@ -187,6 +187,12 @@ def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
     else:
         return False
 
+def check_evalue_f_matrix(CartesianF_Matrix, B, B_inv, InternalF_Matrix):
+    CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
+    evalue, evect = np.linalg.eig(CartesianF_Matrix_check)
+    return evalue
+
+
 def number_terminal_bonds(mult_list):
     number_of_terminal_bonds = 0
     for atom_and_mult in mult_list:
