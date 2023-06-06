@@ -54,9 +54,25 @@ def reciprocal_massvector(atoms):
 def strip_numbers(string):
     return ''.join([char for char in string if not char.isdigit()])
 
+
+def get_linear_bonds(linear_angles):
+    linear_bonds = []
+    for i in range(len(linear_angles)):
+        # extract elements from current tuple
+        first = linear_angles[i][0]
+        middle = linear_angles[i][1]
+        last = linear_angles[i][2]
+
+        # create new tuples by including adjacent elements
+        linear_bonds.append((middle, first))
+        linear_bonds.append((middle,last))
+    linear_bonds = list(set(linear_bonds))
+    return linear_bonds
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
+    # TODO: look up how to set flag directly
     parser.add_argument("debug")
     args = parser.parse_args()
     return args
@@ -73,19 +89,22 @@ def calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles):
         specification = {"planar": "no"}
 
     # check if molecule is linear or has a linear submolecule
+    # if the molecule has a linear submolecule, then determine the number of linear bonds
     if (linear_angles and not angles) or (not linear_angles and not angles):
         specification.update({"linearity": "fully linear"})
     if (linear_angles and angles):
         specification.update({"linearity": "linear submolecules found"})
+        linear_bonds = get_linear_bonds(linear_angles)
+        specification.update({"length of linear submolecule(s) l": len(linear_bonds)})
     if (not linear_angles and angles):
         specification.update({"linearity": "not linear"})
 
+
     # check if molecule is acyclic or cyclic 
     mu = len(bonds) - len(atoms) + 1
-    if mu > 0: 
+    if mu > 0:
         specification.update({"cyclic": "yes"})
         specification.update({"mu": mu})
-
     else:
         specification.update({"cyclic": "no"})
         specification.update({"mu": mu})
@@ -104,7 +123,7 @@ def calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles):
 
     specification.update({"multiplicity": atoms_multiplicity_list})
     
-    # define which atoms are equal or not bases on group theory
+    # define which atoms are equal or not, based on group theory
     equivalent_atoms = molecule_pg.get_equivalent_atoms()
     atom_names = [atom.symbol for atom in atoms]
     equivalent_atoms_list = []
@@ -112,10 +131,12 @@ def calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles):
     for atom_number_set in equivalent_atoms["eq_sets"].values():
         equivalent_atoms_list.append(list(atom_number_set))
 
+
     for i, sublist in enumerate(equivalent_atoms_list):
         for j, element in enumerate(sublist):
             equivalent_atoms_list[i][j] = atom_names[element]
-    
+   
+   
     specification.update({
         "equivalent_atoms": equivalent_atoms_list 
         })
@@ -171,7 +192,7 @@ def main():
     elif specification["planar"] == "no":
         out_of_plane = []
     else:
-        return logging.error("Determination of whether topology is planar or not could not be determined!")
+        return logging.error("Classification of whether topology is planar or not could not be determined!")
     dihedrals = icgen.initialize_dihedrals(atoms)
 
     # determine internal degrees of freedom 
@@ -199,7 +220,8 @@ def main():
     Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
     
     Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
-    
+    #print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
+
     # Determination of the normal modes of zero and low Frequencies
 
     rottra = L[:,0:(3*n_atoms-idof)]
@@ -212,6 +234,8 @@ def main():
         debug_data = pd.DataFrame(index=range(len(ic_dict.keys())),
                 columns=["bonds","angles","linear angles","out-of-plane","dihedrals","red",
                     "complete","imag. intr. freq","sum norm","eucledian norm","maximum norm","MAD", "EV f-matrix", "number of 0 EV f-matrix"])
+    
+
     for num_of_set in ic_dict.keys():
         bonds = ic_dict[num_of_set]["bonds"]
         angles = ic_dict[num_of_set]["angles"]
@@ -282,6 +306,7 @@ def main():
         
         eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
         eigenvalues = np.diag(eigenvalues)
+        # print("eigenvalues (from IC space):", eigenvalues)
 
         P = np.zeros((n_internals-red,n_internals,n_internals))
 
@@ -370,7 +395,10 @@ def main():
 
         logfile.write_logfile_results(Results1, Contribution_Table1, mean_average_deviation)
         if DEBUG_MODE:
-            eval_double_f = np.round(icsel.check_evalue_f_matrix(CartesianF_Matrix, B, B_inv, InternalF_Matrix),2)
+            eval_double_f = np.round(icsel.check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matrix),6)
+            # freq = np.sqrt(icsel.check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matrix)) * 5140.4981
+            #print("eval_double_f (now mw):", eval_double_f)
+            #print(freq)
             debug_data.loc[num_of_set]=[len(bonds), len(angles), len(linear_angles), len(out_of_plane), len(dihedrals),
                     red,COMPLETE,IMAGINARY,np.round(icsel.matrix_norm(B,B_inv,1),2),np.round(icsel.matrix_norm(B,B_inv,2),2),np.round(icsel.matrix_norm(B,B_inv,np.inf),2),
                     np.round(mean_average_deviation,4), eval_double_f, np.count_nonzero(eval_double_f == 0)]

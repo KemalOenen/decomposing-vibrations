@@ -19,6 +19,7 @@ step 5: think of more methods to reduce the high dimensionaliy of new IC sets - 
 def Kemalian_metric(Contribution_Matrix, intrinsic_frequencies, harmonic_frequencies):
     sum_abs = 0
     for i in range(len(harmonic_frequencies)):
+        # print(np.dot(Contribution_Matrix[:,i],intrinsic_frequencies)-harmonic_frequencies[i])
         sum_abs += np.abs(np.dot(Contribution_Matrix[:,i],intrinsic_frequencies)-harmonic_frequencies[i])
     return sum_abs/len(harmonic_frequencies)
 
@@ -187,9 +188,9 @@ def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
     else:
         return False
 
-def check_evalue_f_matrix(CartesianF_Matrix, B, B_inv, InternalF_Matrix):
+def check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matrix):
     CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
-    evalue, evect = np.linalg.eig(CartesianF_Matrix_check)
+    evalue, evect = np.linalg.eigh(np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix_check @ reciprocal_square_massmatrix)
     return evalue
 
 
@@ -243,9 +244,7 @@ def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, 
         n_phi = 2*num_bonds - num_atoms
         n_gamma = 2*(num_bonds-num_atoms) + a_1
         n_tau = num_bonds - a_1
-
-        #TODO: linear submolecules -> change the lengths above simply or make new method
-        
+ 
         symmetric_angles = get_symm_angles2(angles,specification)
         angle_subsets = get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
         
@@ -300,6 +299,99 @@ def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, 
                         "out of plane angles" : [],
                         "dihedrals" : dihedral_subsets[len_dihedrals] }
                 k +=1
+
+    # @decision tree: planar molecules with linear submolecules
+    if specification["planar"] == "yes" and specification["linearity"] == "linear submolecules found":
+        num_of_red = 6*specification["mu"]
+        a_1 = number_terminal_bonds(specification["multiplicity"])
+        l = specification["length of linear submolecule(s) l"]
+
+        # find all combinations of x and y
+        x_and_y = []
+        for x in range(l):
+            y = l - 1 -x
+            x_and_y.append([x,y])
+
+        # set length of subsets
+        n_r = num_bonds
+        n_phi = 2*num_bonds - num_atoms
+        n_phi_prime = l - 1
+        n_gamma = []
+        n_tau = []
+        
+        for pair in x_and_y:
+            n_gamma.append(2*(num_bonds-num_atoms) + a_1 - pair[0])
+            n_tau.append(num_bonds - a_1 - pair[1])
+ 
+        symmetric_angles = get_symm_angles2(angles,specification)
+        angle_subsets = get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
+        
+        # the if statement ensures, that oop angles to the same central atom can not be in the same set
+        # for linear submolecules, multiple sets can be sadly formulated!
+
+        oop_subsets = []
+        for i in range(len(n_gamma)):
+            for subset in itertools.combinations(out_of_plane, n_gamma[i]):
+                if not_same_central_atom(subset): 
+                    oop_subsets.append(list(subset))
+
+        symmetric_dihedrals = get_symm_dihedrals(dihedrals,specification)
+        
+        dihedral_subsets = []
+        for i in range(len(n_tau)):
+            dihedral_subsets.append(list(
+                get_dihedral_subsets(symmetric_dihedrals, len(bonds), len(angles),idof,n_tau[i])))
+
+        # TODO here: cyclic molecules have these redundancies that we need to stash
+
+        k = 0
+        for x_y in range(0,n_tau): # there as many taus and phis, and as x and y were ordered, the values are also ordered
+            for len_angles in range(0, len(angle_subsets)):
+                for len_oop in range(0, len(oop_subsets[x_y])):
+                    for len_dihedrals in range(0, len(dihedral_subsets[x_y])):
+                        ic_dict[k] = {
+                                "bonds" : bonds,
+                                "angles" : angle_subsets[len_angles],
+                                "linear valence angles" : [] ,
+                                "out of plane angles" : oop_subsets[x_y][len_oop],
+                                "dihedrals" : dihedral_subsets[x_y][len_dihedrals] }
+                        k +=1
+
+    # @decision tree: general molecule and linear submolecules)
+    if specification["planar"] == "no" and specification["linearity"] == "linear submolecules found":
+        num_of_red = 6*specification["mu"]
+        a_1 = number_terminal_bonds(specification["multiplicity"])
+        l = specification["length of linear submolecule(s) l"]
+
+        # set length of subsets
+        n_r = num_bonds
+        n_phi = 4*num_bonds - 3*num_atoms + a_1
+        n_phi_prime = l-1
+        n_tau = num_bonds - a_1 - (l-1)
+
+        symmetric_angles = get_symm_angles2(angles,specification)
+        angle_subsets = get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
+ 
+        symmetric_lin_angles = get_symm_angles2(linear_angles,specification)
+        lin_angle_subsets = get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
+
+        symmetric_dihedrals = get_symm_dihedrals(dihedrals,specification)
+        dihedral_subsets = get_dihedral_subsets(symmetric_dihedrals, len(bonds), len(angles),idof,n_tau)
+
+        # TODO here: cyclic molecules have these redundancies that we need to stash
+
+        k = 0
+        for len_angles in range(0, len(angle_subsets)):
+            for len_lin_angles in range(0, len(lin_angle_subsets)):
+                for len_dihedrals in range(0, len(dihedral_subsets)):
+                    ic_dict[k] = {
+                            "bonds" : bonds,
+                            "angles" : angle_subsets[len_angles],
+                            "linear valence angles" : lin_angle_subsets[len_lin_angles] ,
+                            "out of plane angles" : [],
+                            "dihedrals" : dihedral_subsets[len_dihedrals] }
+                    k +=1
+
 
     print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
     return ic_dict
