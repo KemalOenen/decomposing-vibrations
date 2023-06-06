@@ -227,12 +227,13 @@ def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, 
 
     # @decision tree: linear
     if specification["linearity"] == "fully linear":
+        # purely linear molecules should not have oop or dihedrals - for really long chains, there are dihedrals, but we do not want them!
         ic_dict[0] = {
                 "bonds" : bonds,
                 "angles" : angles,
                 "linear valence angles" : linear_angles,
                 "out of plane angles" : out_of_plane,
-                "dihedrals" : dihedrals} 
+                "dihedrals" : []} 
     
     # @decision tree: planar (acyclic, cyclic is smth missing and not linear submolecules) 
     if specification["planar"] == "yes" and not specification["linearity"] == "fully linear":
