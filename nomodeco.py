@@ -69,6 +69,37 @@ def get_linear_bonds(linear_angles):
     linear_bonds = list(set(linear_bonds))
     return linear_bonds
 
+def is_string_in_tuples(string, list_of_tuples):
+    for tuple_ in list_of_tuples:
+        if string in tuple_:
+            return True
+    return False 
+
+def is_system_planar(coordinates, tolerance=1e-3):
+    # convert tuples first to arrays
+    if len(coordinates) == 0:
+        return True
+    coordinates = [np.array(coord) for coord in coordinates]
+
+    # select three non-linearly aligned atoms (already pre-filtered)
+    atom1, atom2, atom3 = coordinates[:3]
+
+    # calculate the vector perpendicular to the plane:
+    vec1 = atom2 - atom1
+    vec2 = atom3 - atom1
+    normal_vector = np.cross(vec1, vec2)
+    
+    # Iterate through remaining atoms and calculate dot products
+    for atom in coordinates[3:]:
+        vec3 = atom - atom1
+        dot_product = np.dot(normal_vector, vec3)
+        print(dot_product)
+        # Check if dot product is close to zero within the tolerance
+        if abs(dot_product) > tolerance:
+            return False
+
+    return True
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
@@ -81,9 +112,12 @@ def calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles):
     specification = dict()
 
     # check if molecule is planar or general
-    if all(x==0 for x,y,z in [atom.coordinates for atom in atoms]) or all(
-            y==0 for x,y,z in [atom.coordinates for atom in atoms]) or all(
-                    z==0 for x,y,z in [atom.coordinates for atom in atoms]):
+    all_coordinates = []
+    # important: planar submolecules need to be extracted, as they are already inherently 
+    for atom in atoms:
+        if is_string_in_tuples(atom.symbol, angles) or not is_string_in_tuples(atom.symbol, linear_angles):
+            all_coordinates.append(atom.coordinates)
+    if is_system_planar(all_coordinates):
         specification = {"planar": "yes"}
     else:
         specification = {"planar": "no"}
@@ -159,6 +193,7 @@ def main():
     else:
         DEBUG_MODE = False
 
+    
     # initialize log file
     if os.path.exists(outputfile):
         i = 1
