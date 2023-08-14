@@ -93,7 +93,6 @@ def is_system_planar(coordinates, tolerance=1e-3):
     for atom in coordinates[3:]:
         vec3 = atom - atom1
         dot_product = np.dot(normal_vector, vec3)
-        print(dot_product)
         # Check if dot product is close to zero within the tolerance
         if abs(dot_product) > tolerance:
             return False
