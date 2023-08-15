@@ -1,3 +1,7 @@
+'''''
+This module contains the get_sets method as well as symmetry functions for selecting internal coordinates
+'''''
+
 import itertools
 import logging
 from collections import Counter
@@ -9,19 +13,13 @@ import pprint
 import topology
 import nomodeco
 
-"""""
-step 1: generate all IC sets that have 3N-6 ICs and have all bonds included - DONE
-step 2: do a calculation run for every possibiliy - DONE
-step 3: compute the B-Matrix for all possibilites and check for completeness, if not complete remove - DONE
 
-step 4: order the decomposition according to new metric - NOT DONE
-step 5: think of more methods to reduce the high dimensionaliy of new IC sets - NOT DONE
-"""""
-#basically computes the MAD but I wanted a fancy name
+#TODO: new metric, based on seperability in matrices (function: Kemalian_metric)
+#TODO: symmetry breaking needs to be revised
+
 def Kemalian_metric(Contribution_Matrix, intrinsic_frequencies, harmonic_frequencies):
     sum_abs = 0
     for i in range(len(harmonic_frequencies)):
-        # print(np.dot(Contribution_Matrix[:,i],intrinsic_frequencies)-harmonic_frequencies[i])
         sum_abs += np.abs(np.dot(Contribution_Matrix[:,i],intrinsic_frequencies)-harmonic_frequencies[i])
     return sum_abs/len(harmonic_frequencies)
 
@@ -69,31 +67,6 @@ def check_in_nested_list(check_list, nested_list):
             check = True
     return check
 
-def get_symm_angles(angles,specification):
-    symmetric_angles = dict()
-    symmetric_angles = {key:[] for (key, val) in Counter(angles).items()}
-    
-    #angles are the same if they share two atoms and
-    #the other one is symmetry equivalent
-
-    for i,key in itertools.product(range(len(angles)), symmetric_angles):
-        if are_two_elements_same(key, angles[i]):
-            symmetric_angles[key].append(angles[i])
-
-    for key,val in symmetric_angles.items():
-        i=0
-        while i<len(val):
-            ang = val[i]
-            if key == ang:
-                i += 1
-                continue
-            elif not check_in_nested_list(get_different_elements(ang,key), specification["equivalent_atoms"]):
-                del val[i]
-            elif check_in_nested_list(get_different_elements(ang,key), specification["equivalent_atoms"]):
-                i += 1
-
-    return symmetric_angles
-
 def all_atoms_can_be_superimposed(test_angle, key_angle, nested_equivalent_atoms):
     return (test_angle[0] == key_angle[0] or check_in_nested_list([test_angle[0],key_angle[0]], nested_equivalent_atoms)) and (
             test_angle[1] == key_angle[1] or check_in_nested_list([test_angle[1],key_angle[1]], nested_equivalent_atoms)) and (
@@ -106,7 +79,7 @@ def all_atoms_can_be_superimposed_dihedral(test_dihedral, key_dihedral, nested_e
                             test_dihedral[3] == key_dihedral[3] or check_in_nested_list([test_dihedral[3],key_dihedral[3]], nested_equivalent_atoms))
 
 
-def get_symm_angles2(angles,specification):
+def get_symm_angles(angles,specification):
     symmetric_angles = dict()
     symmetric_angles = {key:[] for (key, val) in Counter(angles).items()}
     
@@ -127,8 +100,6 @@ def get_symm_angles2(angles,specification):
 
     return symmetric_angles
 
-#TODO: think about special case where num_bonds + num_angles > idof
-#e.g.: make test if set has to many redundancies and if so -> break symmetry
 def get_angle_subsets(symmetric_angles,num_bonds,num_angles,idof,n_phi) -> list:
     symmetric_angles_list, angles = [], []
     #TODO: check for special case if numbond+numangle > idof, then break symmetry
@@ -158,7 +129,7 @@ def get_symm_dihedrals(dihedrals,specification):
     symmetric_dihedrals = dict()
     symmetric_dihedrals = {key:[] for (key, val) in Counter(dihedrals).items()}
    
-    # symmetric dihedrals equally defined as in get_symm_angles2 --> make same function?
+    # symmetric dihedrals equally defined as in get_symm_angles --> make same function?
     for i, key in itertools.product(range(len(dihedrals)), symmetric_dihedrals):
         symmetric_dihedrals[key].append(dihedrals[i])
 
@@ -181,8 +152,6 @@ def get_oop_subsets(out_of_plane, n_gamma):
 
 def get_dihedral_subsets(symmetric_dihedrals,num_bonds,num_angles,idof,n_tau) -> list:
     symmetric_dihedrals_list, dihedrals = [], []
-    #TODO: check for special cases
-
     for ind_dihedral in symmetric_dihedrals.keys():
         if symmetric_dihedrals[ind_dihedral] not in symmetric_dihedrals_list:
             symmetric_dihedrals_list.append(symmetric_dihedrals[ind_dihedral])
@@ -199,31 +168,6 @@ def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
         return True
     else:
         return False
-
-
-def get_angle_subsets_old(symmetric_angles,num_bonds, num_angles,idof) -> list:
-    symmetric_angles_list, angles = [], []
-    if (num_bonds + num_angles) <= idof:
-        k = 1
-    else:
-        k = 0
-    for symm_angles in symmetric_angles.keys():
-        symmetric_angles_list.append(symmetric_angles[symm_angles])
-    for i in range(1, len(symmetric_angles_list)+k):
-        for angle_subset in itertools.combinations(symmetric_angles_list,i):
-            flat_angle_subset = [item for sublist in angle_subset for item in sublist]
-            angles.append(list(flat_angle_subset))
-    return angles
-
-
-def reduce_dihedral_sets_old(symmetric_dihedrals, n_repr):
-    dihedrals = []
-    for symm_dihedrals in symmetric_dihedrals.keys():
-        for i in range(0,n_repr):
-            dihedrals.append(symmetric_dihedrals[symm_dihedrals][i])
-    return dihedrals
-
-
 
 
 def check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matrix):
@@ -255,8 +199,6 @@ def matrix_norm(matrix, matrix_inv, p):
     return np.linalg.norm(matrix, p) * np.linalg.norm(matrix_inv, p) 
 
 
-# This is the new get_sets method including Decius paper (https://doi.org/10.1063/1.1747158) on the selection of IC sets
-
 def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
     ic_dict = dict() 
     num_bonds = len(bonds)
@@ -269,23 +211,23 @@ def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, 
         ic_dict = topology.fully_linear_molecule(ic_dict, bonds, angles, linear_angles, out_of_plane, dihedrals)
     
     # @decision tree: planar, acyclic and no linear submolecules 
-    if specification["planar"] == "yes" and not specification["linearity"] == "linear submolecule found" and (num_of_red == 0):
+    if specification["planar"] == "yes" and not specification["linearity"] == "linear submolecules found" and (num_of_red == 0):
         ic_dict = topology.planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, 
                 dihedrals, num_bonds, num_atoms, number_terminal_bonds(specification["multiplicity"]), specification)
 
 
     # @decision tree: planar, cyclic and no linear submolecules 
-    if specification["planar"] == "yes" and not specification["linearity"] == "fully linear" and (num_of_red != 0):
+    if specification["planar"] == "yes" and not specification["linearity"] == "linear sumbolecules found" and (num_of_red != 0):
         ic_dict = topology.planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, 
                 dihedrals, num_bonds, num_atoms, number_terminal_bonds(specification["multiplicity"]), specification)
 
     # @decision tree: general molecule, acyclic and no linear submolecules
-    if specification["planar"] == "no" and not specification["linearity"] == "fully linear" and (num_of_red == 0):
+    if specification["planar"] == "no" and not specification["linearity"] == "linear submolecules found" and (num_of_red == 0):
         ic_dict = topology.general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, 
                 dihedrals, num_bonds, num_atoms, number_terminal_bonds(specification["multiplicity"]), specification)
 
     # @decision tree: general molecule, cyclic and no linear submolecules
-    if specification["planar"] == "no" and not specification["linearity"] == "fully linear" and (num_of_red != 0):
+    if specification["planar"] == "no" and not specification["linearity"] == "linear submolecules found" and (num_of_red != 0):
         ic_dict = topology.general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, 
                 dihedrals, num_bonds, num_atoms, num_of_red, number_terminal_bonds(specification["multiplicity"]), specification)
 

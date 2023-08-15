@@ -1,5 +1,12 @@
+'''''
+This module contains the decision tree derived by Decius' work on complete sets and redundancies among
+small vibrational coordinates
+(https://doi.org/10.1063/1.1747158)
+'''''
+
 import pandas as pd
 import numpy as np
+import itertools
 import logging
 import nomodeco
 import icsel
@@ -33,7 +40,7 @@ def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
     n_gamma = 2*(num_bonds - num_atoms) + a_1
     n_tau = num_bonds - a_1
 
-    symmetric_angles = icsel.icsel.get_symm_angles2(angles, specification)
+    symmetric_angles = icsel.get_symm_angles(angles, specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles), idof, n_phi)
 
     # in cases of restrictive symmetry, we need to break angle symmetry
@@ -49,7 +56,7 @@ def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
     # the if statement ensures, that oop angles to the same central atom can not be in the same set
     oop_subsets = []
     for subset in itertools.combinations(out_of_plane, n_gamma):
-        if not_same_central_atom(subset): 
+        if icsel.not_same_central_atom(subset): 
             oop_subsets.append(list(subset))
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals,specification)
@@ -96,7 +103,7 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
         n_gamma.append(2*(num_bonds-num_atoms) + a_1 - pair[0])
         n_tau.append(num_bonds - a_1 - pair[1])
 
-    symmetric_angles = icsel.get_symm_angles2(angles,specification)
+    symmetric_angles = icsel.get_symm_angles(angles,specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
     if len(angle_subsets) == 0:
         for subset in itertools.combinations(angles, n_phi):
@@ -109,7 +116,7 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
     # the if statement ensures, that oop angles to the same central atom can not be in the same set
     oop_subsets = []
     for i in range(len(n_gamma)):
-        oop_subsets.append(list(get_oop_subsets(out_of_plane, n_gamma[i])))
+        oop_subsets.append(list(icsel.get_oop_subsets(out_of_plane, n_gamma[i])))
 
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals,specification)
@@ -163,7 +170,7 @@ def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
         n_gamma.append(2*(num_bonds-num_atoms) + a_1 - pair[0])
         n_tau.append(num_bonds - a_1 - pair[1])
 
-    symmetric_angles = icsel.get_symm_angles2(angles,specification)
+    symmetric_angles = icsel.get_symm_angles(angles,specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
     
     if len(angle_subsets) == 0:
@@ -174,13 +181,13 @@ def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
         for subset in itertools.combinations(angles, n_phi+2):
             angle_subsets.append(list(subset))
 
-    symmetric_lin_angles = icsel.get_symm_angles2(linear_angles,specification)
+    symmetric_lin_angles = icsel.get_symm_angles(linear_angles,specification)
     lin_angle_subsets = icsel.get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
     
     oop_subsets = []
     for i in range(len(n_gamma)):
         for subset in itertools.combinations(out_of_plane, n_gamma[i]):
-            if not_same_central_atom(subset): 
+            if icsel.not_same_central_atom(subset): 
                 oop_subsets.append(list(subset))
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals,specification)
@@ -242,7 +249,7 @@ def planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, 
             n_tau.append(num_bonds - a_1 - pair1[1] - pair2[1])
 
 
-    symmetric_angles = icsel.get_symm_angles2(angles,specification)
+    symmetric_angles = icsel.get_symm_angles(angles,specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
 
     # case, when angle symmetry needs to be broken
@@ -254,14 +261,14 @@ def planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, 
         for subset in itertools.combinations(angles, n_phi+2):
             angle_subsets.append(list(subset))
    
-    symmetric_lin_angles = icsel.get_symm_angles2(linear_angles,specification)
+    symmetric_lin_angles = icsel.get_symm_angles(linear_angles,specification)
     lin_angle_subsets = icsel.get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
 
 
     oop_subsets = []
     for i in range(len(n_gamma)):
         for subset in itertools.combinations(out_of_plane, n_gamma[i]):
-            if not_same_central_atom(subset): 
+            if icsel.not_same_central_atom(subset): 
                 oop_subsets.append(list(subset))
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals,specification)
@@ -306,7 +313,7 @@ def general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angl
     n_phi = 4*num_bonds - 3*num_atoms + a_1
     n_tau = num_bonds - a_1
 
-    symmetric_angles = icsel.get_symm_angles2(angles,specification)
+    symmetric_angles = icsel.get_symm_angles(angles,specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
     if len(angle_subsets) == 0:
         for subset in itertools.combinations(angles, n_phi):
@@ -358,7 +365,7 @@ def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
         n_phi.append(4*num_bonds - 3*num_atoms + a_1 - pair[0])
         n_tau.append(num_bonds - a_1 - pair[1])
 
-    symmetric_angles = icsel.get_symm_angles2(angles,specification) 
+    symmetric_angles = icsel.get_symm_angles(angles,specification) 
     angle_subsets = []
     for i in range(len(n_phi)):
         angle_subsets.append(list(
@@ -412,7 +419,7 @@ def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles
     n_phi_prime = l-1
     n_tau = num_bonds - a_1 - (l-1)
 
-    symmetric_angles = icsel.get_symm_angles2(angles,specification)
+    symmetric_angles = icsel.get_symm_angles(angles,specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
 
     if len(angle_subsets) == 0:
@@ -423,7 +430,7 @@ def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles
         for subset in itertools.combinations(angles, n_phi+2):
             angle_subsets.append(list(subset))
     
-    symmetric_lin_angles = icsel.get_symm_angles2(linear_angles,specification)
+    symmetric_lin_angles = icsel.get_symm_angles(linear_angles,specification)
     lin_angle_subsets = icsel.get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals,specification)
@@ -472,7 +479,7 @@ def general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
         n_phi.append(4*num_bonds - 3*num_atoms + a_1 - pair[0])
         n_tau.append(num_bonds - a_1 - pair[1] - (l-1))
 
-    symmetric_angles = icsel.get_symm_angles2(angles,specification) 
+    symmetric_angles = icsel.get_symm_angles(angles,specification) 
     angle_subsets = []
     for i in range(len(n_phi)):
         angle_subsets.append(list(
@@ -487,7 +494,7 @@ def general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
             for subset in itertools.combinations(angles, n_phi[i]+2):
                 angle_subsets.append(list(subset))
 
-    symmetric_lin_angles = icsel.get_symm_angles2(linear_angles,specification)
+    symmetric_lin_angles = icsel.get_symm_angles(linear_angles,specification)
     lin_angle_subsets = icsel.get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals,specification)

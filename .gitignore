@@ -3,3 +3,4 @@
 *.log_1
 *.inp
 tests_delocalizedIC/*
+molpro_tests/*
