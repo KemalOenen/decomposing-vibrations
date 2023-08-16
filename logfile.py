@@ -96,6 +96,18 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
         logging.info('Yes! The double transformed f-matrix is the same as in the input.')
         logging.info("")
 
+def write_logfile_updatedICs_cyclic(bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
+    logging.info("")
+    logging.info("Due to having a cyclic molecule, %s bond(s) is/are removed in the analysis", specification["mu"]) 
+    logging.info("")
+    logging.info("The following updated Internal Coordinates are used in your analysis:".center(50))
+    logging.info("bonds: %s", bonds)
+    logging.info("in-plane angles: %s", angles)
+    logging.info("linear valence-angles: %s", linear_angles)
+    logging.info("out-of-plane angles: %s", out_of_plane)
+    logging.info("dihedrals: %s", dihedrals)
+    logging.info("")
+
 def write_logfile_results(Results1, Contribution_Table1,mean_average_deviation):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
     logging.info("")

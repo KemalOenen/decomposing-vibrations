@@ -6,20 +6,65 @@ small vibrational coordinates
 
 import pandas as pd
 import numpy as np
+import networkx as nx
 import itertools
 import logging
+import logfile
 import nomodeco
 import icsel
 
-# purely linear molecules do not have oop, one can define dihedrals, but they are not significant as 
-# the intrinsic frequency equals 0 for them
+'''''
+GENERAL PURPOSE FUNCTIONS
+'''''
 
+def molecule_is_not_split(bonds):
+    G=nx.Graph()
+    G.add_edges_from(bonds)
+    if len(list(nx.connected_components(G))) == 1:
+        return True
+    else:
+        return False
+
+def delete_bonds(bonds, mu, multiplicity_list):
+    removed_bonds = []
+    
+    while mu > 0:
+        # first of all we will identify where cutting bonds is even making sense to a first degree
+        valide_atoms = []
+        for tup in multiplicity_list:
+            if tup[1] >= 3:
+                valide_atoms.append(tup[0])
+        
+        # then we will cut the bonds out
+        for bond in bonds:
+            if bond[0] in valide_atoms and bond[1] in valide_atoms:
+                removed_bonds.append(bond)
+                bonds.remove(bond)
+                break
+        
+        # we will check if the molecule is not split;
+        if molecule_is_not_split(bonds):
+            mu -= 1
+        else:
+            bonds.append(removed_bonds[-1])
+            removed_bonds.pop()
+
+    return removed_bonds, bonds 
+
+def update_internal_coordinates_cyclic(removed_bonds, ic_list):
+    for bond in removed_bonds:
+        for ic in ic_list[:]:
+            if bond[0] in ic and bond[1] in ic:
+                ic_list.remove(ic)
+    return ic_list
 
 '''''
 LINEAR SYSTEMS
 '''''
 
 def fully_linear_molecule(ic_dict, bonds, angles, linear_angles, out_of_plane, dihedrals):
+# purely linear molecules do not have oop, one can define dihedrals, but they are not significant as 
+# the intrinsic frequency equals 0 for them
     ic_dict[0] = {
             "bonds" : bonds,
             "angles" : angles,
@@ -44,15 +89,11 @@ def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles), idof, n_phi)
 
     # in cases of restrictive symmetry, we need to break angle symmetry
-
     if len(angle_subsets) == 0:
+        logging.warning("In order to gain angle subsets, symmetry needs to be broken!")
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset)) 
-        for subset in itertools.combinations(angles, n_phi+1):
-            angle_subsets.append(list(subset))
-        for subset in itertools.combinations(angles, n_phi+2):
-            angle_subsets.append(list(subset))
-        
+
     # the if statement ensures, that oop angles to the same central atom can not be in the same set
     oop_subsets = []
     for subset in itertools.combinations(out_of_plane, n_gamma):
@@ -66,8 +107,6 @@ def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
     if n_tau != 0 and len(dihedral_subsets) == 0:
         logging.warning("In order to gain dihedral subsets, symmetry needs to be broken!")
         for subset in itertools.combinations(dihedrals, n_tau):
-            dihedral_subsets.append(list(subset))
-        for subset in itertools.combinations(dihedrals, n_tau+1):
             dihedral_subsets.append(list(subset))
 
     k = 0
@@ -84,69 +123,22 @@ def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
     
     return ic_dict
 
+#in the cyclic cases, the molecule is rendered acyclic (by removing random but possible mu bonds) and then the acylic function is called
 def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds, num_atoms, a_1, specification):
 
-    # set length of subsets
-    n_r = num_bonds        
-    n_phi = 2*num_bonds - num_atoms - 3*specification["mu"]
+    # remove bonds without destroying the molecule
+    removed_bonds, bonds = delete_bonds(bonds, specification["mu"], specification["multiplicity"])
 
-    a_and_b = []
-    for a in range(3*specification["mu"]):
-        b = 3*specification["mu"] - a
-        if a >= 0 and b >= 0: 
-            a_and_b.append([a,b])
-
-    n_gamma = []
-    n_tau = []
+    # update angles, oop, and dihedrals to not include the coordinates that were removed 
+    angles = update_internal_coordinates_cyclic(removed_bonds, angles)
+    out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
+    dihedrals = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
     
-    for pair in a_and_b:
-        n_gamma.append(2*(num_bonds-num_atoms) + a_1 - pair[0])
-        n_tau.append(num_bonds - a_1 - pair[1])
-
-    symmetric_angles = icsel.get_symm_angles(angles,specification)
-    angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles),idof,n_phi)
-    if len(angle_subsets) == 0:
-        for subset in itertools.combinations(angles, n_phi):
-            angle_subsets.append(list(subset)) 
-        for subset in itertools.combinations(angles, n_phi+1):
-            angle_subsets.append(list(subset))
-        for subset in itertools.combinations(angles, n_phi+2):
-            angle_subsets.append(list(subset))
+    logfile.write_logfile_updatedICs_cyclic(bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
     
-    # the if statement ensures, that oop angles to the same central atom can not be in the same set
-    oop_subsets = []
-    for i in range(len(n_gamma)):
-        oop_subsets.append(list(icsel.get_oop_subsets(out_of_plane, n_gamma[i])))
-
-
-    symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals,specification)
-    dihedral_subsets = []
-    for i in range(len(n_tau)):
-        dihedral_subsets.append(list(
-            icsel.get_dihedral_subsets(symmetric_dihedrals, len(bonds), len(angles),idof,n_tau[i])))
-
-    # special case where symmetry of dihedrals needs to be broken
-    #TODO: CHECK IF THIS PART WORKS
-    for i in range(len(n_tau)):
-        if n_tau[i] != 0 and len(dihedral_subsets) == 0:
-                logging.warning("In order to gain dihedral subsets, symmetry needs to be broken!")
-                for subset in itertools.combinations(dihedrals, n_tau[i]):
-                    dihedral_subsets.append(list(subset))
-                for subset in itertools.combinations(dihedrals, n_tau[i]+1):
-                    dihedral_subsets.append(list(subset))
-    
-    k = 0
-    for a_b in range(0,len(n_tau)):
-        for len_angles in range(0, len(angle_subsets)):
-            for len_oop in range(0, len(oop_subsets[a_b])):
-                for len_dihedrals in range(0, len(dihedral_subsets[a_b])):
-                    ic_dict[k] = {
-                            "bonds" : bonds,
-                            "angles" : angle_subsets[len_angles],
-                            "linear valence angles" : [] ,
-                            "out of plane angles" : oop_subsets[a_b][len_oop],
-                            "dihedrals" : dihedral_subsets[a_b][len_dihedrals] }
-                    k +=1
+    # call the acyclic version
+    ic_dict = planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, 
+            linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1, specification)
 
     return ic_dict
 
@@ -305,6 +297,7 @@ def planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, 
 '''''
 GENERAL SYSTEMS
 '''''
+#TODO: planar subunits
 
 def general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds, num_atoms, a_1, specification):
 

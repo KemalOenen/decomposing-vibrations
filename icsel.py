@@ -15,7 +15,7 @@ import nomodeco
 
 
 #TODO: new metric, based on seperability in matrices (function: Kemalian_metric)
-#TODO: symmetry breaking needs to be revised
+#TODO: symmetry breaking needs to be revised completely -> currently only 3N-6 coordinate sets
 
 def Kemalian_metric(Contribution_Matrix, intrinsic_frequencies, harmonic_frequencies):
     sum_abs = 0
@@ -102,7 +102,6 @@ def get_symm_angles(angles,specification):
 
 def get_angle_subsets(symmetric_angles,num_bonds,num_angles,idof,n_phi) -> list:
     symmetric_angles_list, angles = [], []
-    #TODO: check for special case if numbond+numangle > idof, then break symmetry
 
     for ind_angle in symmetric_angles.keys():
         if symmetric_angles[ind_angle] not in symmetric_angles_list:
@@ -111,18 +110,8 @@ def get_angle_subsets(symmetric_angles,num_bonds,num_angles,idof,n_phi) -> list:
     for i in range(1,len(symmetric_angles_list)+1):
         for angle_subset in itertools.combinations(symmetric_angles_list,i):
             flat_angle_subset = [item for sublist in angle_subset for item in sublist]
-            if n_phi <= len(list(flat_angle_subset)) <= n_phi+2:
+            if len(list(flat_angle_subset)) == n_phi:
                 angles.append(list(flat_angle_subset))
-
-    # cases where angle symmetry needs to be broken
-    symmetry_needs_to_be_broken = True
-    for angle in angles:
-        if len(angle) != (n_phi + 2):
-            symmetry_needs_to_be_broken=False
-
-    if symmetry_needs_to_be_broken == True:
-        logging.warning("In order to obtain a reasonable sampling, angle symmetry will be broken. This leads to huge combinatorics!")
-        angles = []
     return angles
 
 def get_symm_dihedrals(dihedrals,specification):
@@ -158,7 +147,7 @@ def get_dihedral_subsets(symmetric_dihedrals,num_bonds,num_angles,idof,n_tau) ->
     for i in range(0,len(symmetric_dihedrals_list)+1):
         for dihedral_subset in itertools.combinations(symmetric_dihedrals_list,i):
             flat_dihedral_subset = [item for sublist in dihedral_subset for item in sublist]
-            if n_tau <= len(list(flat_dihedral_subset)) <= n_tau+1:
+            if len(list(flat_dihedral_subset)) == n_tau:
                 dihedrals.append(list(flat_dihedral_subset))
     return dihedrals
 
@@ -246,14 +235,14 @@ def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, 
 
     # @decision tree: general, acyclic molecule with linear submolecules
     if specification["planar"] == "no" and specification["linearity"] == "linear submolecules found" and (num_of_red == 0): 
-        ic_dict = topology.planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles. out_of_plane,
+        ic_dict = topology.general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles. out_of_plane,
                 dihedrals, num_bonds, num_atoms, number_terminal_bonds(specification["multiplicity"]), 
                 specification["length of linear submolecule(s) l"], specification)
 
 
-    # @decision tree: general, cyclic molecule and linear submolecules)
+    # @decision tree: general, cyclic molecule with linear submolecules
     if specification["planar"] == "no" and specification["linearity"] == "linear submolecules found":
-        ic_dict = topology.planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles. out_of_plane,
+        ic_dict = topology.general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles. out_of_plane,
                 dihedrals, num_bonds, num_atoms, num_of_red, number_terminal_bonds(specification["multiplicity"]), 
                 specification["length of linear submolecule(s) l"], specification)
 
