@@ -61,13 +61,14 @@ def initialize_angles(atoms):
     linear_hits = []
     for a,b,c in itertools.permutations(atoms, 3):
         if angle.is_valid(a, b, c) and not (c.symbol, b.symbol, a.symbol) in hits and not (c.symbol, b.symbol, a.symbol) in linear_hits:
-            if np.isclose(angle.bond_angle(a.coordinates, b.coordinates, c.coordinates), np.pi):
+            if np.isclose(angle.bond_angle(a.coordinates, b.coordinates, c.coordinates), np.pi, rtol=5e-05):
                 linear_hits.append((a.symbol, b.symbol, c.symbol))
                 linear_hits.append((a.symbol, b.symbol, c.symbol))
             else:
                 hits.append((a.symbol, b.symbol, c.symbol))
-    if len(hits) != 0:
-        linear_hits = [*set(linear_hits)]
+    # we need both DOF!
+    #if len(hits) != 0:
+    #    linear_hits = [*set(linear_hits)]
     return hits, linear_hits
 
 def initialize_oop(atoms):
@@ -75,6 +76,15 @@ def initialize_oop(atoms):
     for a,b,c,d in itertools.permutations(atoms, 4):
         if oop.is_valid(a, b, c, d) and not (a.symbol, b.symbol, d.symbol, c.symbol) in hits:
             hits.append((a.symbol, b.symbol, c.symbol, d.symbol))
+    return hits
+
+# if the molecule is general but contains a planar submolecule, only sample these coordinates
+def initialize_oop_planar_subunits(atoms, central_atoms_list):
+    hits = []
+    for central_atom in central_atoms_list:
+        for a,b,c,d in itertools.permutations(atoms, 4):
+            if a.symbol == central_atom[0] and oop.is_valid(a, b, c, d) and not (a.symbol, b.symbol, d.symbol, c.symbol) in hits:
+                hits.append((a.symbol, b.symbol, c.symbol, d.symbol))
     return hits
 
 def initialize_dihedrals(atoms):

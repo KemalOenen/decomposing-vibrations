@@ -26,15 +26,17 @@ def write_logfile_header():
     logging.info("*".center(110,"*"))
     logging.info("")
 
-def write_logfile_oop_treatment(oop_directive):
+def write_logfile_oop_treatment(oop_directive, planar_subunit_list):
     if oop_directive == "yes":
         logging.info("Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane angles tend to perform worse")
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
         logging.info("useful for planar systems.")
-    elif oop_directive == "no":
+    elif oop_directive == "no" and len(planar_subunit_list) == 0:
         logging.info("Non-planar system detected. Therefore out-of-plane angles are NOT used in your analysis. Note that out-of-plane angles tend to perform worse")
         logging.info("than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
         logging.info("useful for planar systems.")
+    elif oop_directive == "no" and len(planar_subunit_list) != 0:
+            logging.info("Planar submolecule(s) detected. Out-of-plane angles will be used for the central atoms of the planar subunits ")
     logging.info("")
 
 def write_logfile_symmetry_treatment(specification, point_group_sch):
@@ -104,6 +106,15 @@ def write_logfile_updatedICs_cyclic(bonds, angles, linear_angles, out_of_plane, 
     logging.info("bonds: %s", bonds)
     logging.info("in-plane angles: %s", angles)
     logging.info("linear valence-angles: %s", linear_angles)
+    logging.info("out-of-plane angles: %s", out_of_plane)
+    logging.info("dihedrals: %s", dihedrals)
+    logging.info("")
+
+def write_logfile_updatedICs_linunit(out_of_plane, dihedrals):
+    logging.info("")
+    logging.info("Due to having a linear subunit, out-of-plane / dihedral angles were removed") 
+    logging.info("")
+    logging.info("The following updated Internal Coordinates are used in your analysis:".center(50))
     logging.info("out-of-plane angles: %s", out_of_plane)
     logging.info("dihedrals: %s", dihedrals)
     logging.info("")

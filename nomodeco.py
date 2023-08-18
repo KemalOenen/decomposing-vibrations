@@ -21,6 +21,7 @@ import icsel
 import bmatrix
 import logfile
 import molpro_parser
+import specifications
 
 class Atom(NamedTuple):
     symbol: str
@@ -54,51 +55,6 @@ def reciprocal_massvector(atoms):
 def strip_numbers(string):
     return ''.join([char for char in string if not char.isdigit()])
 
-
-def get_linear_bonds(linear_angles):
-    linear_bonds = []
-    for i in range(len(linear_angles)):
-        # extract elements from current tuple
-        first = linear_angles[i][0]
-        middle = linear_angles[i][1]
-        last = linear_angles[i][2]
-
-        # create new tuples by including adjacent elements
-        linear_bonds.append((middle, first))
-        linear_bonds.append((middle,last))
-    linear_bonds = list(set(linear_bonds))
-    return linear_bonds
-
-def is_string_in_tuples(string, list_of_tuples):
-    for tuple_ in list_of_tuples:
-        if string in tuple_:
-            return True
-    return False 
-
-def is_system_planar(coordinates, tolerance=1e-3):
-    # convert tuples first to arrays
-    if len(coordinates) == 0:
-        return True
-    coordinates = [np.array(coord) for coord in coordinates]
-
-    # select three non-linearly aligned atoms (already pre-filtered)
-    atom1, atom2, atom3 = coordinates[:3]
-
-    # calculate the vector perpendicular to the plane:
-    vec1 = atom2 - atom1
-    vec2 = atom3 - atom1
-    normal_vector = np.cross(vec1, vec2)
-    
-    # Iterate through remaining atoms and calculate dot products
-    for atom in coordinates[3:]:
-        vec3 = atom - atom1
-        dot_product = np.dot(normal_vector, vec3)
-        # Check if dot product is close to zero within the tolerance
-        if abs(dot_product) > tolerance:
-            return False
-
-    return True
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
@@ -107,73 +63,6 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles):
-    specification = dict()
-
-    # check if molecule is planar or general
-    all_coordinates = []
-    # important: planar submolecules need to be extracted, as they are already inherently 
-    for atom in atoms:
-        if is_string_in_tuples(atom.symbol, angles) or not is_string_in_tuples(atom.symbol, linear_angles):
-            all_coordinates.append(atom.coordinates)
-    if is_system_planar(all_coordinates):
-        specification = {"planar": "yes"}
-    else:
-        specification = {"planar": "no"}
-
-    # check if molecule is linear or has a linear submolecule
-    # if the molecule has a linear submolecule, then determine the number of linear bonds
-    if (linear_angles and not angles) or (not linear_angles and not angles):
-        specification.update({"linearity": "fully linear"})
-    if (linear_angles and angles):
-        specification.update({"linearity": "linear submolecules found"})
-        linear_bonds = get_linear_bonds(linear_angles)
-        specification.update({"length of linear submolecule(s) l": len(linear_bonds)})
-    if (not linear_angles and angles):
-        specification.update({"linearity": "not linear"})
-
-
-    # check if molecule is acyclic or cyclic 
-    mu = len(bonds) - len(atoms) + 1
-    if mu > 0:
-        specification.update({"cyclic": "yes"})
-        specification.update({"mu": mu})
-    else:
-        specification.update({"cyclic": "no"})
-        specification.update({"mu": mu})
-
-    # map every atom on their multiplicity 
-    atoms_multiplicity = dict()
-    atoms_multiplicity_list = []
-    for bond_pair in bonds:
-        for atom in bond_pair:
-            if atom in atoms_multiplicity:
-                atoms_multiplicity[atom] += 1
-            else:
-                atoms_multiplicity[atom] = 1
-    for atom, multiplicity in atoms_multiplicity.items():
-        atoms_multiplicity_list.append((atom, multiplicity))
-
-    specification.update({"multiplicity": atoms_multiplicity_list})
-    
-    # define which atoms are equal or not, based on group theory
-    equivalent_atoms = molecule_pg.get_equivalent_atoms()
-    atom_names = [atom.symbol for atom in atoms]
-    equivalent_atoms_list = []
-    
-    for atom_number_set in equivalent_atoms["eq_sets"].values():
-        equivalent_atoms_list.append(list(atom_number_set))
-
-
-    for i, sublist in enumerate(equivalent_atoms_list):
-        for j, element in enumerate(sublist):
-            equivalent_atoms_list[i][j] = atom_names[element]
-   
-   
-    specification.update({
-        "equivalent_atoms": equivalent_atoms_list 
-        })
-    return specification
 
 start_time = time.time()
 
@@ -217,14 +106,17 @@ def main():
     angles, linear_angles = icgen.initialize_angles(atoms)
 
     # Setting specifications for calculation: check if molecule is linear, planar or a general molecule
-    specification = calculation_specification(atoms, molecule_pg, bonds, angles, linear_angles)
+    specification = dict()
+    specification = specifications.calculation_specification(specification, atoms, molecule_pg, bonds, angles, linear_angles)
 
     # Generation of all possible out-of-plane motions
 
     if specification["planar"] == "yes":
         out_of_plane = icgen.initialize_oop(atoms)
-    elif specification["planar"] == "no":
+    elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
         out_of_plane = []
+    elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+        out_of_plane = icgen.initialize_oop_planar_subunits(atoms, specification["planar submolecule(s)"])
     else:
         return logging.error("Classification of whether topology is planar or not could not be determined!")
     dihedrals = icgen.initialize_dihedrals(atoms)
@@ -238,7 +130,7 @@ def main():
 
    # update log file
 
-    logfile.write_logfile_oop_treatment(specification["planar"])
+    logfile.write_logfile_oop_treatment(specification["planar"], specification["planar submolecule(s)"])
     logfile.write_logfile_symmetry_treatment(specification, point_group_sch)
 
     # Computation of the diagonal mass matrices with 
