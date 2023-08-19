@@ -119,37 +119,36 @@ def write_logfile_updatedICs_linunit(out_of_plane, dihedrals):
     logging.info("dihedrals: %s", dihedrals)
     logging.info("")
 
-def write_logfile_results(Results1, Contribution_Table1,mean_average_deviation):
+def write_logfile_results(Results, sum_check_VED):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
     logging.info("")
     logging.info("1.) Intrinsic Frequencies for all normal-coordinate frequencies and")
-    logging.info("    diagonal elements of the vibrational density matrices at the following")
+    logging.info("    vibrational distribution matrix (exact approximation) at the following")
     logging.info("    harmonic frequencies (all frequency values in cm-1):")
     logging.info("")
-    logging.info(Results1.to_string(index=False))
-    
+    logging.info(Results.to_string(index=False))
     logging.info("")
-    logging.info("Contribution Table generated from the Vibrational Density Matrices (values in percent)")
+    logging.info("Check if matrix is normalized: %s", sum_check_VED)
     logging.info("")
-    logging.info(Contribution_Table1.to_string(index=False))
 
+def write_logfile_extended_results(PED,KED,TED, sum_check_PED, sum_check_KED, sum_check_TED, harmonic_frequency):
+    logging.info(" Extended Results: Exact PED, KED and TED analysis per mode ".center(70, "-"))
     logging.info("")
-    logging.info("The mean average deviation (MAD) between computed contributions of intrinsic frequencies")
-    logging.info("to the harmonic frequency equals: %s", mean_average_deviation)
+    logging.info("Normal mode at the followin harmonic frequency: %s cm-1", harmonic_frequency)
+    logging.info("")
+    logging.info("Potential energy distribution matrix (normalization check: %s)", np.round(sum_check_PED,2))
+    logging.info("")
+    logging.info(PED.to_string(index=False))
+    logging.info("")
+    #TODO: explain in output, why KED does not perfectly sum up to 1
+    logging.info("Kinetic energy distribution matrix (normalization check: %s)", np.round(sum_check_KED,2))
+    logging.info("")
+    logging.info(KED.to_string(index=False))
+    logging.info("")
+    logging.info("Total energy distribution matrix (normalization check: %s)", np.round(sum_check_TED,2))
+    logging.info("")
+    logging.info(TED.to_string(index=False))
+    logging.info("")
 
-# If you want to include the results part 2, just remove the comments below
-#    logging.info("")
-#    logging.info("-".center(90, "-"))
-#    logging.info("")
-#    
-#    logging.info("")
-#    logging.info("2.) Eigenvalues for each internal coordinate per normal-coordinate ")
-#    logging.info("")
-#    logging.info(Results2.to_string(index=False))
-#    
-#    logging.info("")
-#    logging.info("Contribution Table generated from the eigenvalues per coordinate (values in percent)")
-#    logging.info("")
-#    logging.info(Contribution_Table2.to_string(index=False))
-#    
+def call_shutdown():
     logging.shutdown()

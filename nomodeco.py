@@ -58,8 +58,6 @@ def strip_numbers(string):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("output")
-    # TODO: look up how to set flag directly
-    parser.add_argument("debug")
     args = parser.parse_args()
     return args
 
@@ -76,12 +74,7 @@ def main():
         CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
         outputfile = logfile.create_new_filename(inputfile.name)
 
-    if args.debug == "debug":
-        DEBUG_MODE = True
-    else:
-        DEBUG_MODE = False
 
-    
     # initialize log file
     if os.path.exists(outputfile):
         i = 1
@@ -155,12 +148,6 @@ def main():
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
     ic_dict = icsel.get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
-    
-    if DEBUG_MODE:
-        debug_data = pd.DataFrame(index=range(len(ic_dict.keys())),
-                columns=["bonds","angles","linear angles","out-of-plane","dihedrals","red",
-                    "complete","imag. intr. freq","sum norm","eucledian norm","maximum norm","MAD", "EV f-matrix", "number of 0 EV f-matrix"])
-    
 
     for num_of_set in ic_dict.keys():
         bonds = ic_dict[num_of_set]["bonds"]
@@ -209,12 +196,8 @@ def main():
         logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
         angles, linear_angles, out_of_plane, dihedrals)
 
-        if not DEBUG_MODE and icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
+        if not icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix):
              continue
-        elif DEBUG_MODE and icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
-            COMPLETE=False
-        elif DEBUG_MODE and icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) == True:
-            COMPLETE=True
             
         ''''' 
         --------------------------- Main-Calculation ------------------------------
@@ -228,41 +211,54 @@ def main():
 
         D = B @ l
 
-        # Calculation of the Vibrational Density Matrices
+        # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices
         
         eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
         eigenvalues = np.diag(eigenvalues)
         # print("eigenvalues (from IC space):", eigenvalues)
 
-        P = np.zeros((n_internals-red,n_internals,n_internals))
+        num_rottra = 3*n_atoms - idof
+
+        P = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
+        T = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra)) 
+        E = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
 
         for i in range(0,n_internals-red):
-            for m in range(0,n_internals):
-                for n in range(0,n_internals):
-                    k = i + (3*n_atoms-idof)
-                    P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k]
+            for m in range(0,n_internals + num_rottra):
+                for n in range(0,n_internals + num_rottra):
+                    k = i + num_rottra
+                    P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k] #PED
+                    T[i][m][n] = D[m][k]*G_inv[m][n]*D[n][k]  #KED
+                    E[i][m][n] = 0.5 *(T[i][m][n] + P[i][m][n]) #TED
 
-
-#small testing for properties of P tensor
-
-#        sum_test = np.zeros((n_internals-red))
-#        for i in range(0,n_internals-red):
-#            for m in range(0,n_internals):
-#                for n in range(0,n_internals):
-#                    sum_test[i] += P[i][m][n]
-#        print(sum_test)
-
+        # check normalization
+        sum_check_PED = np.zeros(n_internals)
+        sum_check_KED = np.zeros(n_internals)
+        sum_check_TED = np.zeros(n_internals)
+        for i in range(0, n_internals):
+            for m in range(0, n_internals + num_rottra):
+                for n in range(0, n_internals + num_rottra):
+                    sum_check_PED[i] += P[i][m][n] 
+                    sum_check_KED[i] += T[i][m][n] 
+                    sum_check_TED[i] += E[i][m][n] 
         ''''' 
         ------------------------------- Results --------------------------------------
         ''''' 
 
-        # Results part 1 
-        Diag_elements = np.zeros((n_internals-red,n_internals))
+        # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED
+        # rows are ICs, columns are harmonic frequencies!
+        sum_check_VED = 0
+        ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
         for i in range(0,n_internals-red):
-            for n in range (0,n_internals):
-                Diag_elements[i][n] = np.diag(P[i])[n]
-
-        Diag_elements = np.transpose(Diag_elements)
+            for m in range(0, n_internals + num_rottra):
+                for n in range (0,n_internals + num_rottra):
+                    ved_matrix[i][m] += P[i][m][n]
+                sum_check_VED += ved_matrix[i][m]
+        
+        sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2) 
+        
+        # remove the rottra
+        ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
 
         nu = np.zeros(n_internals) 
         for n in range(0,n_internals):
@@ -271,15 +267,9 @@ def main():
                     k = i + (3*n_atoms-idof)
                     nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
                     
-        if not DEBUG_MODE and np.any(nu < 0) == True:
+        if np.any(nu < 0) == True:
             logfile.write_logfile_nan_freq()
             continue
-        elif DEBUG_MODE and np.any(nu < 0) == True:
-            logfile.write_logfile_nan_freq_debug()
-            nu[nu<0] = 0
-            IMAGINARY=True
-        elif DEBUG_MODE and np.any(nu >= 0) == True:
-            IMAGINARY=False
         
         nu_final = np.sqrt(nu) *  5140.4981
 
@@ -289,84 +279,56 @@ def main():
 
         all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
 
-        Results1 = pd.DataFrame()
-        Results1['Internal Coordinate'] = all_internals
-        Results1['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-        Results1 = Results1.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
+        Results = pd.DataFrame()
+        Results['Internal Coordinate'] = all_internals
+        Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
+        Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
 
         columns = {}
         keys = range(3*n_atoms-((3*n_atoms-idof)))
         for i in keys:
             columns[i] = normal_coord_harmonic_frequencies_string[i]
 
-        Results1 = Results1.rename(columns=columns)
+        Results = Results.rename(columns=columns)
 
-        sum_array1 = np.zeros(n_internals)
+        logfile.write_logfile_results(Results, sum_check_VED)
+    
+        # TODO: single TED/KED/PED matrix for every mode
+        # here the individual matrices can be computed, one can comment them out
+        # if not needed
 
-        for n in range(0,n_internals):
-            for i in range(0, n_internals-red):
-                sum_array1[i] += Diag_elements[n][i]
+        all_internals_string = []
+        for internal in all_internals:
+            all_internals_string.append('(' + ', '.join(internal) + ')')
+        
+        columns = {}
+        keys = range(n_internals)
+        for i in keys:
+            columns[i] = all_internals_string[i]
 
-        Contribution_Matrix1 = np.zeros((n_internals, n_internals-red))
-        for i in range(0, n_internals-red):
-            Contribution_Matrix1[:,i] =((Diag_elements[:,i] / sum_array1[i]) * 100).astype(float)
-        Contribution_Table1 = pd.DataFrame()
-        Contribution_Table1['Internal Coordinate'] = all_internals
-        Contribution_Table1 = Contribution_Table1.join(pd.DataFrame(Contribution_Matrix1).applymap("{0:.2f}".format))
-        Contribution_Table1 = Contribution_Table1.rename(columns=columns)
+        for mode in range(0, len(normal_coord_harmonic_frequencies)):
 
+            PED = pd.DataFrame()
+            KED = pd.DataFrame()
+            TED = pd.DataFrame()
 
-        #MAD is not computed between frequencies but force constants!
-        mean_average_deviation = icsel.Kemalian_metric(Contribution_Matrix1/100,nu,eigenvalues[(3*n_atoms-idof):3*n_atoms])
+            PED['Internal Coordinate'] = all_internals
+            KED['Internal Coordinate'] = all_internals
+            TED['Internal Coordinate'] = all_internals
+            PED = PED.join(pd.DataFrame(P[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
+            KED = KED.join(pd.DataFrame(T[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
+            TED = TED.join(pd.DataFrame(E[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
+            PED = PED.rename(columns=columns)
+            KED = KED.rename(columns=columns)
+            TED = TED.rename(columns=columns)
+            
+            logfile.write_logfile_extended_results(PED,KED,TED, sum_check_PED[mode], sum_check_KED[mode], sum_check_TED[mode], normal_coord_harmonic_frequencies[mode])
 
-        logfile.write_logfile_results(Results1, Contribution_Table1, mean_average_deviation)
-        if DEBUG_MODE:
-            eval_double_f = np.round(icsel.check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matrix),6)
-            # freq = np.sqrt(icsel.check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matrix)) * 5140.4981
-            #print("eval_double_f (now mw):", eval_double_f)
-            #print(freq)
-            debug_data.loc[num_of_set]=[len(bonds), len(angles), len(linear_angles), len(out_of_plane), len(dihedrals),
-                    red,COMPLETE,IMAGINARY,np.round(icsel.matrix_norm(B,B_inv,1),2),np.round(icsel.matrix_norm(B,B_inv,2),2),np.round(icsel.matrix_norm(B,B_inv,np.inf),2),
-                    np.round(mean_average_deviation,4), eval_double_f, np.count_nonzero(eval_double_f == 0)]
-
-    if DEBUG_MODE:
-        print(debug_data)
-        csv_name = outputfile.replace("_nomodeco.log","") + "_debug.csv" 
-        debug_data.to_csv(csv_name)
+        logfile.call_shutdown()
+    
     print("Runtime: %s seconds" % (time.time() - start_time))
 
 if __name__ == '__main__':
     main()
 
 
-        # Results part 2
-# To be honest, I have never needed the results here, so I deactivated them
-# This is bascially calculation of the eigenvalues PER normal coordinate
-
-#        nu_perNormalCoordinate = np.zeros((n_internals,n_internals-red)) 
-#        for n in range(0,n_internals):
-#            for i in range(0,n_internals-red):
-#                for m in range(0,n_internals):
-#                    k = i + (3*n_atoms-idof)
-#                    nu_perNormalCoordinate[n][i] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
-#
-#        Results2 = pd.DataFrame()
-#        Results2['Internal Coordinate'] = all_internals
-#        Results2 = Results2.join(pd.DataFrame(nu_perNormalCoordinate).applymap("{0:.2f}".format))
-#        Results2 = Results2.rename(columns=columns)
-#
-#
-#        sum_array2 = np.zeros(n_internals)
-#
-#        for n in range(0,n_internals):
-#            for i in range(0,n_internals-red):
-#                sum_array2[i] += nu_perNormalCoordinate[n][i]
-#
-#        Contribution_Matrix2 = np.zeros((n_internals,n_internals-red))
-#        for i in range(0, n_internals-red):
-#            Contribution_Matrix2[:,i] = (nu_perNormalCoordinate[:,i] / sum_array2[i]) * 100
-#
-#        Contribution_Table2 = pd.DataFrame()
-#        Contribution_Table2['Internal Coordinate'] = all_internals
-#        Contribution_Table2 = Contribution_Table2.join(pd.DataFrame(Contribution_Matrix2).applymap("{0:.2f}".format))
-#        Contribution_Table2 = Contribution_Table2.rename(columns=columns)

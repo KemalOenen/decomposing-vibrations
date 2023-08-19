@@ -74,6 +74,7 @@ def calculation_specification(specification, atoms, molecule_pg, bonds, angles, 
             all_coordinates.append(atom.coordinates)
     if is_system_planar(all_coordinates):
         specification.update({"planar": "yes"})
+        specification.update({"planar submolecule(s)": [] })
     else:
         specification.update({"planar": "no"})
         # check if there are planar subunits, if so, check which atoms
