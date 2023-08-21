@@ -14,14 +14,12 @@ import topology
 import nomodeco
 
 
-#TODO: new metric, based on seperability in matrices (function: Kemalian_metric)
 #TODO: symmetry breaking needs to be revised completely -> currently only 3N-6 coordinate sets
 
-def Kemalian_metric(Contribution_Matrix, intrinsic_frequencies, harmonic_frequencies):
-    sum_abs = 0
-    for i in range(len(harmonic_frequencies)):
-        sum_abs += np.abs(np.dot(Contribution_Matrix[:,i],intrinsic_frequencies)-harmonic_frequencies[i])
-    return sum_abs/len(harmonic_frequencies)
+def Kemalian_metric(ved_matrix):
+    # axis = 0, when maximum of each column
+    max_values = np.max(ved_matrix, axis=1)
+    return np.mean(max_values)
 
 def are_two_elements_same(tup1, tup2):
     return ((tup1[0] == tup2[0] and tup1[1] == tup2[1]) or
@@ -245,6 +243,7 @@ def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, 
                 dihedrals, num_bonds, num_atoms, num_of_red, number_terminal_bonds(specification["multiplicity"]), 
                 specification["length of linear submolecule(s) l"], specification)
 
-    print(len(ic_dict), "internal coordinate sets (that should be tested) have been generated.")
+    print(len(ic_dict), "internal coordinate sets were generated.")
+    print("The optimal coordinate set will be determined...")
     return ic_dict
 

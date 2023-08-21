@@ -22,6 +22,7 @@ import bmatrix
 import logfile
 import molpro_parser
 import specifications
+import icset_opt
 
 class Atom(NamedTuple):
     symbol: str
@@ -149,182 +150,181 @@ def main():
 
     ic_dict = icsel.get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
 
-    for num_of_set in ic_dict.keys():
-        bonds = ic_dict[num_of_set]["bonds"]
-        angles = ic_dict[num_of_set]["angles"]
-        linear_angles = ic_dict[num_of_set]["linear valence angles"]
-        out_of_plane = ic_dict[num_of_set]["out of plane angles"]
-        dihedrals = ic_dict[num_of_set]["dihedrals"]
+    optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms, L)
 
-        n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
-        red = n_internals - idof
-        
-        # Augmenting the B-Matrix with rottra, calculating 
-        # and printing the final B-Matrix
+    '''''
+    Final calculation with optimal set
+    '''''
+    bonds = optimal_set["bonds"]
+    angles = optimal_set["angles"]
+    linear_angles = optimal_set["linear valence angles"]
+    out_of_plane = optimal_set["out of plane angles"]
+    dihedrals = optimal_set["dihedrals"]
 
-        B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
-                            np.transpose(rottra)),axis=0)
-
-        # Calculating the G-Matrix
-
-        G = B @ reciprocal_massmatrix @ np.transpose(B)
-        e,K = np.linalg.eigh(G)
-
-        # Sorting eigenvalues and eigenvectors (just for the case)
-        # Sorting highest eigenvalue/eigenvector to lowest!
-
-        idx = e.argsort()[::-1]   
-        e = e[idx]
-        K = K[:,idx]
-
-        # if redundancies are present, then approximate the inverse of the G-Matrix
-        if red > 0:
-            K = np.delete(K, -red, axis=1)
-            e = np.delete(e, -red, axis=0)
-
-        e = np.diag(e)
-        try:
-            G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
-        except np.linalg.LinAlgError:
-            G_inv = K @ np.linalg.pinv(e) @ np.transpose(K)
-
-        # Calculating the inverse augmented B-Matrix
-
-        B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
-        InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
-
-        logfile.write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, 
-        angles, linear_angles, out_of_plane, dihedrals)
-
-        if not icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix):
-             continue
-            
-        ''''' 
-        --------------------------- Main-Calculation ------------------------------
-        ''''' 
-
-        # Calculation of the mass-weighted normal modes in Cartesian Coordinates
-
-        l = reciprocal_square_massmatrix @ L
-
-        # Calculation of the mass-weighted normal modes in Internal Coordinates
-
-        D = B @ l
-
-        # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices
-        
-        eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
-        eigenvalues = np.diag(eigenvalues)
-        # print("eigenvalues (from IC space):", eigenvalues)
-
-        num_rottra = 3*n_atoms - idof
-
-        P = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
-        T = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra)) 
-        E = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
-
-        for i in range(0,n_internals-red):
-            for m in range(0,n_internals + num_rottra):
-                for n in range(0,n_internals + num_rottra):
-                    k = i + num_rottra
-                    P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k] #PED
-                    T[i][m][n] = D[m][k]*G_inv[m][n]*D[n][k]  #KED
-                    E[i][m][n] = 0.5 *(T[i][m][n] + P[i][m][n]) #TED
-
-        # check normalization
-        sum_check_PED = np.zeros(n_internals)
-        sum_check_KED = np.zeros(n_internals)
-        sum_check_TED = np.zeros(n_internals)
-        for i in range(0, n_internals):
-            for m in range(0, n_internals + num_rottra):
-                for n in range(0, n_internals + num_rottra):
-                    sum_check_PED[i] += P[i][m][n] 
-                    sum_check_KED[i] += T[i][m][n] 
-                    sum_check_TED[i] += E[i][m][n] 
-        ''''' 
-        ------------------------------- Results --------------------------------------
-        ''''' 
-
-        # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED
-        # rows are ICs, columns are harmonic frequencies!
-        sum_check_VED = 0
-        ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
-        for i in range(0,n_internals-red):
-            for m in range(0, n_internals + num_rottra):
-                for n in range (0,n_internals + num_rottra):
-                    ved_matrix[i][m] += P[i][m][n]
-                sum_check_VED += ved_matrix[i][m]
-        
-        sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2) 
-        
-        # remove the rottra
-        ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
-
-        nu = np.zeros(n_internals) 
-        for n in range(0,n_internals):
-            for m in range(0,n_internals):
-                for i in range(0,n_internals-red):
-                    k = i + (3*n_atoms-idof)
-                    nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
-                    
-        if np.any(nu < 0) == True:
-            logfile.write_logfile_nan_freq()
-            continue
-        
-        nu_final = np.sqrt(nu) *  5140.4981
-
-        normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981
-        normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
-        normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
-
-        all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
-
-        Results = pd.DataFrame()
-        Results['Internal Coordinate'] = all_internals
-        Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-        Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
-
-        columns = {}
-        keys = range(3*n_atoms-((3*n_atoms-idof)))
-        for i in keys:
-            columns[i] = normal_coord_harmonic_frequencies_string[i]
-
-        Results = Results.rename(columns=columns)
-
-        logfile.write_logfile_results(Results, sum_check_VED)
+    n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
+    red = n_internals - idof
     
-        # TODO: single TED/KED/PED matrix for every mode
-        # here the individual matrices can be computed, one can comment them out
-        # if not needed
+    # Augmenting the B-Matrix with rottra, calculating 
+    # and printing the final B-Matrix
 
-        all_internals_string = []
-        for internal in all_internals:
-            all_internals_string.append('(' + ', '.join(internal) + ')')
+    B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
+                        np.transpose(rottra)),axis=0)
+
+    # Calculating the G-Matrix
+
+    G = B @ reciprocal_massmatrix @ np.transpose(B)
+    e,K = np.linalg.eigh(G)
+
+    # Sorting eigenvalues and eigenvectors (just for the case)
+    # Sorting highest eigenvalue/eigenvector to lowest!
+
+    idx = e.argsort()[::-1]   
+    e = e[idx]
+    K = K[:,idx]
+
+    # if redundancies are present, then approximate the inverse of the G-Matrix
+    if red > 0:
+        K = np.delete(K, -red, axis=1)
+        e = np.delete(e, -red, axis=0)
+
+    e = np.diag(e)
+    try:
+        G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
+    except np.linalg.LinAlgError:
+        G_inv = K @ np.linalg.pinv(e) @ np.transpose(K)
+
+    # Calculating the inverse augmented B-Matrix
+
+    B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
+    InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
+
+    logfile.write_logfile_information_results(n_internals, red, bonds, angles, 
+            linear_angles, out_of_plane, dihedrals)
+
+    ''''' 
+    --------------------------- Main-Calculation ------------------------------
+    ''''' 
+
+    # Calculation of the mass-weighted normal modes in Cartesian Coordinates
+
+    l = reciprocal_square_massmatrix @ L
+
+    # Calculation of the mass-weighted normal modes in Internal Coordinates
+
+    D = B @ l
+
+    # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices
+    
+    eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
+    eigenvalues = np.diag(eigenvalues)
+    # print("eigenvalues (from IC space):", eigenvalues)
+
+    num_rottra = 3*n_atoms - idof
+
+    ''''' 
+    ------------------------------- Results --------------------------------------
+    ''''' 
+    
+    P = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
+    T = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra)) 
+    E = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
+
+    for i in range(0,n_internals-red):
+        for m in range(0,n_internals + num_rottra):
+            for n in range(0,n_internals + num_rottra):
+                k = i + num_rottra
+                P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k] #PED
+                T[i][m][n] = D[m][k]*G_inv[m][n]*D[n][k]  #KED
+                E[i][m][n] = 0.5 *(T[i][m][n] + P[i][m][n]) #TED
+
+    # check normalization
+    sum_check_PED = np.zeros(n_internals)
+    sum_check_KED = np.zeros(n_internals)
+    sum_check_TED = np.zeros(n_internals)
+    for i in range(0, n_internals):
+        for m in range(0, n_internals + num_rottra):
+            for n in range(0, n_internals + num_rottra):
+                sum_check_PED[i] += P[i][m][n] 
+                sum_check_KED[i] += T[i][m][n] 
+                sum_check_TED[i] += E[i][m][n] 
+
+    # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED
+    # rows are ICs, columns are harmonic frequencies!
+    sum_check_VED = 0
+    ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
+    for i in range(0,n_internals-red):
+        for m in range(0, n_internals + num_rottra):
+            for n in range (0,n_internals + num_rottra):
+                ved_matrix[i][m] += P[i][m][n]
+            sum_check_VED += ved_matrix[i][m]
+    
+    sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2) 
+    
+    # remove the rottra
+    ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
+
+    # compute intrinsic frequencies
+    nu = np.zeros(n_internals) 
+    for n in range(0,n_internals):
+        for m in range(0,n_internals):
+            for i in range(0,n_internals-red):
+                k = i + num_rottra
+                nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
+     
+    nu_final = np.sqrt(nu) *  5140.4981
+
+    normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981
+    normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
+    normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
+
+    all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
+
+    Results = pd.DataFrame()
+    Results['Internal Coordinate'] = all_internals
+    Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
+    Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
+
+    columns = {}
+    keys = range(3*n_atoms-((3*n_atoms-idof)))
+    for i in keys:
+        columns[i] = normal_coord_harmonic_frequencies_string[i]
+
+    Results = Results.rename(columns=columns)
+
+    logfile.write_logfile_results(Results, sum_check_VED)
+
+    # TODO: single TED/KED/PED matrix for every mode
+    # here the individual matrices can be computed, one can comment them out
+    # if not needed
+
+    all_internals_string = []
+    for internal in all_internals:
+        all_internals_string.append('(' + ', '.join(internal) + ')')
+    
+    columns = {}
+    keys = range(n_internals)
+    for i in keys:
+        columns[i] = all_internals_string[i]
+
+    for mode in range(0, len(normal_coord_harmonic_frequencies)):
+
+        PED = pd.DataFrame()
+        KED = pd.DataFrame()
+        TED = pd.DataFrame()
+
+        PED['Internal Coordinate'] = all_internals
+        KED['Internal Coordinate'] = all_internals
+        TED['Internal Coordinate'] = all_internals
+        PED = PED.join(pd.DataFrame(P[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
+        KED = KED.join(pd.DataFrame(T[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
+        TED = TED.join(pd.DataFrame(E[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
+        PED = PED.rename(columns=columns)
+        KED = KED.rename(columns=columns)
+        TED = TED.rename(columns=columns)
         
-        columns = {}
-        keys = range(n_internals)
-        for i in keys:
-            columns[i] = all_internals_string[i]
+        logfile.write_logfile_extended_results(PED,KED,TED, sum_check_PED[mode], sum_check_KED[mode], sum_check_TED[mode], normal_coord_harmonic_frequencies[mode])
 
-        for mode in range(0, len(normal_coord_harmonic_frequencies)):
-
-            PED = pd.DataFrame()
-            KED = pd.DataFrame()
-            TED = pd.DataFrame()
-
-            PED['Internal Coordinate'] = all_internals
-            KED['Internal Coordinate'] = all_internals
-            TED['Internal Coordinate'] = all_internals
-            PED = PED.join(pd.DataFrame(P[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
-            KED = KED.join(pd.DataFrame(T[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
-            TED = TED.join(pd.DataFrame(E[mode][0:n_internals, 0:n_internals]).applymap("{0:.2f}".format))
-            PED = PED.rename(columns=columns)
-            KED = KED.rename(columns=columns)
-            TED = TED.rename(columns=columns)
-            
-            logfile.write_logfile_extended_results(PED,KED,TED, sum_check_PED[mode], sum_check_KED[mode], sum_check_TED[mode], normal_coord_harmonic_frequencies[mode])
-
-        logfile.call_shutdown()
+    logfile.call_shutdown()
     
     print("Runtime: %s seconds" % (time.time() - start_time))
 

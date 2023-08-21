@@ -66,7 +66,7 @@ def write_logfile_nan_freq_debug():
     logging.error('Imaginary frequency values were detected for the intrinsic frequencies.')
     logging.info("In debug mode intrinsic frequencies are set to 0")
 
-def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Matrix, n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals):
+def write_logfile_information_results(n_internals, red, bonds, angles, linear_angles, out_of_plane, dihedrals):
     logging.info("")
     logging.info(" Initialization of an internal coordinate set ".center(110, "-"))
     logging.info("")
@@ -82,21 +82,6 @@ def write_logfile_information_results(B, B_inv, CartesianF_Matrix, InternalF_Mat
     else:
         logging.info('There are %s redundant internal coordinates used.', red)
     logging.info("")
-    logging.info('The condition number of the B-Matrix is given by:')
-    logging.info('Sum-Norm of B: %s', icsel.matrix_norm(B, B_inv, 1))
-    logging.info('Eucledian-Norm of B: %s', icsel.matrix_norm(B, B_inv, 2))
-    logging.info('Maximum-Norm of B: %s', icsel.matrix_norm(B, B_inv, np.inf))
-    logging.info("")
-    logging.info("")
-    logging.info("Testing if the Internal Coordinate Set is complete ...")
-    if icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) != True:
-        logging.error('No! The double transformed f-matrix is NOT the same as in the input.')
-        logging.info("")
-        logging.error("This set is not complete and will not be computed!")
-        logging.info("")
-    else:
-        logging.info('Yes! The double transformed f-matrix is the same as in the input.')
-        logging.info("")
 
 def write_logfile_updatedICs_cyclic(bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
     logging.info("")
@@ -151,4 +136,5 @@ def write_logfile_extended_results(PED,KED,TED, sum_check_PED, sum_check_KED, su
     logging.info("")
 
 def call_shutdown():
+    print("Done!")
     logging.shutdown()
