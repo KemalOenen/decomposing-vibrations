@@ -258,7 +258,10 @@ def main():
                 ved_matrix[i][m] += P[i][m][n]
             sum_check_VED += ved_matrix[i][m]
     
-    sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2) 
+    sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2)
+    
+    # currently: rows are harmonic modes and columns are ICs ==> need to transpose
+    ved_matrix = np.transpose(ved_matrix)
     
     # remove the rottra
     ved_matrix = ved_matrix[0:n_internals, 0:n_internals]

@@ -119,7 +119,7 @@ def write_logfile_results(Results, sum_check_VED):
 def write_logfile_extended_results(PED,KED,TED, sum_check_PED, sum_check_KED, sum_check_TED, harmonic_frequency):
     logging.info(" Extended Results: Exact PED, KED and TED analysis per mode ".center(70, "-"))
     logging.info("")
-    logging.info("Normal mode at the followin harmonic frequency: %s cm-1", harmonic_frequency)
+    logging.info("Normal mode at the following harmonic frequency: %s cm-1", harmonic_frequency)
     logging.info("")
     logging.info("Potential energy distribution matrix (normalization check: %s)", np.round(sum_check_PED,2))
     logging.info("")

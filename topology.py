@@ -11,6 +11,7 @@ import itertools
 import logging
 import logfile
 import nomodeco
+import specifications
 import icsel
 
 '''''
@@ -181,7 +182,7 @@ def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
     # before computing the number of ICs we will remove all oop that are associated with this linear angle
     # you could also remove dihedrals, but looking at Decius' work it is not advised
     
-    linear_bonds = nomodeco.get_linear_bonds(linear_angles)
+    linear_bonds = specifications.get_linear_bonds(linear_angles)
     out_of_plane = update_internal_coordinates_cyclic(linear_bonds, out_of_plane)
 
     logfile.write_logfile_updatedICs_linunit(out_of_plane, dihedrals)
