@@ -104,7 +104,7 @@ def write_logfile_updatedICs_linunit(out_of_plane, dihedrals):
     logging.info("dihedrals: %s", dihedrals)
     logging.info("")
 
-def write_logfile_results(Results, sum_check_VED):
+def write_logfile_results(Results, ContributionTable,  sum_check_VED):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
     logging.info("")
     logging.info("1.) Intrinsic Frequencies for all normal-coordinate frequencies and")
@@ -114,6 +114,12 @@ def write_logfile_results(Results, sum_check_VED):
     logging.info(Results.to_string(index=False))
     logging.info("")
     logging.info("Check if matrix is normalized: %s", sum_check_VED)
+    logging.info("")
+    logging.info("2.) Intrinsic Frequencies for all normal-coordinate frequencies and")
+    logging.info("    contribution table calculated from the VED matrix at the following")
+    logging.info("    harmonic frequencies (all frequency values in cm-1):")
+    logging.info("")
+    logging.info(ContributionTable.to_string(index=False))
     logging.info("")
 
 def write_logfile_extended_results(PED,KED,TED, sum_check_PED, sum_check_KED, sum_check_TED, harmonic_frequency):

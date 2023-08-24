@@ -100,7 +100,7 @@ def find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal
         sum_check_PED = np.zeros(n_internals)
         sum_check_KED = np.zeros(n_internals)
         sum_check_TED = np.zeros(n_internals)
-        for i in range(0, n_internals):
+        for i in range(0, n_internals - red):
             for m in range(0, n_internals + num_rottra):
                 for n in range(0, n_internals + num_rottra):
                     sum_check_PED[i] += P[i][m][n] 
@@ -126,5 +126,10 @@ def find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal
         ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
 
         metric_analysis[num_of_set] = icsel.Kemalian_metric(ved_matrix)
-    
+        #if metric_analysis[num_of_set] != 0:
+        #    print(metric_analysis[num_of_set])
+        #    print(pd.DataFrame(ved_matrix))
+
+    # TODO: rename the metric?
+    print("Optimal coordinate set has the following diagonalization parameter:", metric_analysis[np.argmax(metric_analysis)])
     return ic_dict[np.argmax(metric_analysis)] 

@@ -19,6 +19,13 @@ import nomodeco
 def Kemalian_metric(ved_matrix):
     # axis = 0, when maximum of each column
     max_values = np.max(ved_matrix, axis=1)
+    
+    # penalty value if unreasonable values are comming
+    # cutoff is little bit random though
+    min_values = np.min(ved_matrix, axis=1)
+    if np.any(min_values) <= (-0.15):
+        return 0
+    
     return np.mean(max_values)
 
 def are_two_elements_same(tup1, tup2):
@@ -65,6 +72,10 @@ def check_in_nested_list(check_list, nested_list):
             check = True
     return check
 
+def all_atoms_can_be_superimposed_bond(test_bond, key_bond, nested_equivalent_atoms):
+    return (test_bond[0] == key_bond[0] or check_in_nested_list([test_bond[0],key_bond[0]], nested_equivalent_atoms)) and (
+            test_bond[1] == key_bond[1] or check_in_nested_list([test_bond[1],key_bond[1]], nested_equivalent_atoms)) 
+
 def all_atoms_can_be_superimposed(test_angle, key_angle, nested_equivalent_atoms):
     return (test_angle[0] == key_angle[0] or check_in_nested_list([test_angle[0],key_angle[0]], nested_equivalent_atoms)) and (
             test_angle[1] == key_angle[1] or check_in_nested_list([test_angle[1],key_angle[1]], nested_equivalent_atoms)) and (
@@ -76,6 +87,41 @@ def all_atoms_can_be_superimposed_dihedral(test_dihedral, key_dihedral, nested_e
                     test_dihedral[2] == key_dihedral[2] or check_in_nested_list([test_dihedral[2],key_dihedral[2]], nested_equivalent_atoms)) and (
                             test_dihedral[3] == key_dihedral[3] or check_in_nested_list([test_dihedral[3],key_dihedral[3]], nested_equivalent_atoms))
 
+
+def get_symm_bonds(bonds,specification):
+    symmetric_bonds = dict()
+    symmetric_bonds = {key:[] for (key, val) in Counter(bonds).items()}
+
+    #angles are the same if the atoms can all be superimposed
+    #on each other with symmetry operations
+
+    for i,key in itertools.product(range(len(bonds)), symmetric_bonds):
+        symmetric_bonds[key].append(bonds[i])
+
+    for key,val in symmetric_bonds.items():
+        i=0
+        while i<len(val):
+            bond = val[i]
+            if not all_atoms_can_be_superimposed_bond(bond,key,specification["equivalent_atoms"]):
+                del val[i]
+            elif all_atoms_can_be_superimposed_bond(bond,key,specification["equivalent_atoms"]):
+                i +=1
+
+    return symmetric_bonds
+
+def get_bond_subsets(symmetric_bonds) -> list:
+    symmetric_bonds_list = []
+
+    for ind_bond in symmetric_bonds.keys():
+        if symmetric_bonds[ind_bond] not in symmetric_bonds_list:
+            symmetric_bonds_list.append(symmetric_bonds[ind_bond])
+
+    return symmetric_bonds_list
+    #for i in range(1,len(symmetric_angles_list)+1):
+    #    for angle_subset in itertools.combinations(symmetric_angles_list,i):
+    #        flat_angle_subset = [item for sublist in angle_subset for item in sublist]
+    #        if len(list(flat_angle_subset)) == n_phi:
+    #            angles.append(list(flat_angle_subset))
 
 def get_symm_angles(angles,specification):
     symmetric_angles = dict()
@@ -110,6 +156,24 @@ def get_angle_subsets(symmetric_angles,num_bonds,num_angles,idof,n_phi) -> list:
             flat_angle_subset = [item for sublist in angle_subset for item in sublist]
             if len(list(flat_angle_subset)) == n_phi:
                 angles.append(list(flat_angle_subset))
+
+    # allow the inclusion of red
+    # if you don't want that ==> uncomment
+    if not angles:
+        logging.info("In order to obtain symmetry in the angles and hence intrinsic frequencies, inclusion of 1 redundant angle coordinate will be attempted")
+        for i in range(1,len(symmetric_angles_list)+1):
+            for angle_subset in itertools.combinations(symmetric_angles_list,i):
+                flat_angle_subset = [item for sublist in angle_subset for item in sublist]
+                if len(list(flat_angle_subset)) == n_phi + 1:
+                    angles.append(list(flat_angle_subset))
+
+    if not angles: 
+        logging.info("In order to obtain symmetry in the angles and hence intrinsic frequencies, inclusion of 2 redundant angle coordinates will be attempted")
+        for i in range(1,len(symmetric_angles_list)+1):
+            for angle_subset in itertools.combinations(symmetric_angles_list,i):
+                flat_angle_subset = [item for sublist in angle_subset for item in sublist]
+                if len(list(flat_angle_subset)) == n_phi + 2:
+                    angles.append(list(flat_angle_subset))
     return angles
 
 def get_symm_dihedrals(dihedrals,specification):
@@ -147,6 +211,17 @@ def get_dihedral_subsets(symmetric_dihedrals,num_bonds,num_angles,idof,n_tau) ->
             flat_dihedral_subset = [item for sublist in dihedral_subset for item in sublist]
             if len(list(flat_dihedral_subset)) == n_tau:
                 dihedrals.append(list(flat_dihedral_subset))
+    
+    # allow the inclusion of red
+    # if you don't want that ==> uncomment
+    if not dihedrals:
+        logging.info("In order to obtain symmetry in the dihedrals and hence intrinsic frequencies, inclusion of 1 redundant dihedral coordinate will be attempted")
+        for i in range(0,len(symmetric_dihedrals_list)+1):
+            for dihedral_subset in itertools.combinations(symmetric_dihedrals_list,i):
+                flat_dihedral_subset = [item for sublist in dihedral_subset for item in sublist]
+                if len(list(flat_dihedral_subset)) == n_tau + 1:
+                    dihedrals.append(list(flat_dihedral_subset))
+    
     return dihedrals
 
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:

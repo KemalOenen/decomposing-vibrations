@@ -4,3 +4,4 @@
 *.inp
 tests_delocalizedIC/*
 molpro_tests/*
+__pycache__/*

@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 from typing import NamedTuple
 from typing import Iterable
+from sklearn.preprocessing import normalize
 import pprint
 import string
 import os
@@ -77,6 +78,7 @@ def main():
 
 
     # initialize log file
+    #TODO: extract
     if os.path.exists(outputfile):
         i = 1
         while True:
@@ -212,7 +214,7 @@ def main():
     # Calculation of the mass-weighted normal modes in Internal Coordinates
 
     D = B @ l
-
+ 
     # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices
     
     eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
@@ -241,7 +243,7 @@ def main():
     sum_check_PED = np.zeros(n_internals)
     sum_check_KED = np.zeros(n_internals)
     sum_check_TED = np.zeros(n_internals)
-    for i in range(0, n_internals):
+    for i in range(0, n_internals - red):
         for m in range(0, n_internals + num_rottra):
             for n in range(0, n_internals + num_rottra):
                 sum_check_PED[i] += P[i][m][n] 
@@ -266,6 +268,10 @@ def main():
     # remove the rottra
     ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
 
+    # compute contribution table
+    #TODO: normalize if negativ valuea are present?
+    contribution_table = normalize(ved_matrix, axis=0, norm='l1') * 100
+
     # compute intrinsic frequencies
     nu = np.zeros(n_internals) 
     for n in range(0,n_internals):
@@ -287,16 +293,21 @@ def main():
     Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
     Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
 
+    ContributionTable = pd.DataFrame()
+    ContributionTable['Internal Coordinate'] = all_internals
+    ContributionTable['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
+    ContributionTable = ContributionTable.join(pd.DataFrame(contribution_table).applymap("{0:.2f}".format))
+    
     columns = {}
     keys = range(3*n_atoms-((3*n_atoms-idof)))
     for i in keys:
         columns[i] = normal_coord_harmonic_frequencies_string[i]
 
     Results = Results.rename(columns=columns)
+    ContributionTable = ContributionTable.rename(columns=columns)
 
-    logfile.write_logfile_results(Results, sum_check_VED)
+    logfile.write_logfile_results(Results, ContributionTable, sum_check_VED)
 
-    # TODO: single TED/KED/PED matrix for every mode
     # here the individual matrices can be computed, one can comment them out
     # if not needed
 
