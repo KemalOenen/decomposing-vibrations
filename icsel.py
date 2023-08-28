@@ -300,7 +300,7 @@ def get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, 
 
 
     # @decision tree: general, cyclic molecule with linear submolecules
-    if specification["planar"] == "no" and specification["linearity"] == "linear submolecules found":
+    if specification["planar"] == "no" and specification["linearity"] == "linear submolecules found" and (num_of_red != 0):
         ic_dict = topology.general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
                 dihedrals, num_bonds, num_atoms, num_of_red, number_terminal_bonds(specification["multiplicity"]), 
                 specification["length of linear submolecule(s) l"], specification)

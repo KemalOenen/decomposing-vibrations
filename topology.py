@@ -88,7 +88,7 @@ def delete_bonds(bonds, mu, valide_atoms):
 def update_internal_coordinates_cyclic(removed_bonds, ic_list):
     ic_list_dup = ic_list[:]
     for bond in removed_bonds:
-        for ic in ic_list_dup[:]:
+        for ic in ic_list_dup:
             if bond[0] in ic and bond[1] in ic:
                 ic_list_dup.remove(ic)
     return ic_list_dup
@@ -125,6 +125,11 @@ def get_param_planar_submolecule(planar_subunits_list, multiplicity_list, angles
             else:
                 n_phi += (2*atom_and_mult[1] - 3)
     return n_phi, n_gamma, angles
+
+def get_multiplicity(atom_name, multiplicity_list):
+    for atom_and_mult in multiplicity_list:
+        if atom_name == atom_and_mult[0]:
+            return atom_and_mult[1]
 
 '''''
 LINEAR SYSTEMS
@@ -268,13 +273,17 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
 def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds, num_atoms, a_1,l, specification):
 
     # before computing the number of ICs we will remove all oop that are associated with this linear angle
-    # you could also remove dihedrals, but looking at Decius' work it is not advised
+    # also remove dihedrals,if they are terminal
     
     linear_bonds = specifications.get_linear_bonds(linear_angles)
     out_of_plane = update_internal_coordinates_cyclic(linear_bonds, out_of_plane)
+    for linear_bond in linear_bonds:
+        if get_multiplicity(linear_bond[0], specification["multiplicity"]) == 1 or get_multiplicity(
+                linear_bond[1], specification["multiplicity"]) == 1: 
+            dihedrals = update_internal_coordinates_cyclic([linear_bond], dihedrals)
 
     logfile.write_logfile_updatedICs_linunit(out_of_plane, dihedrals)
-    
+ 
     # find all combinations of x and y
     x_and_y = []
     for x in range(l+1):
@@ -528,7 +537,8 @@ def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles
    
    # TODO: for SF6, we will not use the linear angles in the analysis, as we would have faulty values for some parameters
    # so we need a better check here
-    if n_tau < 0:
+    if n_tau < 0 or n_phi < 0:
+        logging.warning("Due to high number of linear angles, the topology conditions can not be considered. Linear angles will be removed from the analysis to do so.")
         ic_dict = general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, [], out_of_plane, dihedrals, 
                 num_bonds, num_atoms, a_1, specification)
         return ic_dict
@@ -537,7 +547,7 @@ def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles
     # remove angles at the specified coordinate, as we else would have linear dependencies
     if len(planar_subunits_list) != 0:
         n_phi, n_gamma, angles = get_param_planar_submolecule(planar_subunits_list, specification["multiplicity"], angles)
-        # correct n_phi because we lose aobtain (l-1) DOF
+        # correct n_phi because we lose (l-1) DOF
         n_phi = n_phi - (l-1)
 
     symmetric_angles = icsel.get_symm_angles(angles,specification)
@@ -546,10 +556,23 @@ def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles
         logging.warning("In order to obtain angle subsets, symmetry needs to be broken!")
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset)) 
+
+    # before computing the number of ICs we will remove all oop that are associated with this linear angle
+    # also remove dihedrals,if they are terminal
     
-    #TODO: we actually include all linear angles anyways! So we not need this right?
-    #symmetric_lin_angles = icsel.get_symm_angles(linear_angles,specification)
-    #lin_angle_subsets = icsel.get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
+    linear_bonds = specifications.get_linear_bonds(linear_angles)
+    out_of_plane = update_internal_coordinates_cyclic(linear_bonds, out_of_plane)
+    for linear_bond in linear_bonds:
+        if get_multiplicity(linear_bond[0], specification["multiplicity"]) == 1 or get_multiplicity(
+                linear_bond[1], specification["multiplicity"]) == 1: 
+            dihedrals = update_internal_coordinates_cyclic([linear_bond], dihedrals)
+
+    logfile.write_logfile_updatedICs_linunit(out_of_plane, dihedrals)
+    
+    # Uncomment, if you want to sample internal coordinates as well
+    # Beware: This will lead to high combinatorics!
+    # symmetric_lin_angles = icsel.get_symm_angles(linear_angles,specification)
+    # lin_angle_subsets = icsel.get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
 
     oop_subsets = []
     for subset in itertools.combinations(out_of_plane, n_gamma):
@@ -584,7 +607,6 @@ def general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
 
     #remove bonds without destroying the molecule
     removed_bonds, bonds = delete_bonds(bonds, specification["mu"], specification["multiplicity"])
-
     # update angles, oop, and dihedrals to not include the coordinates that were removed 
     angles = update_internal_coordinates_cyclic(removed_bonds, angles)
     out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)

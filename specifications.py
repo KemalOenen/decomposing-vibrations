@@ -12,7 +12,8 @@ def get_linear_bonds(linear_angles):
         # create new tuples by including adjacent elements
         linear_bonds.append((middle, first))
         linear_bonds.append((middle,last))
-    linear_bonds = list(set(linear_bonds))
+    unique_linear_bonds = list(set(frozenset(bond) for bond in linear_bonds))
+    linear_bonds = [tuple(unique_bond) for unique_bond in unique_linear_bonds]
     return linear_bonds
 
 def is_string_in_tuples(string, list_of_tuples):

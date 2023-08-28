@@ -61,7 +61,7 @@ def initialize_angles(atoms):
     linear_hits = []
     for a,b,c in itertools.permutations(atoms, 3):
         if angle.is_valid(a, b, c) and not (c.symbol, b.symbol, a.symbol) in hits and not (c.symbol, b.symbol, a.symbol) in linear_hits:
-            if np.isclose(angle.bond_angle(a.coordinates, b.coordinates, c.coordinates), np.pi, rtol=5e-05):
+            if np.isclose(angle.bond_angle(a.coordinates, b.coordinates, c.coordinates) / np.pi, 0.99, atol=0.15):
                 linear_hits.append((a.symbol, b.symbol, c.symbol))
                 linear_hits.append((a.symbol, b.symbol, c.symbol))
             else:
