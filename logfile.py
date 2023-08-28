@@ -104,8 +104,10 @@ def write_logfile_updatedICs_linunit(out_of_plane, dihedrals):
     logging.info("dihedrals: %s", dihedrals)
     logging.info("")
 
-def write_logfile_results(Results, ContributionTable,  sum_check_VED):
+def write_logfile_results(Results, DiagonalElementsPED, ContributionTable,  sum_check_VED):
     logging.info(" Results of the Decomposition Scheme ".center(90, "-"))
+    logging.info("")
+    logging.info("The selection of the optimal coordinate set is based on the contribution table in 3.)")
     logging.info("")
     logging.info("1.) Intrinsic Frequencies for all normal-coordinate frequencies and")
     logging.info("    vibrational distribution matrix (exact approximation) at the following")
@@ -116,7 +118,13 @@ def write_logfile_results(Results, ContributionTable,  sum_check_VED):
     logging.info("Check if matrix is normalized: %s", sum_check_VED)
     logging.info("")
     logging.info("2.) Intrinsic Frequencies for all normal-coordinate frequencies and")
-    logging.info("    contribution table calculated from the VED matrix at the following")
+    logging.info("    diagonal elements of the PED matrix at the following")
+    logging.info("    harmonic frequencies (all frequency values in cm-1):")
+    logging.info("")
+    logging.info(DiagonalElementsPED.to_string(index=False))
+    logging.info("")
+    logging.info("3.) Intrinsic Frequencies for all normal-coordinate frequencies and")
+    logging.info("    contribution table calculated from the diagonal elements of the PED at the following")
     logging.info("    harmonic frequencies (all frequency values in cm-1):")
     logging.info("")
     logging.info(ContributionTable.to_string(index=False))

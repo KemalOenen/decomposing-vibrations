@@ -16,16 +16,10 @@ import nomodeco
 
 #TODO: symmetry breaking needs to be revised completely -> currently only 3N-6 coordinate sets
 
-def Kemalian_metric(ved_matrix):
+def Kemalian_metric(matrix):
     # axis = 0, when maximum of each column
-    max_values = np.max(ved_matrix, axis=1)
-    
-    # penalty value if unreasonable values are comming
-    # cutoff is little bit random though
-    min_values = np.min(ved_matrix, axis=1)
-    if np.any(min_values) <= (-0.15):
-        return 0
-    
+    max_values = np.max(matrix, axis=1)
+
     return np.mean(max_values)
 
 def are_two_elements_same(tup1, tup2):
@@ -74,7 +68,7 @@ def check_in_nested_list(check_list, nested_list):
 
 def all_atoms_can_be_superimposed_bond(test_bond, key_bond, nested_equivalent_atoms):
     return (test_bond[0] == key_bond[0] or check_in_nested_list([test_bond[0],key_bond[0]], nested_equivalent_atoms)) and (
-            test_bond[1] == key_bond[1] or check_in_nested_list([test_bond[1],key_bond[1]], nested_equivalent_atoms)) 
+            test_bond[1] == key_bond[1] or check_in_nested_list([test_bond[1],key_bond[1]], nested_equivalent_atoms))
 
 def all_atoms_can_be_superimposed(test_angle, key_angle, nested_equivalent_atoms):
     return (test_angle[0] == key_angle[0] or check_in_nested_list([test_angle[0],key_angle[0]], nested_equivalent_atoms)) and (
@@ -92,9 +86,6 @@ def get_symm_bonds(bonds,specification):
     symmetric_bonds = dict()
     symmetric_bonds = {key:[] for (key, val) in Counter(bonds).items()}
 
-    #angles are the same if the atoms can all be superimposed
-    #on each other with symmetry operations
-
     for i,key in itertools.product(range(len(bonds)), symmetric_bonds):
         symmetric_bonds[key].append(bonds[i])
 
@@ -102,9 +93,9 @@ def get_symm_bonds(bonds,specification):
         i=0
         while i<len(val):
             bond = val[i]
-            if not all_atoms_can_be_superimposed_bond(bond,key,specification["equivalent_atoms"]):
+            if not (all_atoms_can_be_superimposed_bond(bond,key,specification["equivalent_atoms"]) or all_atoms_can_be_superimposed_bond((bond[1], bond[0]), key, specification["equivalent_atoms"])):
                 del val[i]
-            elif all_atoms_can_be_superimposed_bond(bond,key,specification["equivalent_atoms"]):
+            elif (all_atoms_can_be_superimposed_bond(bond,key,specification["equivalent_atoms"]) or all_atoms_can_be_superimposed_bond((bond[1], bond[0]), key, specification["equivalent_atoms"])):
                 i +=1
 
     return symmetric_bonds
@@ -117,11 +108,6 @@ def get_bond_subsets(symmetric_bonds) -> list:
             symmetric_bonds_list.append(symmetric_bonds[ind_bond])
 
     return symmetric_bonds_list
-    #for i in range(1,len(symmetric_angles_list)+1):
-    #    for angle_subset in itertools.combinations(symmetric_angles_list,i):
-    #        flat_angle_subset = [item for sublist in angle_subset for item in sublist]
-    #        if len(list(flat_angle_subset)) == n_phi:
-    #            angles.append(list(flat_angle_subset))
 
 def get_symm_angles(angles,specification):
     symmetric_angles = dict()
@@ -137,11 +123,10 @@ def get_symm_angles(angles,specification):
         i=0
         while i<len(val):
             ang = val[i]
-            if not all_atoms_can_be_superimposed(ang,key,specification["equivalent_atoms"]):
+            if not (all_atoms_can_be_superimposed(ang,key,specification["equivalent_atoms"]) or all_atoms_can_be_superimposed((ang[2], ang[1], ang[0]),key,specification["equivalent_atoms"])):
                 del val[i]
-            elif all_atoms_can_be_superimposed(ang,key,specification["equivalent_atoms"]):
+            elif (all_atoms_can_be_superimposed(ang,key,specification["equivalent_atoms"]) or all_atoms_can_be_superimposed((ang[2], ang[1], ang[0]),key,specification["equivalent_atoms"])):
                 i +=1
-
     return symmetric_angles
 
 def get_angle_subsets(symmetric_angles,num_bonds,num_angles,idof,n_phi) -> list:
@@ -188,9 +173,11 @@ def get_symm_dihedrals(dihedrals,specification):
         i=0
         while i<len(val):
             dihedral = val[i]
-            if not all_atoms_can_be_superimposed_dihedral(dihedral,key,specification["equivalent_atoms"]):
+            if not (all_atoms_can_be_superimposed_dihedral(dihedral,key,specification["equivalent_atoms"]) or 
+                    all_atoms_can_be_superimposed_dihedral((dihedral[3], dihedral[2], dihedral[1], dihedral[0]),key,specification["equivalent_atoms"])):
                 del val[i]
-            elif all_atoms_can_be_superimposed_dihedral(dihedral,key,specification["equivalent_atoms"]):
+            elif (all_atoms_can_be_superimposed_dihedral(dihedral,key,specification["equivalent_atoms"]) or 
+                    all_atoms_can_be_superimposed_dihedral((dihedral[3], dihedral[2], dihedral[1], dihedral[0]),key,specification["equivalent_atoms"])):
                 i +=1
     return symmetric_dihedrals
 

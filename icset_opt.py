@@ -107,29 +107,51 @@ def find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal
                     sum_check_KED[i] += T[i][m][n] 
                     sum_check_TED[i] += E[i][m][n] 
 
+        # compute diagonal elements of PED matrix
+
+        Diag_elements = np.zeros((n_internals-red,n_internals))
+        for i in range(0,n_internals-red):
+            for n in range (0,n_internals):
+                Diag_elements[i][n] = np.diag(P[i])[n]
+
+        Diag_elements = np.transpose(Diag_elements)
+
+        # compute contribution matrix
+        sum_diag = np.zeros(n_internals)
+
+        for n in range(0,n_internals):
+            for i in range(0, n_internals-red):
+                sum_diag[i] += Diag_elements[n][i]
+
+        contribution_matrix = np.zeros((n_internals, n_internals - red))
+        for i in range(0, n_internals-red):
+            contribution_matrix[:,i] = ((Diag_elements[:,1] / sum_diag[i]) * 100).astype(float)
+
+        # IMPORTANT: CONTRIBUTION TABLE IS USED FOR METRIC
         # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED
         # rows are ICs, columns are harmonic frequencies!
-        sum_check_VED = 0
-        ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
-        for i in range(0,n_internals-red):
-            for m in range(0, n_internals + num_rottra):
-                for n in range (0,n_internals + num_rottra):
-                    ved_matrix[i][m] += P[i][m][n]
-                sum_check_VED += ved_matrix[i][m]
-        
-        sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2)
-        
-        # currently: rows are harmonic modes and columns are ICs ==> need to transpose
-        ved_matrix = np.transpose(ved_matrix)
-        
-        # remove the rottra
-        ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
+        #sum_check_VED = 0
+        #ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
+        #for i in range(0,n_internals-red):
+        #    for m in range(0, n_internals + num_rottra):
+        #        for n in range (0,n_internals + num_rottra):
+        #            ved_matrix[i][m] += P[i][m][n]
+        #        sum_check_VED += ved_matrix[i][m]
+        #
+        #sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2)
+        #
+        ## currently: rows are harmonic modes and columns are ICs ==> need to transpose
+        #ved_matrix = np.transpose(ved_matrix)
+        #
+        ## remove the rottra
+        #ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
 
-        metric_analysis[num_of_set] = icsel.Kemalian_metric(ved_matrix)
+        metric_analysis[num_of_set] = icsel.Kemalian_metric(contribution_matrix)
         #if metric_analysis[num_of_set] != 0:
         #    print(metric_analysis[num_of_set])
         #    print(pd.DataFrame(ved_matrix))
 
     # TODO: rename the metric?
+    print(metric_analysis)
     print("Optimal coordinate set has the following diagonalization parameter:", metric_analysis[np.argmax(metric_analysis)])
     return ic_dict[np.argmax(metric_analysis)] 

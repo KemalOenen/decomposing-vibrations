@@ -76,7 +76,6 @@ def main():
         CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
         outputfile = logfile.create_new_filename(inputfile.name)
 
-
     # initialize log file
     #TODO: extract
     if os.path.exists(outputfile):
@@ -268,9 +267,26 @@ def main():
     # remove the rottra
     ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
 
-    # compute contribution table
-    #TODO: normalize if negativ valuea are present?
-    contribution_table = normalize(ved_matrix, axis=0, norm='l1') * 100
+    # compute diagonal elements of PED matrix
+
+    Diag_elements = np.zeros((n_internals-red,n_internals))
+    for i in range(0,n_internals-red):
+        for n in range (0,n_internals):
+            Diag_elements[i][n] = np.diag(P[i])[n]
+
+    Diag_elements = np.transpose(Diag_elements)
+
+    # compute contribution matrix
+    sum_diag = np.zeros(n_internals)
+
+    for n in range(0,n_internals):
+        for i in range(0, n_internals-red):
+            sum_diag[i] += Diag_elements[n][i]
+
+    contribution_matrix = np.zeros((n_internals, n_internals - red))
+    for i in range(0, n_internals-red):
+        contribution_matrix[:,i] = ((Diag_elements[:,i] / sum_diag[i]) * 100).astype(float)
+
 
     # compute intrinsic frequencies
     nu = np.zeros(n_internals) 
@@ -292,11 +308,16 @@ def main():
     Results['Internal Coordinate'] = all_internals
     Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
     Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
+    
+    DiagonalElementsPED = pd.DataFrame()
+    DiagonalElementsPED['Internal Coordinate'] = all_internals
+    DiagonalElementsPED['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
+    DiagonalElementsPED= DiagonalElementsPED.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
 
     ContributionTable = pd.DataFrame()
     ContributionTable['Internal Coordinate'] = all_internals
     ContributionTable['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-    ContributionTable = ContributionTable.join(pd.DataFrame(contribution_table).applymap("{0:.2f}".format))
+    ContributionTable = ContributionTable.join(pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format))
     
     columns = {}
     keys = range(3*n_atoms-((3*n_atoms-idof)))
@@ -304,9 +325,10 @@ def main():
         columns[i] = normal_coord_harmonic_frequencies_string[i]
 
     Results = Results.rename(columns=columns)
+    DiagonalElementsPED = DiagonalElementsPED.rename(columns=columns)
     ContributionTable = ContributionTable.rename(columns=columns)
 
-    logfile.write_logfile_results(Results, ContributionTable, sum_check_VED)
+    logfile.write_logfile_results(Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
 
     # here the individual matrices can be computed, one can comment them out
     # if not needed

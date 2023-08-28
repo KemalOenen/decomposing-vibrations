@@ -13,6 +13,7 @@ import logfile
 import nomodeco
 import specifications
 import icsel
+import pprint
 
 '''''
 GENERAL PURPOSE FUNCTIONS
@@ -40,6 +41,30 @@ def bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):
             return False
     return True
 
+def delete_bonds_symmetry(symmetric_bond_group, bonds, mu, valide_atoms):
+    removed_bonds = []
+    while mu > 0:
+        if not symmetric_bond_group:
+            return [], bonds + removed_bonds
+        # cut the bonds 
+        for bond in symmetric_bond_group:
+            if bond[0] in valide_atoms and bond[1] in valide_atoms:
+                removed_bonds.append(bond)
+                bonds.remove(bond)
+                symmetric_bond_group.remove(bond)
+                break
+
+        # we will check if the molecule is not split;
+        if molecule_is_not_split(bonds):
+            mu -= 1
+        else:
+            # if we can not cut bonds out in the symmetric group
+            bonds.append(removed_bonds[-1])
+            removed_bonds.pop()
+
+
+    return removed_bonds, bonds + removed_bonds
+
 def delete_bonds(bonds, mu, valide_atoms):
     removed_bonds = []
     while mu > 0:
@@ -61,11 +86,12 @@ def delete_bonds(bonds, mu, valide_atoms):
 
 #TODO: rename method
 def update_internal_coordinates_cyclic(removed_bonds, ic_list):
+    ic_list_dup = ic_list[:]
     for bond in removed_bonds:
-        for ic in ic_list[:]:
+        for ic in ic_list_dup[:]:
             if bond[0] in ic and bond[1] in ic:
-                ic_list.remove(ic)
-    return ic_list
+                ic_list_dup.remove(ic)
+    return ic_list_dup
 
 def find_common_index_with_most_subsets(list1, list2):
     combined_lengths = [len(sublist1) + len(sublist2) for sublist1, sublist2 in zip(list1, list2)]
@@ -129,7 +155,7 @@ def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
 
     symmetric_angles = icsel.get_symm_angles(angles, specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles), idof, n_phi)
-
+    
     # in cases of restrictive symmetry, we need to break angle symmetry
     if len(angle_subsets) == 0:
         logging.warning("In order to obtain angle subsets, symmetry needs to be broken!")
@@ -175,15 +201,14 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
     symmetric_bonds = icsel.get_symm_bonds(bonds,specification)
     symmetric_bonds_list = icsel.get_bond_subsets(symmetric_bonds)
     valide_atoms = valide_atoms_to_cut(bonds, specification["multiplicity"])
-
     ic_dict_list = []
+    removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
         if len(symmetric_bond_group) >= specification["mu"] and bonds_are_in_valide_atoms(
                 symmetric_bond_group, valide_atoms):
-            removed_bonds, symmetric_bond_group = delete_bonds(symmetric_bond_group, specification["mu"], valide_atoms)
-        else:
+            removed_bonds, bonds = delete_bonds_symmetry(symmetric_bond_group, bonds, specification["mu"], valide_atoms)
+        if not removed_bonds:
             continue
-            
 
         # update bonds, angles, oop, and dihedrals to not include the coordinates that were removed 
         bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds)
@@ -194,17 +219,50 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
         logfile.write_logfile_updatedICs_cyclic(bonds_updated, angles_updated, 
                 linear_angles, out_of_plane_updated, dihedrals_updated, specification)
 
+        # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
+        # so that we do not sample a subspace, which is not feasible
+
+        symmetric_angles = icsel.get_symm_angles(angles_updated, specification)
+        angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds_updated), len(angles_updated), idof, 2*len(bonds_updated) - num_atoms)
+        if len(angle_subsets) == 0:
+            logging.warning("For this rendered molecule, angle symmetry can not be considered and hence this subspace of internal coordinates will be skipped")
+            continue
+
+        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification)
+        dihedral_subsets = icsel.get_dihedral_subsets(symmetric_dihedrals, len(bonds_updated), len(angles_updated), idof, len(bonds_updated) - a_1)
+        if len(dihedral_subsets) == 0:
+            logging.warning("For this rendered molecule, dihedral symmetry can not be considered and hence this subspace of internal coordintes will be skipped")
+            continue
 
         # call the acyclic version
-        ic_dict_list.append(planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds_updated, angles_updated, 
+       
+        ic_dict_list.append(planar_acyclic_nolinunit_molecule(dict(), idof, bonds_updated, angles_updated, 
                 linear_angles, out_of_plane_updated, dihedrals_updated, len(bonds_updated), num_atoms, a_1, specification))
+        removed_bonds = []
     
-    new_key = 0
-    for dictionary in ic_dict_list:
-        for key, value in dictionary.items():
-            ic_dict[new_key] = value
-            new_key += 1
-    return ic_dict
+    # if we can't cut according to symmetry, do random cutting
+    # cut symmetry out if you want, by commenting everyting out
+    if not ic_dict_list:
+        removed_bonds, bonds = delete_bonds(bonds, specification["mu"], valide_atoms)
+        angles = update_internal_coordinates_cyclic(removed_bonds, angles)
+        out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
+        dihedrals = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
+    
+        logfile.write_logfile_updatedICs_cyclic(bonds, angles, 
+                linear_angles, out_of_plane, dihedrals, specification)
+    
+        ic_dict = planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, 
+                linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1, specification)
+        return ic_dict
+    
+    else:
+        ic_dict = dict()
+        new_key = 0
+        for dictionary in ic_dict_list: 
+            for key, value in dictionary.copy().items():
+                ic_dict[new_key] = value
+                new_key += 1
+        return ic_dict
 
 
 def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds, num_atoms, a_1,l, specification):
@@ -395,15 +453,14 @@ def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
     symmetric_bonds = icsel.get_symm_bonds(bonds,specification)
     symmetric_bonds_list = icsel.get_bond_subsets(symmetric_bonds)
     valide_atoms = valide_atoms_to_cut(bonds, specification["multiplicity"])
-
     ic_dict_list = []
+    removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
         if len(symmetric_bond_group) >= specification["mu"] and bonds_are_in_valide_atoms(
                 symmetric_bond_group, valide_atoms):
-            removed_bonds, symmetric_bond_group = delete_bonds(symmetric_bond_group, specification["mu"], valide_atoms)
-        else:
+            removed_bonds, bonds = delete_bonds_symmetry(symmetric_bond_group, bonds, specification["mu"], valide_atoms)
+        if not removed_bonds:
             continue
-            
 
         # update bonds, angles, oop, and dihedrals to not include the coordinates that were removed 
         bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds)
@@ -414,17 +471,50 @@ def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
         logfile.write_logfile_updatedICs_cyclic(bonds_updated, angles_updated, 
                 linear_angles, out_of_plane_updated, dihedrals_updated, specification)
 
+        # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
+        # so that we do not sample a subspace, which is not feasible
+
+        symmetric_angles = icsel.get_symm_angles(angles_updated, specification)
+        angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds_updated), len(angles_updated), idof, 2*len(bonds_updated) - num_atoms)
+        if len(angle_subsets) == 0:
+            logging.warning("For this rendered molecule, angle symmetry can not be considered and hence this subspace of internal coordinates will be skipped")
+            continue
+
+        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification)
+        dihedral_subsets = icsel.get_dihedral_subsets(symmetric_dihedrals, len(bonds_updated), len(angles_updated), idof, len(bonds_updated) - a_1)
+        if len(dihedral_subsets) == 0:
+            logging.warning("For this rendered molecule, dihedral symmetry can not be considered and hence this subspace of internal coordintes will be skipped")
+            continue
 
         # call the acyclic version
-        ic_dict_list.append(general_acyclic_nolinunit_molecule(ic_dict, idof, bonds_updated, angles_updated, 
+       
+        ic_dict_list.append(general_acyclic_nolinunit_molecule(dict(), idof, bonds_updated, angles_updated, 
                 linear_angles, out_of_plane_updated, dihedrals_updated, len(bonds_updated), num_atoms, a_1, specification))
+        removed_bonds = []
     
-    new_key = 0
-    for dictionary in ic_dict_list:
-        for key, value in dictionary.items():
-            ic_dict[new_key] = value
-            new_key += 1
-    return ic_dict
+    # if we can't cut according to symmetry, do random cutting
+    # cut symmetry out if you want, by commenting everyting out
+    if not ic_dict_list:
+        removed_bonds, bonds = delete_bonds(bonds, specification["mu"], valide_atoms)
+        angles = update_internal_coordinates_cyclic(removed_bonds, angles)
+        out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
+        dihedrals = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
+    
+        logfile.write_logfile_updatedICs_cyclic(bonds, angles, 
+                linear_angles, out_of_plane, dihedrals, specification)
+    
+        ic_dict = general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, 
+                linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1, specification)
+        return ic_dict
+    
+    else:
+        ic_dict = dict()
+        new_key = 0
+        for dictionary in ic_dict_list: 
+            for key, value in dictionary.copy().items():
+                ic_dict[new_key] = value
+                new_key += 1
+        return ic_dict
 
 def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds, num_atoms, a_1,l, specification):
 
