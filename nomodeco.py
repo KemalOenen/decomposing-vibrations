@@ -9,6 +9,9 @@ import string
 import os
 import numpy as np
 import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
 import argparse
 import logging
 import time
@@ -16,6 +19,8 @@ import pymatgen.core as mg
 from pymatgen.symmetry.analyzer import PointGroupAnalyzer
 from mendeleev.fetch import fetch_table
 
+# for heatmap
+mpl.rcParams['backend'] = "Agg"
 
 import icgen
 import icsel
@@ -304,18 +309,22 @@ def main():
 
     all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
 
+    all_internals_string = []
+    for internal in all_internals:
+        all_internals_string.append('(' + ', '.join(internal) + ')')
+    
     Results = pd.DataFrame()
-    Results['Internal Coordinate'] = all_internals
+    Results['Internal Coordinate'] = all_internals_string
     Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
     Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
     
     DiagonalElementsPED = pd.DataFrame()
-    DiagonalElementsPED['Internal Coordinate'] = all_internals
+    DiagonalElementsPED['Internal Coordinate'] = all_internals_string
     DiagonalElementsPED['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
     DiagonalElementsPED= DiagonalElementsPED.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
 
     ContributionTable = pd.DataFrame()
-    ContributionTable['Internal Coordinate'] = all_internals
+    ContributionTable['Internal Coordinate'] = all_internals_string
     ContributionTable['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
     ContributionTable = ContributionTable.join(pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format))
     
@@ -328,15 +337,33 @@ def main():
     DiagonalElementsPED = DiagonalElementsPED.rename(columns=columns)
     ContributionTable = ContributionTable.rename(columns=columns)
 
+    #TODO:  line breaks in output file
+
     logfile.write_logfile_results(Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
+
+    # heat map results
+
+    columns = {}
+    keys = range(3*n_atoms-((3*n_atoms-idof)))
+    for i in keys:
+        columns[i] = normal_coord_harmonic_frequencies[i]
+
+
+    heatmap_df = pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
+    heatmap_df.index = all_internals_string
+    heatmap_df = heatmap_df.rename(columns=columns)
+
+    heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
+    heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot = True)
+    heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi = 500)
+    plt.close(heatmap.figure)
+
+    # TODO: csv results
+
 
     # here the individual matrices can be computed, one can comment them out
     # if not needed
-
-    all_internals_string = []
-    for internal in all_internals:
-        all_internals_string.append('(' + ', '.join(internal) + ')')
-    
+ 
     columns = {}
     keys = range(n_internals)
     for i in keys:
