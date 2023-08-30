@@ -21,6 +21,8 @@ from mendeleev.fetch import fetch_table
 
 # for heatmap
 mpl.rcParams['backend'] = "Agg"
+# do not show messages
+logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 import icgen
 import icsel
@@ -271,6 +273,22 @@ def main():
     
     # remove the rottra
     ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
+
+
+
+    sum_check_VEDA = 0
+    veda = np.zeros((n_internals - red, n_internals))
+    for i in range(0,n_internals-red):
+        for m in range(0,n_internals):
+            k = i + num_rottra
+            veda[i][m] = D[m][k]*InternalF_Matrix[m][m]*D[m][k] / eigenvalues[k]
+            sum_check_VEDA += veda[i][m]
+    
+    sum_check_VEDA = np.around(sum_check_VEDA / (n_internals-red), 2)
+    
+    veda = np.transpose(veda)
+    print(sum_check_VEDA)
+    print(pd.DataFrame(veda).applymap("{0:.2f}".format))
 
     # compute diagonal elements of PED matrix
 

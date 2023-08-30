@@ -125,7 +125,7 @@ def find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal
 
         contribution_matrix = np.zeros((n_internals, n_internals - red))
         for i in range(0, n_internals-red):
-            contribution_matrix[:,i] = ((Diag_elements[:,1] / sum_diag[i]) * 100).astype(float)
+            contribution_matrix[:,i] = ((Diag_elements[:,i] / sum_diag[i]) * 100).astype(float)
 
         # IMPORTANT: CONTRIBUTION TABLE IS USED FOR METRIC
         # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED

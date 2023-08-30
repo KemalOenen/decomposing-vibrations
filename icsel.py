@@ -19,7 +19,6 @@ import nomodeco
 def Kemalian_metric(matrix):
     # axis = 0, when maximum of each column
     max_values = np.max(matrix, axis=1)
-
     return np.mean(max_values)
 
 def are_two_elements_same(tup1, tup2):
