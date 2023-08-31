@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-import itertools
 from typing import NamedTuple
-from typing import Iterable
-from sklearn.preprocessing import normalize
-import pprint
 import string
 import os
 import numpy as np
@@ -12,7 +8,6 @@ import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
-import argparse
 import logging
 import time
 import pymatgen.core as mg
@@ -31,12 +26,15 @@ import logfile
 import molpro_parser
 import specifications
 import icset_opt
+import arguments
+
 
 class Atom(NamedTuple):
     symbol: str
     coordinates: tuple
 
-#TODO: isotopes for all elements with command line input
+
+# TODO: isotopes for all elements with command line input
 def get_mass_information() -> pd.DataFrame:
     df = fetch_table('elements')
     mass_info = df.loc[:, ['symbol', 'atomic_weight']]
@@ -45,46 +43,45 @@ def get_mass_information() -> pd.DataFrame:
     mass_info.set_index("symbol", inplace=True)
     return mass_info
 
+
 def reciprocal_square_massvector(atoms):
     n_atoms = len(atoms)
-    diag_reciprocal_square = np.zeros(3*n_atoms)
+    diag_reciprocal_square = np.zeros(3 * n_atoms)
     MASS_INFO = get_mass_information()
     for i in range(0, n_atoms):
-        diag_reciprocal_square[3*i:3*i+3] = 1/np.sqrt(MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
+        diag_reciprocal_square[3 * i:3 * i + 3] = 1 / np.sqrt(MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
     return diag_reciprocal_square
+
 
 def reciprocal_massvector(atoms):
     n_atoms = len(atoms)
-    diag_reciprocal = np.zeros(3*n_atoms)
+    diag_reciprocal = np.zeros(3 * n_atoms)
     MASS_INFO = get_mass_information()
     for i in range(0, n_atoms):
-        diag_reciprocal[3*i:3*i+3] = 1/(MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
+        diag_reciprocal[3 * i:3 * i + 3] = 1 / (MASS_INFO.loc[atoms[i].symbol.strip(string.digits)])
     return diag_reciprocal
+
 
 def strip_numbers(string):
     return ''.join([char for char in string if not char.isdigit()])
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("output")
-    args = parser.parse_args()
-    return args
-
 
 start_time = time.time()
 
+
 def main():
     # Reading Cartesian Coordinates and Hessian
-    args = get_args()
+    # from user input
+    args = arguments.get_args()
     with open(args.output) as inputfile:
-        atoms=molpro_parser.parse_xyz_from_inputfile(inputfile)
-        n_atoms = len(atoms) 
+        atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
+        n_atoms = len(atoms)
     with open(args.output) as inputfile:
-        CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile) 
+        CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile)
         outputfile = logfile.create_new_filename(inputfile.name)
 
     # initialize log file
-    #TODO: extract
+    # TODO: extract
     if os.path.exists(outputfile):
         i = 1
         while True:
@@ -92,11 +89,10 @@ def main():
             if not os.path.exists(new_outputfile_name):
                 os.rename(outputfile, new_outputfile_name)
                 break
-            i +=1
-   
+            i += 1
+
     logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
-    logfile.write_logfile_header() 
-    
+    logfile.write_logfile_header()
 
     # Determining molecular symmetry
     molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in atoms], [atom.coordinates for atom in atoms])
@@ -109,7 +105,8 @@ def main():
 
     # Setting specifications for calculation: check if molecule is linear, planar or a general molecule
     specification = dict()
-    specification = specifications.calculation_specification(specification, atoms, molecule_pg, bonds, angles, linear_angles)
+    specification = specifications.calculation_specification(specification, atoms, molecule_pg, bonds, angles,
+                                                             linear_angles)
 
     # Generation of all possible out-of-plane motions
 
@@ -126,11 +123,11 @@ def main():
     # determine internal degrees of freedom 
     idof = 0
     if specification["linearity"] == "fully linear":
-        idof = 3*n_atoms-5
+        idof = 3 * n_atoms - 5
     else:
-        idof = 3*n_atoms-6
+        idof = 3 * n_atoms - 6
 
-   # update log file
+    # update log file
 
     logfile.write_logfile_oop_treatment(specification["planar"], specification["planar submolecule(s)"])
     logfile.write_logfile_symmetry_treatment(specification, point_group_sch)
@@ -141,24 +138,36 @@ def main():
     reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
     diag_reciprocal = reciprocal_massvector(atoms)
     reciprocal_massmatrix = np.diag(diag_reciprocal)
-    
+
     # Determination of the Normal Modes and eigenvalues 
     # via the diagonalization of the mass-weighted Cartesian F Matrix
-    
-    Mass_weighted_CartesianF_Matrix = np.transpose(reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
-    
+
+    Mass_weighted_CartesianF_Matrix = np.transpose(
+        reciprocal_square_massmatrix) @ CartesianF_Matrix @ reciprocal_square_massmatrix
+
     Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
-    #print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
+    # print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
 
     # Determination of the normal modes of zero and low Frequencies
 
-    rottra = L[:,0:(3*n_atoms-idof)]
-    
+    rottra = L[:, 0:(3 * n_atoms - idof)]
+
     logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
-    ic_dict = icsel.get_sets(idof,atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+    # get symmetric coordinates
+    if args.penalty1 != 0:
+        symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
+        symmetric_angles = icsel.get_symm_angles(angles, specification)
+        symmetric_dihedrals = icsel.get_symm_angles(dihedrals, specification)
+        symmetric_coordinates = {**symmetric_bonds, **symmetric_angles, **symmetric_dihedrals}
+    else:
+        symmetric_coordinates = dict()
 
-    optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms, L)
+    ic_dict = icsel.get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+
+    optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix,
+                                                        reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms,
+                                                        symmetric_coordinates, L, args.penalty1, args.penalty2)
 
     '''''
     Final calculation with optimal set
@@ -171,24 +180,24 @@ def main():
 
     n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
     red = n_internals - idof
-    
+
     # Augmenting the B-Matrix with rottra, calculating 
     # and printing the final B-Matrix
 
     B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
-                        np.transpose(rottra)),axis=0)
+                        np.transpose(rottra)), axis=0)
 
     # Calculating the G-Matrix
 
     G = B @ reciprocal_massmatrix @ np.transpose(B)
-    e,K = np.linalg.eigh(G)
+    e, K = np.linalg.eigh(G)
 
     # Sorting eigenvalues and eigenvectors (just for the case)
     # Sorting highest eigenvalue/eigenvector to lowest!
 
-    idx = e.argsort()[::-1]   
+    idx = e.argsort()[::-1]
     e = e[idx]
-    K = K[:,idx]
+    K = K[:, idx]
 
     # if redundancies are present, then approximate the inverse of the G-Matrix
     if red > 0:
@@ -206,12 +215,12 @@ def main():
     B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
     InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
 
-    logfile.write_logfile_information_results(n_internals, red, bonds, angles, 
-            linear_angles, out_of_plane, dihedrals)
+    logfile.write_logfile_information_results(n_internals, red, bonds, angles,
+                                              linear_angles, out_of_plane, dihedrals)
 
     ''''' 
     --------------------------- Main-Calculation ------------------------------
-    ''''' 
+    '''''
 
     # Calculation of the mass-weighted normal modes in Cartesian Coordinates
 
@@ -220,30 +229,30 @@ def main():
     # Calculation of the mass-weighted normal modes in Internal Coordinates
 
     D = B @ l
- 
+
     # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices
-    
+
     eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
     eigenvalues = np.diag(eigenvalues)
     # print("eigenvalues (from IC space):", eigenvalues)
 
-    num_rottra = 3*n_atoms - idof
+    num_rottra = 3 * n_atoms - idof
 
     ''''' 
     ------------------------------- Results --------------------------------------
-    ''''' 
-    
-    P = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
-    T = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra)) 
-    E = np.zeros((n_internals-red,n_internals+num_rottra,n_internals+num_rottra))
+    '''''
 
-    for i in range(0,n_internals-red):
-        for m in range(0,n_internals + num_rottra):
-            for n in range(0,n_internals + num_rottra):
+    P = np.zeros((n_internals - red, n_internals + num_rottra, n_internals + num_rottra))
+    T = np.zeros((n_internals - red, n_internals + num_rottra, n_internals + num_rottra))
+    E = np.zeros((n_internals - red, n_internals + num_rottra, n_internals + num_rottra))
+
+    for i in range(0, n_internals - red):
+        for m in range(0, n_internals + num_rottra):
+            for n in range(0, n_internals + num_rottra):
                 k = i + num_rottra
-                P[i][m][n] = D[m][k]*InternalF_Matrix[m][n]*D[n][k] / eigenvalues[k] #PED
-                T[i][m][n] = D[m][k]*G_inv[m][n]*D[n][k]  #KED
-                E[i][m][n] = 0.5 *(T[i][m][n] + P[i][m][n]) #TED
+                P[i][m][n] = D[m][k] * InternalF_Matrix[m][n] * D[n][k] / eigenvalues[k]  # PED
+                T[i][m][n] = D[m][k] * G_inv[m][n] * D[n][k]  # KED
+                E[i][m][n] = 0.5 * (T[i][m][n] + P[i][m][n])  # TED
 
     # check normalization
     sum_check_PED = np.zeros(n_internals)
@@ -252,49 +261,33 @@ def main():
     for i in range(0, n_internals - red):
         for m in range(0, n_internals + num_rottra):
             for n in range(0, n_internals + num_rottra):
-                sum_check_PED[i] += P[i][m][n] 
-                sum_check_KED[i] += T[i][m][n] 
-                sum_check_TED[i] += E[i][m][n] 
+                sum_check_PED[i] += P[i][m][n]
+                sum_check_KED[i] += T[i][m][n]
+                sum_check_TED[i] += E[i][m][n]
 
-    # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED
+                # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED
     # rows are ICs, columns are harmonic frequencies!
     sum_check_VED = 0
     ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
-    for i in range(0,n_internals-red):
+    for i in range(0, n_internals - red):
         for m in range(0, n_internals + num_rottra):
-            for n in range (0,n_internals + num_rottra):
+            for n in range(0, n_internals + num_rottra):
                 ved_matrix[i][m] += P[i][m][n]
             sum_check_VED += ved_matrix[i][m]
-    
-    sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2)
-    
+
+    sum_check_VED = np.around(sum_check_VED / (n_internals - red), 2)
+
     # currently: rows are harmonic modes and columns are ICs ==> need to transpose
     ved_matrix = np.transpose(ved_matrix)
-    
+
     # remove the rottra
     ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
 
-
-
-    sum_check_VEDA = 0
-    veda = np.zeros((n_internals - red, n_internals))
-    for i in range(0,n_internals-red):
-        for m in range(0,n_internals):
-            k = i + num_rottra
-            veda[i][m] = D[m][k]*InternalF_Matrix[m][m]*D[m][k] / eigenvalues[k]
-            sum_check_VEDA += veda[i][m]
-    
-    sum_check_VEDA = np.around(sum_check_VEDA / (n_internals-red), 2)
-    
-    veda = np.transpose(veda)
-    print(sum_check_VEDA)
-    print(pd.DataFrame(veda).applymap("{0:.2f}".format))
-
     # compute diagonal elements of PED matrix
 
-    Diag_elements = np.zeros((n_internals-red,n_internals))
-    for i in range(0,n_internals-red):
-        for n in range (0,n_internals):
+    Diag_elements = np.zeros((n_internals - red, n_internals))
+    for i in range(0, n_internals - red):
+        for n in range(0, n_internals):
             Diag_elements[i][n] = np.diag(P[i])[n]
 
     Diag_elements = np.transpose(Diag_elements)
@@ -302,26 +295,25 @@ def main():
     # compute contribution matrix
     sum_diag = np.zeros(n_internals)
 
-    for n in range(0,n_internals):
-        for i in range(0, n_internals-red):
+    for n in range(0, n_internals):
+        for i in range(0, n_internals - red):
             sum_diag[i] += Diag_elements[n][i]
 
     contribution_matrix = np.zeros((n_internals, n_internals - red))
-    for i in range(0, n_internals-red):
-        contribution_matrix[:,i] = ((Diag_elements[:,i] / sum_diag[i]) * 100).astype(float)
-
+    for i in range(0, n_internals - red):
+        contribution_matrix[:, i] = ((Diag_elements[:, i] / sum_diag[i]) * 100).astype(float)
 
     # compute intrinsic frequencies
-    nu = np.zeros(n_internals) 
-    for n in range(0,n_internals):
-        for m in range(0,n_internals):
-            for i in range(0,n_internals-red):
+    nu = np.zeros(n_internals)
+    for n in range(0, n_internals):
+        for m in range(0, n_internals):
+            for i in range(0, n_internals - red):
                 k = i + num_rottra
                 nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
-     
-    nu_final = np.sqrt(nu) *  5140.4981
 
-    normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3*n_atoms-idof):3*n_atoms]) * 5140.4981
+    nu_final = np.sqrt(nu) * 5140.4981
+
+    normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3 * n_atoms - idof):3 * n_atoms]) * 5140.4981
     normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
     normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
 
@@ -330,24 +322,24 @@ def main():
     all_internals_string = []
     for internal in all_internals:
         all_internals_string.append('(' + ', '.join(internal) + ')')
-    
+
     Results = pd.DataFrame()
     Results['Internal Coordinate'] = all_internals_string
     Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
     Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
-    
+
     DiagonalElementsPED = pd.DataFrame()
     DiagonalElementsPED['Internal Coordinate'] = all_internals_string
     DiagonalElementsPED['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-    DiagonalElementsPED= DiagonalElementsPED.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
+    DiagonalElementsPED = DiagonalElementsPED.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
 
     ContributionTable = pd.DataFrame()
     ContributionTable['Internal Coordinate'] = all_internals_string
     ContributionTable['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
     ContributionTable = ContributionTable.join(pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format))
-    
+
     columns = {}
-    keys = range(3*n_atoms-((3*n_atoms-idof)))
+    keys = range(3 * n_atoms - ((3 * n_atoms - idof)))
     for i in keys:
         columns[i] = normal_coord_harmonic_frequencies_string[i]
 
@@ -355,40 +347,37 @@ def main():
     DiagonalElementsPED = DiagonalElementsPED.rename(columns=columns)
     ContributionTable = ContributionTable.rename(columns=columns)
 
-    #TODO:  line breaks in output file
+    # TODO:  line breaks in output file
 
     logfile.write_logfile_results(Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
 
     # heat map results
 
     columns = {}
-    keys = range(3*n_atoms-((3*n_atoms-idof)))
+    keys = range(3 * n_atoms - ((3 * n_atoms - idof)))
     for i in keys:
         columns[i] = normal_coord_harmonic_frequencies[i]
-
 
     heatmap_df = pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
     heatmap_df.index = all_internals_string
     heatmap_df = heatmap_df.rename(columns=columns)
 
     heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
-    heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot = True)
-    heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi = 500)
+    heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
+    heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=500)
     plt.close(heatmap.figure)
 
     # TODO: csv results
 
-
     # here the individual matrices can be computed, one can comment them out
     # if not needed
- 
+
     columns = {}
     keys = range(n_internals)
     for i in keys:
         columns[i] = all_internals_string[i]
 
     for mode in range(0, len(normal_coord_harmonic_frequencies)):
-
         PED = pd.DataFrame()
         KED = pd.DataFrame()
         TED = pd.DataFrame()
@@ -402,14 +391,14 @@ def main():
         PED = PED.rename(columns=columns)
         KED = KED.rename(columns=columns)
         TED = TED.rename(columns=columns)
-        
-        logfile.write_logfile_extended_results(PED,KED,TED, sum_check_PED[mode], sum_check_KED[mode], sum_check_TED[mode], normal_coord_harmonic_frequencies[mode])
+
+        logfile.write_logfile_extended_results(PED, KED, TED, sum_check_PED[mode], sum_check_KED[mode],
+                                               sum_check_TED[mode], normal_coord_harmonic_frequencies[mode])
 
     logfile.call_shutdown()
-    
+
     print("Runtime: %s seconds" % (time.time() - start_time))
+
 
 if __name__ == '__main__':
     main()
-
-

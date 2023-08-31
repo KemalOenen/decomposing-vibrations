@@ -14,12 +14,21 @@ import topology
 import nomodeco
 
 
-#TODO: symmetry breaking needs to be revised completely -> currently only 3N-6 coordinate sets
-
-def Kemalian_metric(matrix):
+def Kemalian_metric(contribution_matrix, Diag_elements, nu, counter, intfreq_penalty, intfc_penalty):
     # axis = 0, when maximum of each column
-    max_values = np.max(matrix, axis=1)
-    return np.mean(max_values)
+    max_values = np.max(contribution_matrix, axis=1)
+
+    # penalty for high fc values
+    penalty1 = intfreq_penalty * counter
+
+    # penalty for high fc values
+    penalty2 = 0
+    max_values_int_fc = np.max(Diag_elements, axis=1)
+    for max_fc_value in max_values_int_fc:
+        if max_fc_value > 1:
+            penalty2 += ((max_fc_value-1)/0.1) * intfc_penalty
+
+    return np.mean(max_values) - penalty1 - penalty2
 
 def are_two_elements_same(tup1, tup2):
     return ((tup1[0] == tup2[0] and tup1[1] == tup2[1]) or
