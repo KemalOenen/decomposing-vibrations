@@ -3,7 +3,8 @@ import pandas as pd
 import icsel
 import bmatrix
 
-def find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms, L):
+def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra,
+                                CartesianF_Matrix, atoms, symmetric_coordinates, L, intfreq_penalty, intfc_penalty):
     metric_analysis = np.zeros(len(ic_dict))
 
     for num_of_set in ic_dict.keys():
@@ -105,10 +106,21 @@ def find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal
                 for n in range(0, n_internals + num_rottra):
                     sum_check_PED[i] += P[i][m][n] 
                     sum_check_KED[i] += T[i][m][n] 
-                    sum_check_TED[i] += E[i][m][n] 
+                    sum_check_TED[i] += E[i][m][n]
+
+        sum_check_VED = 0
+        ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
+        for i in range(0, n_internals - red):
+            for m in range(0, n_internals + num_rottra):
+                for n in range(0, n_internals + num_rottra):
+                    ved_matrix[i][m] += P[i][m][n]
+                sum_check_VED += ved_matrix[i][m]
+
+        sum_check_VED = np.around(sum_check_VED / (n_internals - red), 2)
+        ved_matrix = np.transpose(ved_matrix)
+        ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
 
         # compute diagonal elements of PED matrix
-
         Diag_elements = np.zeros((n_internals-red,n_internals))
         for i in range(0,n_internals-red):
             for n in range (0,n_internals):
@@ -127,31 +139,49 @@ def find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix, reciprocal
         for i in range(0, n_internals-red):
             contribution_matrix[:,i] = ((Diag_elements[:,i] / sum_diag[i]) * 100).astype(float)
 
-        # IMPORTANT: CONTRIBUTION TABLE IS USED FOR METRIC
-        # Summarized vibrational energy distribution matrix - can be calculated by either PED/KED/TED
-        # rows are ICs, columns are harmonic frequencies!
-        #sum_check_VED = 0
-        #ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
-        #for i in range(0,n_internals-red):
-        #    for m in range(0, n_internals + num_rottra):
-        #        for n in range (0,n_internals + num_rottra):
-        #            ved_matrix[i][m] += P[i][m][n]
-        #        sum_check_VED += ved_matrix[i][m]
-        #
-        #sum_check_VED = np.around(sum_check_VED / (n_internals-red), 2)
-        #
-        ## currently: rows are harmonic modes and columns are ICs ==> need to transpose
-        #ved_matrix = np.transpose(ved_matrix)
-        #
-        ## remove the rottra
-        #ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
+        if intfreq_penalty != 0:
+            nu = np.zeros(n_internals)
+            for n in range(0, n_internals):
+                for m in range(0, n_internals):
+                    for i in range(0, n_internals - red):
+                        k = i + num_rottra
+                        nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
 
-        metric_analysis[num_of_set] = icsel.Kemalian_metric(contribution_matrix)
-        #if metric_analysis[num_of_set] != 0:
-        #    print(metric_analysis[num_of_set])
-        #    print(pd.DataFrame(ved_matrix))
+            all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
 
-    # TODO: rename the metric?
-    print(metric_analysis)
-    print("Optimal coordinate set has the following diagonalization parameter:", metric_analysis[np.argmax(metric_analysis)])
+            # check how often the intrinsic frequencies are the same for symmetric counterparts
+            # get counter for asymmetry
+
+            nu_dict = dict()
+            for n in range(0, n_internals):
+                nu_dict[all_internals[n]] = nu[n]
+
+            counter_same_intrinsic_frequencies = 0
+            counter_expected_symmetric_coordinates = 0
+            for key1, value1 in nu_dict.items():
+                for key2, value2 in nu_dict.items():
+                    if key1 != key2 and np.isclose(value1, value2):
+                        counter_same_intrinsic_frequencies += 1
+            for key in nu_dict:
+                if len(symmetric_coordinates[key]) > 1:
+                    counter_expected_symmetric_coordinates += 1
+
+            # no double counting
+            counter_same_intrinsic_frequencies = (counter_same_intrinsic_frequencies // 2)
+            counter_expected_symmetric_coordinates = (counter_expected_symmetric_coordinates // 2)
+
+            counter = np.abs(counter_expected_symmetric_coordinates - counter_same_intrinsic_frequencies)
+        else:
+            counter = 0
+
+        matrix = contribution_matrix
+        if args.matrix_opt == "diag":
+            matrix = Diag_elements
+        if args.matrix_opt == "ved":
+            matrix = ved_matrix
+
+        metric_analysis[num_of_set] = icsel.Kemalian_metric(matrix, Diag_elements, counter,
+                                                            intfreq_penalty, intfc_penalty)
+
+    print("Optimal coordinate set has the following assigned metric value:", metric_analysis[np.argmax(metric_analysis)])
     return ic_dict[np.argmax(metric_analysis)] 

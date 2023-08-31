@@ -14,9 +14,14 @@ import topology
 import nomodeco
 
 
-def Kemalian_metric(contribution_matrix, Diag_elements, nu, counter, intfreq_penalty, intfc_penalty):
+def Kemalian_metric(matrix, Diag_elements, counter, intfreq_penalty, intfc_penalty):
     # axis = 0, when maximum of each column
-    max_values = np.max(contribution_matrix, axis=1)
+    max_values = np.max(matrix, axis=1)
+
+    # set 0 if negative values
+    min_values = np.min(matrix, axis=1)
+    if np.any(min_values < -1):
+        return 0
 
     # penalty for high fc values
     penalty1 = intfreq_penalty * counter

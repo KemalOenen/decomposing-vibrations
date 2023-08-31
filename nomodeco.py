@@ -164,8 +164,7 @@ def main():
         symmetric_coordinates = dict()
 
     ic_dict = icsel.get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
-
-    optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, idof, reciprocal_massmatrix,
+    optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix,
                                                         reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms,
                                                         symmetric_coordinates, L, args.penalty1, args.penalty2)
 
@@ -352,22 +351,51 @@ def main():
     logfile.write_logfile_results(Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
 
     # heat map results
+    # TODO: clean up
+    if args.heatmap:
+        columns = {}
+        keys = range(3 * n_atoms - ((3 * n_atoms - idof)))
+        for i in keys:
+            columns[i] = normal_coord_harmonic_frequencies[i]
 
-    columns = {}
-    keys = range(3 * n_atoms - ((3 * n_atoms - idof)))
-    for i in keys:
-        columns[i] = normal_coord_harmonic_frequencies[i]
+        for matrix_type in args.heatmap:
+            if matrix_type == "ved":
+                heatmap_df = pd.DataFrame(ved_matrix).applymap("{0:.2f}".format)
+                heatmap_df.index = all_internals_string
+                heatmap_df = heatmap_df.rename(columns=columns)
 
-    heatmap_df = pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
-    heatmap_df.index = all_internals_string
-    heatmap_df = heatmap_df.rename(columns=columns)
+                heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
+                heatmap.figure.savefig("heatmap_ved_matrix.png", bbox_inches="tight", dpi=500)
+                plt.close(heatmap.figure)
+            if matrix_type == "diag":
+                heatmap_df = pd.DataFrame(Diag_elements).applymap("{0:.2f}".format)
+                heatmap_df.index = all_internals_string
+                heatmap_df = heatmap_df.rename(columns=columns)
 
-    heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
-    heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
-    heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=500)
-    plt.close(heatmap.figure)
+                heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
+                heatmap.figure.savefig("heatmap_ped_diagonal.png", bbox_inches="tight", dpi=500)
+                plt.close(heatmap.figure)
+            if matrix_type == "contr":
+                heatmap_df = pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
+                heatmap_df.index = all_internals_string
+                heatmap_df = heatmap_df.rename(columns=columns)
 
-    # TODO: csv results
+                heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.3g')
+                heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=500)
+                plt.close(heatmap.figure)
+
+    if args.csv:
+        for matrix_type in args.csv:
+            if matrix_type == "ved":
+                Results.to_csv("ved_matrix.csv")
+            if matrix_type == "diag":
+                DiagonalElementsPED.to_csv("ped_diagonal.csv")
+            if matrix_type == "contr":
+                ContributionTable.to_csv("contribution_table.csv")
+
 
     # here the individual matrices can be computed, one can comment them out
     # if not needed
