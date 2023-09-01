@@ -78,9 +78,9 @@ def main():
         n_atoms = len(atoms)
     with open(args.output) as inputfile:
         CartesianF_Matrix = molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile)
-        outputfile = logfile.create_new_filename(inputfile.name)
+        outputfile = logfile.create_filename_out(inputfile.name)
 
-    # initialize log file
+    # initialize out file
     # TODO: extract
     if os.path.exists(outputfile):
         i = 1
@@ -91,8 +91,8 @@ def main():
                 break
             i += 1
 
-    logging.basicConfig(filename=outputfile, filemode='a', format='%(message)s', level=logging.DEBUG)
-    logfile.write_logfile_header()
+    out = logfile.setup_logger('outputfile', outputfile)
+    logfile.write_logfile_header(out)
 
     # Determining molecular symmetry
     molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in atoms], [atom.coordinates for atom in atoms])
@@ -117,7 +117,7 @@ def main():
     elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
         out_of_plane = icgen.initialize_oop_planar_subunits(atoms, specification["planar submolecule(s)"])
     else:
-        return logging.error("Classification of whether topology is planar or not could not be determined!")
+        return out.error("Classification of whether topology is planar or not could not be determined!")
     dihedrals = icgen.initialize_dihedrals(atoms)
 
     # determine internal degrees of freedom 
@@ -127,10 +127,10 @@ def main():
     else:
         idof = 3 * n_atoms - 6
 
-    # update log file
+    # update out file
 
-    logfile.write_logfile_oop_treatment(specification["planar"], specification["planar submolecule(s)"])
-    logfile.write_logfile_symmetry_treatment(specification, point_group_sch)
+    logfile.write_logfile_oop_treatment(out, specification["planar"], specification["planar submolecule(s)"])
+    logfile.write_logfile_symmetry_treatment(out, specification, point_group_sch)
 
     # Computation of the diagonal mass matrices with 
     # the reciprocal and square root reciprocal masses
@@ -152,7 +152,7 @@ def main():
 
     rottra = L[:, 0:(3 * n_atoms - idof)]
 
-    logfile.write_logfile_generated_IC(bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
+    logfile.write_logfile_generated_IC(out, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
 
     # get symmetric coordinates
     if args.penalty1 != 0:
@@ -214,7 +214,7 @@ def main():
     B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
     InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
 
-    logfile.write_logfile_information_results(n_internals, red, bonds, angles,
+    logfile.write_logfile_information_results(out, n_internals, red, bonds, angles,
                                               linear_angles, out_of_plane, dihedrals)
 
     ''''' 
@@ -348,7 +348,7 @@ def main():
 
     # TODO:  line breaks in output file
 
-    logfile.write_logfile_results(Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
+    logfile.write_logfile_results(out, Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
 
     # heat map results
     # TODO: clean up
@@ -420,7 +420,7 @@ def main():
         KED = KED.rename(columns=columns)
         TED = TED.rename(columns=columns)
 
-        logfile.write_logfile_extended_results(PED, KED, TED, sum_check_PED[mode], sum_check_KED[mode],
+        logfile.write_logfile_extended_results(out, PED, KED, TED, sum_check_PED[mode], sum_check_KED[mode],
                                                sum_check_TED[mode], normal_coord_harmonic_frequencies[mode])
 
     logfile.call_shutdown()

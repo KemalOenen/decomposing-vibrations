@@ -6,6 +6,9 @@ def get_args():
     parser.add_argument("output",
                         help='output file containing '
                              'geometry optimized coordinates and hessian')
+    parser.add_argument("--log", action='store_true',
+                        help='set if you want an additional .log file that contains the results for '
+                             'every tested internal coordinate set')
     parser.add_argument('--matrix_opt', nargs='?', default='contr',
                         metavar='matrix', help='choose which matrix to use for optimization: i.e., '
                                                'VED matrix (keyword: ved), Diagonal elements of PED matrix '
