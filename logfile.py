@@ -3,6 +3,7 @@ import pyfiglet
 import logging
 
 formatter = logging.Formatter('%(message)s')
+from pprint import pformat
 
 
 def setup_logger(name, log_file, level=logging.DEBUG):
@@ -43,37 +44,43 @@ def write_logfile_header(logger):
 def write_logfile_oop_treatment(logger, oop_directive, planar_subunit_list):
     if oop_directive == "yes":
         logger.info(
-            "Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane angles tend to perform worse")
+            "Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane "
+            "angles tend to perform worse")
         logger.info(
-            "than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
+            "than the other internal coordinates in terms of computational cost and in the decomposition. However "
+            "they can be")
         logger.info("useful for planar systems.")
     elif oop_directive == "no" and len(planar_subunit_list) == 0:
         logger.info(
-            "Non-planar system detected. Therefore out-of-plane angles are NOT used in your analysis. Note that out-of-plane angles tend to perform worse")
+            "Non-planar system detected. Therefore out-of-plane angles are NOT used in your analysis. Note that "
+            "out-of-plane angles tend to perform worse")
         logger.info(
-            "than the other internal coordinates in terms of computational cost and in the decomposition. However they can be")
+            "than the other internal coordinates in terms of computational cost and in the decomposition. However "
+            "they can be")
         logger.info("useful for planar systems.")
     elif oop_directive == "no" and len(planar_subunit_list) != 0:
         logger.info(
-            "Planar submolecule(s) detected. Out-of-plane angles will be used for the central atoms of the planar subunits ")
+            "Planar submolecule(s) detected. Out-of-plane angles will be used for the central atoms of the planar "
+            "subunits ")
     logger.info("")
 
 
 def write_logfile_symmetry_treatment(logger, specification, point_group_sch):
     logger.info("The detected point group is %s", point_group_sch)
-    logger.info("The following equivalent atoms were found: %s ", specification["equivalent_atoms"])
+    logger.info("The following equivalent atoms were found: %s ", pformat(specification["equivalent_atoms"], width=110, compact=True))
     logger.info("")
 
 
 def write_logfile_generated_IC(logger, bonds, angles, linear_angles, out_of_plane, dihedrals, idof):
     logger.info(
-        "The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:".center(
+        "The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and "
+        "torsions) were generated:".center(
             110))
-    logger.info("bonds: %s", bonds)
-    logger.info("in-plane angles: %s", angles)
-    logger.info("linear valence-angles: %s", linear_angles)
-    logger.info("out-of-plane angles: %s", out_of_plane)
-    logger.info("dihedrals: %s", dihedrals)
+    logger.info("bonds: %s", pformat(bonds, width=110, compact=True))
+    logger.info("in-plane angles: %s", pformat(angles, width=110, compact=True))
+    logger.info("linear valence-angles: %s",  pformat(linear_angles, width=110, compact=True))
+    logger.info("out-of-plane angles: %s", pformat(out_of_plane, width=110, compact=True))
+    logger.info("dihedrals: %s", pformat(dihedrals, width=110, compact=True))
     logger.info("")
     logger.info("%s internal coordinates are at least needed for the decomposition scheme.".center(50), idof)
     logger.info("")
@@ -105,11 +112,11 @@ def write_logfile_information_results(logger, n_internals, red, bonds, angles, l
     logger.info(" Initialization of an internal coordinate set ".center(110, "-"))
     logger.info("")
     logger.info("The following %s Internal Coordinates are used in your analysis:".center(50), n_internals)
-    logger.info("bonds: %s", bonds)
-    logger.info("in-plane angles: %s", angles)
-    logger.info("linear valence-angles: %s", linear_angles)
-    logger.info("out-of-plane angles: %s", out_of_plane)
-    logger.info("dihedrals: %s", dihedrals)
+    logger.info("bonds: %s", pformat(bonds, width=110, compact=True))
+    logger.info("in-plane angles: %s", pformat(angles, width=110, compact=True))
+    logger.info("linear valence-angles: %s", pformat(linear_angles, width=110, compact=True))
+    logger.info("out-of-plane angles: %s", pformat(out_of_plane, width=110, compact=True))
+    logger.info("dihedrals: %s", pformat(dihedrals, width=110, compact=True))
     logger.info("")
     if red == 1:
         logging.info('There is %s redundant internal coordinates used.', red)
@@ -123,11 +130,11 @@ def write_logfile_updatedICs_cyclic(logger, bonds, angles, linear_angles, out_of
     logger.info("Due to having a cyclic molecule, %s bond(s) is/are removed in the analysis", specification["mu"])
     logger.info("")
     logger.info("The following updated Internal Coordinates are used in your analysis:".center(50))
-    logger.info("bonds: %s", bonds)
-    logger.info("in-plane angles: %s", angles)
-    logger.info("linear valence-angles: %s", linear_angles)
-    logger.info("out-of-plane angles: %s", out_of_plane)
-    logger.info("dihedrals: %s", dihedrals)
+    logger.info("bonds: %s", pformat(bonds, width=110, compact=True))
+    logger.info("in-plane angles: %s", pformat(angles, width=110, compact=True))
+    logger.info("linear valence-angles: %s", pformat(linear_angles, width=110, compact=True))
+    logger.info("out-of-plane angles: %s", pformat(out_of_plane, width=110, compact=True))
+    logger.info("dihedrals: %s", pformat(dihedrals, width=110, compact=True))
     logger.info("")
 
 
@@ -136,8 +143,8 @@ def write_logfile_updatedICs_linunit(logger, out_of_plane, dihedrals):
     logger.info("Due to having a linear subunit, out-of-plane / dihedral angles were removed")
     logger.info("")
     logger.info("The following updated Internal Coordinates are used in your analysis:".center(50))
-    logger.info("out-of-plane angles: %s", out_of_plane)
-    logger.info("dihedrals: %s", dihedrals)
+    logger.info("out-of-plane angles: %s", pformat(out_of_plane, width=110, compact=True))
+    logger.info("dihedrals: %s", pformat(dihedrals, width=110, compact=True))
     logger.info("")
 
 

@@ -321,7 +321,7 @@ def matrix_norm(matrix, matrix_inv, p):
     return np.linalg.norm(matrix, p) * np.linalg.norm(matrix_inv, p)
 
 
-def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
+def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
     ic_dict = dict()
     num_bonds = len(bonds)
     num_atoms = len(atoms)
@@ -334,7 +334,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
     # @decision tree: planar, acyclic and no linear submolecules 
     if specification["planar"] == "yes" and not specification["linearity"] == "linear submolecules found" and (
             num_of_red == 0):
-        ic_dict = topology.planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.planar_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                              dihedrals, num_bonds, num_atoms,
                                                              number_terminal_bonds(specification["multiplicity"]),
                                                              specification)
@@ -342,7 +342,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
     # @decision tree: planar, cyclic and no linear submolecules 
     if specification["planar"] == "yes" and not specification["linearity"] == "linear submolecules found" and (
             num_of_red != 0):
-        ic_dict = topology.planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.planar_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                             dihedrals, num_bonds, num_atoms,
                                                             number_terminal_bonds(specification["multiplicity"]),
                                                             specification)
@@ -350,7 +350,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
     # @decision tree: general molecule, acyclic and no linear submolecules
     if specification["planar"] == "no" and not specification["linearity"] == "linear submolecules found" and (
             num_of_red == 0):
-        ic_dict = topology.general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.general_acyclic_nolinunit_molecule(ic_dict, out,idof, bonds, angles, linear_angles, out_of_plane,
                                                               dihedrals, num_bonds, num_atoms,
                                                               number_terminal_bonds(specification["multiplicity"]),
                                                               specification)
@@ -358,7 +358,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
     # @decision tree: general molecule, cyclic and no linear submolecules
     if specification["planar"] == "no" and not specification["linearity"] == "linear submolecules found" and (
             num_of_red != 0):
-        ic_dict = topology.general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.general_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                              dihedrals, num_bonds, num_atoms, num_of_red,
                                                              number_terminal_bonds(specification["multiplicity"]),
                                                              specification)
@@ -366,7 +366,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
     # @decision tree: planar, acyclic molecules with linear submolecules
     if specification["planar"] == "yes" and specification["linearity"] == "linear submolecules found" and (
             num_of_red == 0):
-        ic_dict = topology.planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.planar_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                            dihedrals, num_bonds, num_atoms,
                                                            number_terminal_bonds(specification["multiplicity"]),
                                                            specification["length of linear submolecule(s) l"],
@@ -375,7 +375,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
     # @decision tree: planar, cyclic molecules with linear submolecules
     if specification["planar"] == "yes" and specification["linearity"] == "linear submolecules found" and (
             num_of_red != 0):
-        ic_dict = topology.planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.planar_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                           dihedrals, num_bonds, num_atoms,
                                                           number_terminal_bonds(specification["multiplicity"]),
                                                           specification["length of linear submolecule(s) l"],
@@ -384,7 +384,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
         # @decision tree: general, acyclic molecule with linear submolecules
     if specification["planar"] == "no" and specification["linearity"] == "linear submolecules found" and (
             num_of_red == 0):
-        ic_dict = topology.general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.general_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                             dihedrals, num_bonds, num_atoms,
                                                             number_terminal_bonds(specification["multiplicity"]),
                                                             specification["length of linear submolecule(s) l"],
@@ -393,7 +393,7 @@ def get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals,
     # @decision tree: general, cyclic molecule with linear submolecules
     if specification["planar"] == "no" and specification["linearity"] == "linear submolecules found" and (
             num_of_red != 0):
-        ic_dict = topology.general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane,
+        ic_dict = topology.general_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                            dihedrals, num_bonds, num_atoms, num_of_red,
                                                            number_terminal_bonds(specification["multiplicity"]),
                                                            specification["length of linear submolecule(s) l"],

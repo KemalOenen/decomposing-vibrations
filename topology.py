@@ -161,7 +161,7 @@ PLANAR SYSTEMS
 '''''
 
 
-def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def planar_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                       num_atoms, a_1, specification):
     # set length of subsets
     n_r = num_bonds
@@ -218,7 +218,7 @@ def planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
 
 
 # in the cyclic cases, the molecule is rendered acyclic (by removing random but possible mu bonds) and then the acylic function is called
-def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def planar_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                      num_atoms, a_1, specification):
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
@@ -242,7 +242,7 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
         out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds_updated, angles_updated,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds_updated, angles_updated,
                                                 linear_angles, out_of_plane_updated, dihedrals_updated, specification)
 
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
@@ -266,7 +266,7 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
 
         # call the acyclic version
 
-        ic_dict_list.append(planar_acyclic_nolinunit_molecule(dict(), idof, bonds_updated, angles_updated,
+        ic_dict_list.append(planar_acyclic_nolinunit_molecule(dict(), out, idof, bonds_updated, angles_updated,
                                                               linear_angles, out_of_plane_updated, dihedrals_updated,
                                                               len(bonds_updated), num_atoms, a_1, specification))
         removed_bonds = []
@@ -279,10 +279,10 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
         out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds, angles,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds, angles,
                                                 linear_angles, out_of_plane, dihedrals, specification)
 
-        ic_dict = planar_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles,
+        ic_dict = planar_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles,
                                                     linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1,
                                                     specification)
         return ic_dict
@@ -297,7 +297,7 @@ def planar_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles
         return ic_dict
 
 
-def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def planar_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                     num_atoms, a_1, l, specification):
     # set length of subsets
     # IMPORTANT: there is a distinction to Decius work -> Decius counts one l.A. in n_phi and one in n_phi'!
@@ -336,7 +336,7 @@ def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
     n_gamma = n_gamma - ((len(out_of_plane) - len(out_of_plane_updated)) // 3)
     out_of_plane = out_of_plane_updated
 
-    logfile.write_logfile_updatedICs_linunit(out_of_plane, dihedrals)
+    logfile.write_logfile_updatedICs_linunit(out, out_of_plane, dihedrals)
 
     symmetric_angles = icsel.get_symm_angles(angles, specification)
     angle_subsets = icsel.get_angle_subsets(symmetric_angles, len(bonds), len(angles), idof, n_phi)
@@ -376,7 +376,7 @@ def planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
     return ic_dict
 
 
-def planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def planar_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                    num_atoms, a_1, l, specification):
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
@@ -400,7 +400,7 @@ def planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, 
         out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds_updated, angles_updated,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds_updated, angles_updated,
                                                 linear_angles, out_of_plane_updated, dihedrals_updated, specification)
 
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
@@ -424,7 +424,7 @@ def planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, 
 
         # call the acyclic version
 
-        ic_dict_list.append(planar_acyclic_linunit_molecule(dict(), idof, bonds_updated, angles_updated,
+        ic_dict_list.append(planar_acyclic_linunit_molecule(dict(), out, idof, bonds_updated, angles_updated,
                                                             linear_angles, out_of_plane_updated, dihedrals_updated,
                                                             len(bonds_updated), num_atoms, a_1, specification))
         removed_bonds = []
@@ -437,10 +437,10 @@ def planar_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, 
         out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds, angles,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds, angles,
                                                 linear_angles, out_of_plane, dihedrals, specification)
 
-        ic_dict = planar_acyclic_linunit_molecule(ic_dict, idof, bonds, angles,
+        ic_dict = planar_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles,
                                                   linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1,
                                                   specification)
         return ic_dict
@@ -460,7 +460,7 @@ GENERAL SYSTEMS
 '''''
 
 
-def general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def general_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                        num_atoms, a_1, specification):
     # set length of subsets
     n_r = num_bonds
@@ -510,7 +510,7 @@ def general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angl
     return ic_dict
 
 
-def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def general_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                       num_atoms, num_of_red, a_1, specification):
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
@@ -534,7 +534,7 @@ def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
         out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds_updated, angles_updated,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds_updated, angles_updated,
                                                 linear_angles, out_of_plane_updated, dihedrals_updated, specification)
 
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
@@ -558,7 +558,7 @@ def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
 
         # call the acyclic version
 
-        ic_dict_list.append(general_acyclic_nolinunit_molecule(dict(), idof, bonds_updated, angles_updated,
+        ic_dict_list.append(general_acyclic_nolinunit_molecule(dict(), out, idof, bonds_updated, angles_updated,
                                                                linear_angles, out_of_plane_updated, dihedrals_updated,
                                                                len(bonds_updated), num_atoms, a_1, specification))
         removed_bonds = []
@@ -571,10 +571,10 @@ def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
         out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds, angles,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds, angles,
                                                 linear_angles, out_of_plane, dihedrals, specification)
 
-        ic_dict = general_acyclic_nolinunit_molecule(ic_dict, idof, bonds, angles,
+        ic_dict = general_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles,
                                                      linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1,
                                                      specification)
         return ic_dict
@@ -589,7 +589,7 @@ def general_cyclic_nolinunit_molecule(ic_dict, idof, bonds, angles, linear_angle
         return ic_dict
 
 
-def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def general_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                      num_atoms, a_1, l, specification):
     # set length of subsets
     n_r = num_bonds
@@ -633,7 +633,7 @@ def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles
                 linear_bond[1], specification["multiplicity"]) == 1:
             dihedrals = update_internal_coordinates_cyclic([linear_bond], dihedrals)
 
-    logfile.write_logfile_updatedICs_linunit(out_of_plane, dihedrals)
+    logfile.write_logfile_updatedICs_linunit(out, out_of_plane, dihedrals)
 
     # Uncomment, if you want to sample internal coordinates as well
     # Beware: This will lead to high combinatorics!
@@ -669,7 +669,7 @@ def general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles
     return ic_dict
 
 
-def general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+def general_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                     num_atoms, num_of_red, a_1, l, specification):
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
@@ -693,7 +693,7 @@ def general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
         out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds_updated, angles_updated,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds_updated, angles_updated,
                                                 linear_angles, out_of_plane_updated, dihedrals_updated, specification)
 
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
@@ -717,7 +717,7 @@ def general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
 
         # call the acyclic version
 
-        ic_dict_list.append(general_acyclic_linunit_molecule(dict(), idof, bonds_updated, angles_updated,
+        ic_dict_list.append(general_acyclic_linunit_molecule(dict(), out, idof, bonds_updated, angles_updated,
                                                              linear_angles, out_of_plane_updated, dihedrals_updated,
                                                              len(bonds_updated), num_atoms, a_1, specification))
         removed_bonds = []
@@ -730,10 +730,10 @@ def general_cyclic_linunit_molecule(ic_dict, idof, bonds, angles, linear_angles,
         out_of_plane = update_internal_coordinates_cyclic(removed_bonds, out_of_plane)
         dihedrals = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
 
-        logfile.write_logfile_updatedICs_cyclic(bonds, angles,
+        logfile.write_logfile_updatedICs_cyclic(out, bonds, angles,
                                                 linear_angles, out_of_plane, dihedrals, specification)
 
-        ic_dict = general_acyclic_linunit_molecule(ic_dict, idof, bonds, angles,
+        ic_dict = general_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles,
                                                    linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1,
                                                    specification)
         return ic_dict

@@ -163,7 +163,7 @@ def main():
     else:
         symmetric_coordinates = dict()
 
-    ic_dict = icsel.get_sets(idof, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
+    ic_dict = icsel.get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
     optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix,
                                                         reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms,
                                                         symmetric_coordinates, L, args.penalty1, args.penalty2)
