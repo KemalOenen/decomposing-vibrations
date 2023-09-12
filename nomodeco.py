@@ -361,28 +361,28 @@ def main():
         for matrix_type in args.heatmap:
             if matrix_type == "ved":
                 heatmap_df = pd.DataFrame(ved_matrix).applymap("{0:.2f}".format)
-                heatmap_df.index = all_internals_string
                 heatmap_df = heatmap_df.rename(columns=columns)
+                heatmap_df = heatmap_df.astype('float')
+                heatmap_df.index = all_internals_string
 
-                heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
                 heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
                 heatmap.figure.savefig("heatmap_ved_matrix.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
             if matrix_type == "diag":
                 heatmap_df = pd.DataFrame(Diag_elements).applymap("{0:.2f}".format)
-                heatmap_df.index = all_internals_string
                 heatmap_df = heatmap_df.rename(columns=columns)
+                heatmap_df = heatmap_df.astype('float')
+                heatmap_df.index = all_internals_string
 
-                heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
                 heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
                 heatmap.figure.savefig("heatmap_ped_diagonal.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
             if matrix_type == "contr":
                 heatmap_df = pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
-                heatmap_df.index = all_internals_string
                 heatmap_df = heatmap_df.rename(columns=columns)
+                heatmap_df = heatmap_df.astype('float')
+                heatmap_df.index = all_internals_string
 
-                heatmap_df = heatmap_df[heatmap_df.columns].astype('float')
                 heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.3g')
                 heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
