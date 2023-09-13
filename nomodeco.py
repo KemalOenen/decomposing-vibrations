@@ -360,30 +360,42 @@ def main():
 
         for matrix_type in args.heatmap:
             if matrix_type == "ved":
+                rows, cols = ved_matrix.shape
+                figsize = (cols, rows)
+                plt.figure(figsize=figsize)
+                
                 heatmap_df = pd.DataFrame(ved_matrix).applymap("{0:.2f}".format)
                 heatmap_df = heatmap_df.rename(columns=columns)
                 heatmap_df = heatmap_df.astype('float')
                 heatmap_df.index = all_internals_string
 
-                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, annot_kws={"size": 35 / np.sqrt(len(ved_matrix))})
                 heatmap.figure.savefig("heatmap_ved_matrix.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
             if matrix_type == "diag":
+                rows, cols = Diag_elements.shape
+                figsize = (cols, rows)
+                plt.figure(figsize=figsize)
+                
                 heatmap_df = pd.DataFrame(Diag_elements).applymap("{0:.2f}".format)
                 heatmap_df = heatmap_df.rename(columns=columns)
                 heatmap_df = heatmap_df.astype('float')
                 heatmap_df.index = all_internals_string
 
-                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True)
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, annot_kws={"size": 35 / np.sqrt(len(Diag_elements))})
                 heatmap.figure.savefig("heatmap_ped_diagonal.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
             if matrix_type == "contr":
+                rows, cols = contribution_matrix.shape
+                figsize = (cols, rows)
+                plt.figure(figsize=figsize)
+
                 heatmap_df = pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
                 heatmap_df = heatmap_df.rename(columns=columns)
                 heatmap_df = heatmap_df.astype('float')
                 heatmap_df.index = all_internals_string
 
-                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.3g')
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.3g', annot_kws={"size": 35 / np.sqrt(len(contribution_matrix))})
                 heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
 
