@@ -97,7 +97,8 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
         # if you want the information where imaginary freq. occur
         # uncomment below
         if np.any(nu < 0) == True:
-            logfile.write_logfile_nan_freq(log)
+            if args.log:
+                logfile.write_logfile_nan_freq(log)
             continue
 
         # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices

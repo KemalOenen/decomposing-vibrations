@@ -369,7 +369,7 @@ def main():
                 heatmap_df = heatmap_df.astype('float')
                 heatmap_df.index = all_internals_string
 
-                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, annot_kws={"size": 35 / np.sqrt(len(ved_matrix))})
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, square=True, annot_kws={"size": 35 / np.sqrt(len(ved_matrix))})
                 heatmap.figure.savefig("heatmap_ved_matrix.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
             if matrix_type == "diag":
@@ -382,7 +382,7 @@ def main():
                 heatmap_df = heatmap_df.astype('float')
                 heatmap_df.index = all_internals_string
 
-                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, annot_kws={"size": 35 / np.sqrt(len(Diag_elements))})
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, square=True, annot_kws={"size": 35 / np.sqrt(len(Diag_elements))})
                 heatmap.figure.savefig("heatmap_ped_diagonal.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
             if matrix_type == "contr":
@@ -395,7 +395,7 @@ def main():
                 heatmap_df = heatmap_df.astype('float')
                 heatmap_df.index = all_internals_string
 
-                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.3g', annot_kws={"size": 35 / np.sqrt(len(contribution_matrix))})
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.3g', square=True, annot_kws={"size": 35 / np.sqrt(len(contribution_matrix))})
                 heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
 
