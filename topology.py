@@ -86,10 +86,11 @@ def delete_bonds(bonds, mu, valide_atoms):
 
 
 # TODO: rename method
+# TODO: possible bug here for cyclic systems, when using [:]!
 def update_internal_coordinates_cyclic(removed_bonds, ic_list):
     ic_list_dup = ic_list[:]
     for bond in removed_bonds:
-        for ic in ic_list_dup:
+        for ic in ic_list_dup[:]:
             if bond[0] in ic and bond[1] in ic:
                 ic_list_dup.remove(ic)
     return ic_list_dup
@@ -368,13 +369,12 @@ def planar_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_an
                 ic_dict[k] = {
                     "bonds": bonds,
                     "angles": angle_subsets[len_angles],
-                    "linear valence angles": [linear_angles[0]],
+                    "linear valence angles": linear_angles,
                     "out of plane angles": oop_subsets[len_oop],
                     "dihedrals": dihedral_subsets[len_dihedrals]}
                 k += 1
 
     return ic_dict
-
 
 def planar_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
                                    num_atoms, a_1, l, specification):
@@ -564,7 +564,7 @@ def general_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_
         removed_bonds = []
 
     # if we can't cut according to symmetry, do random cutting
-    # cut symmetry out if you want, by commenting everyting out
+    # cut symmetry out if you want, by commenting everything out
     if not ic_dict_list:
         removed_bonds, bonds = delete_bonds(bonds, specification["mu"], valide_atoms)
         angles = update_internal_coordinates_cyclic(removed_bonds, angles)
@@ -599,8 +599,7 @@ def general_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_a
     n_phi_prime = 2 * (l - 1)
     n_tau = num_bonds - a_1 - (l - 1)
 
-    # TODO: for SF6, we will not use the linear angles in the analysis, as we would have faulty values for some parameters
-    # so we need a better check here
+    # occurs for SF6
     if n_tau < 0 or n_phi < 0:
         logging.warning(
             "Due to high number of linear angles, the topology conditions can not be considered. Linear angles will be removed from the analysis to do so.")

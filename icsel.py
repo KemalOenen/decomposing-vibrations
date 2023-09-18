@@ -320,7 +320,6 @@ def not_same_central_atom(list_oop_angles) -> bool:
 def matrix_norm(matrix, matrix_inv, p):
     return np.linalg.norm(matrix, p) * np.linalg.norm(matrix_inv, p)
 
-
 def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
     ic_dict = dict()
     num_bonds = len(bonds)

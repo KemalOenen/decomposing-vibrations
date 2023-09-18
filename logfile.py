@@ -85,7 +85,6 @@ def write_logfile_generated_IC(logger, bonds, angles, linear_angles, out_of_plan
     logger.info("%s internal coordinates are at least needed for the decomposition scheme.".center(50), idof)
     logger.info("")
 
-
 def write_logfile_nan_freq(logger):
     logger.info("")
     logger.error('Imaginary frequency values were detected for the intrinsic frequencies.')
