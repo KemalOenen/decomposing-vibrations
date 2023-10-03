@@ -1,7 +1,13 @@
-@software{Oenen2023,
-  author = {Kemal Oenen and Dennis F. Dinu and Klaus R. Liedl},
-  title = {{Sampling internal coordinate sets for optimal representation of molecular vibration}},
-  url = {https://github.com/KemalOenen/decomposing-vibrations},
-  version = {0.9},
-  year = {2023}
-}
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Oenen"
+  given-names: "Kemal"
+- family-names: "Dinu"
+  given-names: "Dennis F."
+- family-names: "Liedl"
+  given-names: "Klaus R."
+title: "Nomodeco toolkit"
+version: 0.9.0
+date-released: 2023-03-10
+url: "https://github.com/KemalOenen/decomposing-vibrations"
