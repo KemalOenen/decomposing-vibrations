@@ -1,0 +1,7 @@
+@software{Oenen2023,
+  author = {Kemal Oenen and Dennis F. Dinu and Klaus R. Liedl},
+  title = {{Sampling internal coordinate sets for optimal representation of molecular vibration}},
+  url = {https://github.com/KemalOenen/decomposing-vibrations},
+  version = {0.9},
+  year = {2023}
+}
