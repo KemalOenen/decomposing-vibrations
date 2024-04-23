@@ -1,3 +1,4 @@
+#general packages
 from __future__ import annotations
 
 from typing import NamedTuple
@@ -19,6 +20,9 @@ mpl.rcParams['backend'] = "Agg"
 # do not show messages
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
+# nomodeco libraries
+import sys
+sys.path.append('modules')
 import icgen
 import icsel
 import bmatrix
@@ -34,7 +38,7 @@ class Atom(NamedTuple):
     coordinates: tuple
 
 
-# TODO: isotopes for all elements with command line input
+# TODO: isotopes for all elements with command line input?
 def get_mass_information() -> pd.DataFrame:
     df = fetch_table('elements')
     mass_info = df.loc[:, ['symbol', 'atomic_weight']]
@@ -66,8 +70,7 @@ def strip_numbers(string):
     return ''.join([char for char in string if not char.isdigit()])
 
 
-start_time = time.time()
-
+start_time = time.time() # measure runtime
 
 def main():
     # Reading Cartesian Coordinates and Hessian
@@ -81,7 +84,6 @@ def main():
         outputfile = logfile.create_filename_out(inputfile.name)
 
     # initialize out file
-    # TODO: extract
     if os.path.exists(outputfile):
         i = 1
         while True:
@@ -313,7 +315,7 @@ def main():
     nu_final = np.sqrt(nu) * 5140.4981
 
     normal_coord_harmonic_frequencies = np.sqrt(eigenvalues[(3 * n_atoms - idof):3 * n_atoms]) * 5140.4981
-    normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies, decimals=2)
+    normal_coord_harmonic_frequencies = np.around(normal_coord_harmonic_frequencies).astype(int)
     normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
 
     all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
@@ -386,17 +388,17 @@ def main():
                 heatmap.figure.savefig("heatmap_ped_diagonal.png", bbox_inches="tight", dpi=500)
                 plt.close(heatmap.figure)
             if matrix_type == "contr":
-                rows, cols = contribution_matrix.shape
-                figsize = (cols, rows)
-                plt.figure(figsize=figsize)
+                #rows, cols = contribution_matrix.shape
+                #figsize = (cols, rows)
+                #plt.figure(figsize=figsize)
 
                 heatmap_df = pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
                 heatmap_df = heatmap_df.rename(columns=columns)
                 heatmap_df = heatmap_df.astype('float')
                 heatmap_df.index = all_internals_string
 
-                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.3g', square=True, annot_kws={"size": 35 / np.sqrt(len(contribution_matrix))})
-                heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=500)
+                heatmap = sns.heatmap(heatmap_df, cmap="Blues", annot=True, fmt='.1f', cbar_kws={"label": "Contribution %"}) #, annot_kws={"size": 20 / np.sqrt(len(contribution_matrix))})
+                heatmap.figure.savefig("heatmap_contribution_table.png", bbox_inches="tight", dpi=600)
                 plt.close(heatmap.figure)
 
     if args.csv:

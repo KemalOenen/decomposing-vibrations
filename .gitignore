@@ -8,3 +8,6 @@ __pycache__/*
 tests_macbook/*
 venv/*
 .DS_Store
+symmetry_adapted_ICs/*
+calc_paper/*
+outfiles_paper/*
