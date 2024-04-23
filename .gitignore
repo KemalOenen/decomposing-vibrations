@@ -6,3 +6,5 @@ tests_delocalizedIC/*
 molpro_tests/*
 __pycache__/*
 tests_macbook/*
+venv/*
+.DS_Store
