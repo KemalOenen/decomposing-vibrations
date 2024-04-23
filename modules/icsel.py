@@ -6,7 +6,7 @@ import itertools
 import logging
 from collections import Counter
 import numpy as np
-import topology
+from . import topology
 
 
 def Kemalian_metric(matrix, Diag_elements, counter, intfreq_penalty, intfc_penalty, args):

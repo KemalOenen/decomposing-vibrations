@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-import icsel
-import bmatrix
-import logfile
+from . import icsel
+from . import bmatrix
+from . import logfile
 import os
 
 

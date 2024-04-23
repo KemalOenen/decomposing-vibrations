@@ -7,11 +7,11 @@ import numpy as np
 from scipy import constants
 import argparse
 
-import bond
-import angle
-import oop
-import dihedral
-import molpro_parser
+from . import bond
+from . import angle
+from . import oop
+from . import dihedral
+from . import molpro_parser
 
 class Atom(NamedTuple):
     symbol: str

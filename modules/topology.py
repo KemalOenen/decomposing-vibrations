@@ -7,9 +7,9 @@ small vibrational coordinates
 import networkx as nx
 import itertools
 import logging
-import logfile
-import specifications
-import icsel
+from . import logfile
+from . import specifications
+from . import icsel
 
 '''''
 GENERAL PURPOSE FUNCTIONS

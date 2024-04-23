@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import combinations
-import bond
+from . import bond
 import numpy as np
 
 #TODO: clean bond_angle function

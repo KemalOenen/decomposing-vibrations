@@ -21,16 +21,14 @@ mpl.rcParams['backend'] = "Agg"
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 # nomodeco libraries
-import sys
-sys.path.append('modules')
-import icgen
-import icsel
-import bmatrix
-import logfile
-import molpro_parser
-import specifications
-import icset_opt
-import arguments
+from modules import icgen
+from modules import icsel
+from modules import bmatrix
+from modules import logfile
+from modules import molpro_parser
+from modules import specifications
+from modules import icset_opt
+from modules import arguments
 
 
 class Atom(NamedTuple):

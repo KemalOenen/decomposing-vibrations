@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from itertools import combinations
-import bond
+from . import bond
 
 
 def is_valid(atom_a: Atom, atom_b: Atom, atom_c: Atom, atom_d: Atom) -> bool:
-    """returns True if any order of atoms 2,3,4 is linked to a central atom 1 and if the the atoms do not form a
-    pseudo out-of-plane angle."""
+    """returns True if any order of atoms is linked from 1->2->3->4 and if the the atoms do not form a
+    pseudo dihedral."""
     if is_pseudo(atom_a, atom_b, atom_c, atom_d):
         return False
-    if bond.is_valid(atom_a, atom_b) and bond.is_valid(atom_a, atom_c) and bond.is_valid(atom_a, atom_d):
+    if bond.is_valid(atom_a, atom_b) and bond.is_valid(atom_b, atom_c) and bond.is_valid(atom_c, atom_d):
         return True
     return False
 
