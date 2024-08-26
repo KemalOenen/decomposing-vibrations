@@ -35,6 +35,20 @@ For a list of all arguments use
 nomodeco --help
 ```
 
+## Example
+
+Here as an example the Normal Mode Decomposition for the Water Dimer is presented.
+
+```
+molpro -n6 template_molpro.inp
+```
+Using the Molpro.out file one can now carry out the automatic normal mode decompositon and generate a contribution table
+
+```
+nomodeco --log --heatmap contr --latex_tab template_molpro.out
+```
+
+
 
 ## Publication for further information:
 Kemal Oenen, Dennis F. Dinu, Klaus R. Liedl; Determining internal coordinate sets for optimal representation of molecular vibration. J. Chem. Phys. 7 January 2024; 160 (1): 014104. https://doi.org/10.1063/5.0180657
