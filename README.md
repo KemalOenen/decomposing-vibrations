@@ -4,8 +4,17 @@ Internal coordinate sets are automatically generated and optimized for optimal s
 
 ## Installation
 
+Clone the Github repository
 '''
-
+git clone https://github.com/KemalOenen/decomposing-vibrations.git
+'''
+Install the requirements for python
+'''
+pip install -r requirements.txt
+'''
+Generate an alias on you machine to run repository
+'''
+alias nomodeco = 'python -W ignore /path/to/local/repo/clone'
 '''
 
 ## Publication for further information:
