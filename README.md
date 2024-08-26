@@ -26,14 +26,14 @@ To run Nomodeco.py a Molpro output file containing the analytical hessian matrix
 
 With the Molpro.out file one can subsequently using the alias run Nomodeco.py
 
-'''
+```
 nomodeco --args molpro.out
-'''
+```
 For a list of all arguments use
 
-'''
+```
 nomodeco --help
-'''
+```
 
 
 ## Publication for further information:
