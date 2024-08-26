@@ -7,14 +7,48 @@ small vibrational coordinates
 import networkx as nx
 import itertools
 import logging
+import string
+import pandas as pd
+import pymatgen.core as mg
+from pymatgen.symmetry.analyzer import PointGroupAnalyzer
+
+# more or less usless
+import matplotlib.pyplot as plt
 from . import logfile
 from . import specifications
 from . import icsel
+from . import alt_icgen
+from . import dfs_connected
+from . import icgen
+from .nomodeco_classes import Molecule
+'''
+Shared Variables for the Intermolecular Functions
+'''
+# General information about the structure
+atoms_list = None
+
+Total_IC_dict = None
+
+# Variables with Donor - H as a coordinate
+intermolecular_bonds = None
+intermolecular_angles = None
+intermolecular_linear_angles = None
+intermolecular_dihedrals = None
+intermolecular_oop = None
+
+# Variables with Donor Akzeptor as a coordinate
+intermolecular_heavy_hbonds = None
+intermolecular_heavy_hbonds_angles = None 
+intermolecular_heavy_hbonds_linear_angles = None
+intermolecular_heavy_hbonds_dihedrals = None
+intermolecular_heavy_hbonds_oop = None
+
+
 
 '''''
 GENERAL PURPOSE FUNCTIONS
 '''''
-
+out = None
 
 def molecule_is_not_split(bonds):
     G = nx.Graph()
@@ -23,6 +57,23 @@ def molecule_is_not_split(bonds):
         return True
     else:
         return False
+
+
+def strip_numbers(string):
+    return ''.join([char for char in string if not char.isdigit()])
+
+
+def eliminate_symmetric_tuples(list_tuples):
+    new_list = []
+    seen_tuples= set()
+    for tp1 in list_tuples:
+        reversed_tp1 = tuple(reversed(tp1))
+        if reversed_tp1 not in seen_tuples:
+           new_list.append(tp1)
+           seen_tuples.add(tp1)
+    return new_list
+
+
 
 
 def valide_atoms_to_cut(bonds, multiplicity_list):
@@ -155,9 +206,7 @@ def fully_linear_molecule(ic_dict, bonds, angles, linear_angles, out_of_plane, d
         "dihedrals": []}
     return ic_dict
 
-
-# TODO: linunits need revision
-'''''
+''''
 PLANAR SYSTEMS
 '''''
 
@@ -421,12 +470,11 @@ def planar_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_ang
             logging.warning(
                 "For this rendered molecule, dihedral symmetry can not be considered and hence this subspace of internal coordintes will be skipped")
             continue
-
-        # call the acyclic version
-
+        
+        # call the acyclic version #TODO Help there was a l missing
         ic_dict_list.append(planar_acyclic_linunit_molecule(dict(), out, idof, bonds_updated, angles_updated,
                                                             linear_angles, out_of_plane_updated, dihedrals_updated,
-                                                            len(bonds_updated), num_atoms, a_1, specification))
+                                                            len(bonds_updated), num_atoms, a_1,l, specification))
         removed_bonds = []
 
     # if we can't cut according to symmetry, do random cutting
@@ -442,7 +490,7 @@ def planar_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_ang
 
         ic_dict = planar_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles,
                                                   linear_angles, out_of_plane, dihedrals, len(bonds), num_atoms, a_1,
-                                                  specification)
+                                                  l,specification)
         return ic_dict
 
     else:
@@ -468,7 +516,6 @@ def general_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear
     n_gamma = 0
     planar_subunits_list = specification["planar submolecule(s)"]
     n_tau = num_bonds - a_1
-
     # if planar subunits exist, we need to do 2 things: change n_phi and n_gamma;
     # remove angles at the specified coordinate, as we else would have linear dependencies
     if len(planar_subunits_list) != 0:
@@ -515,7 +562,6 @@ def general_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
     # symmetric bonds
-
     symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
     symmetric_bonds_list = icsel.get_bond_subsets(symmetric_bonds)
     valide_atoms = valide_atoms_to_cut(bonds, specification["multiplicity"])
@@ -598,7 +644,9 @@ def general_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_a
     planar_subunits_list = specification["planar submolecule(s)"]
     n_phi_prime = 2 * (l - 1)
     n_tau = num_bonds - a_1 - (l - 1)
+    
 
+     
     # occurs for SF6
     if n_tau < 0 or n_phi < 0:
         logging.warning(
@@ -745,3 +793,1605 @@ def general_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_an
                 ic_dict[new_key] = value
                 new_key += 1
         return ic_dict
+
+
+'''''
+Intermolecular Systems
+'''''
+# Key goal for intermolecular systems is to cut the molecule into different submolecules
+# For this we need to split up the molecule into the sperate parts and then use the topology descirption
+
+def detect_submolecules(bonds):
+    molecular_graph = nx.Graph()
+    molecular_graph.add_edges_from(bonds)
+    
+    connected_components = list(nx.connected_components(molecular_graph))
+    
+    # First function extracts the Submolecules as a list of bonds 
+    submolecules = []
+    for component in connected_components:
+        subgraph = molecular_graph.subgraph(component)
+        submolecule_bonds = list(subgraph.edges)
+        submolecules.append(submolecule_bonds)
+    
+    return connected_components, submolecules
+
+def extract_atoms_of_submolecules(connected_components,atoms_list):
+    submolecule_atoms = []
+    for component in connected_components:
+        atom_objects = [atom_obj for atom_obj in atoms_list if atom_obj.symbol in component]
+        submolecule_atoms.append(atom_objects)
+    return submolecule_atoms 
+
+#The combine dictionary function has the following task:
+     # Evaluate the smaller sub dictionary and make a element wise combination
+
+def combine_dictionaries(dict_list):
+    # First we determine the length of the list 
+    length_of_dict = []
+    for d in dict_list:
+        length_of_dict.append(len(d.items()))
+    result = {}
+    # FIRST-CASE:
+      # Two Submolecules and one Dictionary of Length 1
+    if len(length_of_dict) == 2 and min(length_of_dict) == 1 and max(length_of_dict) != 1:
+       # In this case we evaluate the position of the first dictionary and then merge it entry wise
+       length_of_small_dictionary = min(length_of_dict)
+       length_of_big_dictionary = max(length_of_dict)
+       small_dictionary = dict_list[length_of_dict.index(length_of_small_dictionary)]
+       big_dictionary = dict_list[length_of_dict.index(length_of_big_dictionary)] 
+       idx = 0
+       inner_dict_result= {}
+       for outer_key in big_dictionary.keys():
+               inner_dict_result['bonds'] = big_dictionary[outer_key]['bonds'] + small_dictionary[0]['bonds']
+               inner_dict_result['angles'] = big_dictionary[outer_key]['angles'] + small_dictionary[0]['angles']
+               inner_dict_result['linear valence angles'] = big_dictionary[outer_key]['linear valence angles'] + small_dictionary[0]['linear valence angles']
+               inner_dict_result['out of plane angles'] = big_dictionary[outer_key]['out of plane angles'] + small_dictionary[0]['out of plane angles']
+               inner_dict_result['dihedrals'] = big_dictionary[outer_key]['dihedrals'] + small_dictionary[0]['dihedrals']
+               result.setdefault(idx,inner_dict_result)
+               inner_dict_result = {} # After the values are unloaded we set the dict to {} i think this is because of some weird python stuff
+               idx +=1
+    # SECOND SPECIAL CASE
+              # Both Submolecule_Dicts have length 1
+    if len(length_of_dict) == 2 and min(length_of_dict) == 1 and max(length_of_dict) ==1:
+       # we can arbitrary choose the small and the big one
+       small_dictionary = dict_list[0]
+       big_dictionary = dict_list[1]
+       inner_dict_result = {}
+       idx = 0
+       for outer_key in big_dictionary.keys():
+           for inner_key in big_dictionary[outer_key].keys():
+               inner_dict_result[inner_key] = big_dictionary[outer_key][inner_key] + small_dictionary[0][inner_key]
+               result.setdefault(0,inner_dict_result) 
+    # Third Case
+            # Both Submolecule_Dicts have the same length but bigger then one
+            # For example if both have 3 then we have 3*3 choises
+    if len(length_of_dict) == 2 and min(length_of_dict) == max(length_of_dict) and min(length_of_dict) != 1:
+       first_dictionary = dict_list[0]
+       second_dictionary = dict_list[1]
+       combinations = len(first_dictionary.items()) * len(second_dictionary.items())
+       idx = 0
+       new_dict = {} # new dict with the structure gets created
+       subindex = 1
+       while idx<combinations:
+             copy_of_the_dictionary = second_dictionary[subindex-1].copy()
+             if idx < subindex * len(second_dictionary.items()):
+                new_dict.setdefault(idx,copy_of_the_dictionary)
+                idx += 1
+             else: 
+                subindex += 1
+       # This while loop gives us the structure now we need to combine the elements
+       # now we have combine it with the first dictionary element wise
+       idx = 0
+       subindex = 1
+       while idx < len(new_dict.items()):
+             if idx < subindex * len(second_dictionary.items()):
+                new_dict[idx]['bonds'] = new_dict[idx]['bonds'] + first_dictionary[subindex-1]['bonds']
+                new_dict[idx]['angles'] = new_dict[idx]['angles'] + first_dictionary[subindex-1]['angles']
+                new_dict[idx]['linear valence angles'] = new_dict[idx]['linear valence angles'] + first_dictionary[subindex-1]['linear valence angles']
+                new_dict[idx]['out of plane angles'] = new_dict[idx]['out of plane angles'] + first_dictionary[subindex-1]['out of plane angles']
+                new_dict[idx]['dihedrals'] = new_dict[idx]['dihedrals'] + first_dictionary[subindex-1]['dihedrals']
+                idx += 1
+             else:
+                subindex +=1
+       result = new_dict # chefschmee
+    # Fourth Case:
+          # We get three submolecules all with length one
+    if len(length_of_dict) == 3 and min(length_of_dict) == 1 and max(length_of_dict) == 1:
+       first_dictionary = dict_list[0]
+       second_dictionary = dict_list[1]
+       third_dictionary = dict_list[2]
+       idx = 0
+       inner_dict_result= {}  
+       for outer_key in first_dictionary.keys():
+           for inner_key in first_dictionary[outer_key].keys():
+               inner_dict_result[inner_key] = first_dictionary[outer_key][inner_key] + second_dictionary[0][inner_key] + third_dictionary[0][inner_key]
+               result.setdefault(0,inner_dict_result) 
+    # TODO there are cases missing for every bigger complexes    
+    if len(length_of_dict) == 4 and min(length_of_dict) == 1 and max(length_of_dict) == 1:
+       first_dictionary = dict_list[0]
+       second_dictionary = dict_list[1]
+       third_dictionary = dict_list[2]
+       fourth_dictionary = dict_list[3]
+       idx = 0
+       inner_dict_result = {}
+       for outer_key in first_dictionary.keys():
+           for inner_key in first_dictionary[outer_key].keys():
+               inner_dict_result[inner_key] = first_dictionary[outer_key][inner_key] + second_dictionary[0][inner_key] + third_dictionary[0][inner_key] + fourth_dictionary[0][inner_key]
+               result.setdefault(0,inner_dict_result)
+
+     # First generalisation: if the lenght of one Dictionary is bigger than the other one we can first create the template then fill them up
+    if min(length_of_dict) != max(length_of_dict) and len(length_of_dict) == 2:
+       min_idx = pd.Series(length_of_dict).idxmin()
+       max_idx = pd.Series(length_of_dict).idxmax()
+       small_dict = dict_list[min_idx]
+       big_dict = dict_list[max_idx]
+       subindex = 0 # Both a index and a subindex are used for the combination
+       idx = 0
+       result = {}
+       length_new_dictionary = min(length_of_dict) * max(length_of_dict)
+       while idx < length_new_dictionary:
+             copy_of_big_dict = big_dict[subindex].copy()
+             result.setdefault(idx,copy_of_big_dict)
+             idx += 1
+             if subindex < len(big_dict)-1:
+                subindex += 1
+             elif subindex >= len(big_dict)-1:
+                subindex = 0
+        # We now have our dictionary structure next we create n 
+       idx = 0
+       subindex = 0
+       while idx < len(result):
+             result[idx]['bonds'] = result[idx]['bonds'] + small_dict[subindex]['bonds']
+             result[idx]['angles'] = result[idx]['angles'] + small_dict[subindex]['angles']
+             result[idx]['linear valence angles'] = result[idx]['linear valence angles'] + small_dict[subindex]['linear valence angles']
+             result[idx]['out of plane angles'] = result[idx]['out of plane angles'] + small_dict[subindex]['out of plane angles']
+             result[idx]['dihedrals'] = result[idx]['dihedrals'] + small_dict[subindex]['dihedrals']
+             idx +=1
+             if subindex < len(small_dict)-1:
+                subindex += 1
+             elif subindex >= len(small_dict)-1:
+                subindex = 0
+    return[result] 
+
+def add_element_to_all_entries(dict_list,element,dict_key,amount):
+    # Specify how much elements will be added 
+    number_elements = element[:amount]
+    # Ite rate through each dictionary in the list 
+    for d in dict_list:
+        for key,value in d.items():
+        # Append the new bond to the bonds list
+            if dict_key in value:
+               value[dict_key].extend(number_elements)
+            else:
+               value[dict_key] = number_elements.copy()
+    return dict_list
+
+# Alternative way would distributing the degrees of freedom over all the possible lists
+# The Distribute Elements function will be the main tool for building up the dictionary
+
+# the divide_chunks function therefore slices the list
+
+def divide_chunks(l, n):
+   
+    # looping till length 1
+    for i in range(0,len(l),n):
+        yield l[i:i + n]
+
+
+def distribute_elements(dict_list,elements,dict_key,number_of_elements):
+    
+    # The dict list will always be a list of dict with exactly one dict in it
+    dictionary_inner = dict_list[0]
+    # we then define a copy which we we need when building up a new dictionary entry
+    copy_of_the_dictionary = dictionary_inner[0].copy()
+    
+    # Next a index for iteration
+    idx = 0
+    
+    # and the new_dict where the structure is formed, and the end result as a variable
+    new_dict = {}
+    result = {}
+    
+    # This print helps us to define the case and have a check for testing purposed
+    print("Dictionary - Key currently used:", dict_key)
+    print("Length of elements list:", len(elements))
+    print("Number of elements to take out", number_of_elements)
+    print("Length of the actual dictionary", len(dictionary_inner.items())) 
+   
+    # Non-defining case when the number of elements is zero
+    if number_of_elements ==0:
+       return dict_list 
+
+  
+    # here we evaluate the length of the elements and let the index run until, the length of currenct dictionary * length of elements is reaches
+    if number_of_elements <= 1 and len(elements) <= (len(dictionary_inner.items())):
+       # we also define a subindex so that the dictionary gets duplicated the right amount of times
+       subindex = 0
+       length_new_dictionary = len(dictionary_inner.items()) * len(elements) 
+       while idx < length_new_dictionary:
+             copy_of_the_dictionary = dictionary_inner[subindex].copy()
+             for key,value in copy_of_the_dictionary.items():
+                 if key == dict_key:
+                    new_dict.setdefault(idx,copy_of_the_dictionary)
+                    idx += 1
+                    if subindex < len(dictionary_inner.items())-1:
+                       subindex += 1
+                    elif subindex > len(dictionary_inner.items())-1:
+                       subindex = 0
+       duplicated_elements = list(itertools.islice(itertools.cycle(elements),length_new_dictionary))
+     
+       for outer_key,inner_dict in new_dict.items():
+           result[outer_key] = inner_dict.copy()
+           copy_elements = inner_dict[dict_key].copy()
+           result[outer_key][dict_key] = [duplicated_elements.pop(0)]           
+           if len(copy_elements) >0:
+              result[outer_key][dict_key].extend(copy_elements)
+    
+    #FIRST-CASE: number_of_elements = 1 and len(elements) > dictionary entries
+    # Only difference here is that new entries get created
+    # With this variant alone for example the water dimer can be calculated
+    if number_of_elements <= 1 and len(elements) > len(dictionary_inner.items()):
+       
+       subindex = 0
+       length_new_dictionary = len(dictionary_inner.items()) * len(elements) 
+       while idx < length_new_dictionary:
+             copy_of_the_dictionary = dictionary_inner[subindex].copy()
+             for key,value in copy_of_the_dictionary.items():
+                 if key == dict_key:
+                    new_dict.setdefault(idx,copy_of_the_dictionary)
+                    idx += 1
+                    if subindex < len(dictionary_inner.items())-1:
+                       subindex += 1
+                    elif subindex > len(dictionary_inner.items())-1:
+                       subindex = 0
+       duplicated_elements = list(itertools.islice(itertools.cycle(elements),length_new_dictionary))
+     
+       for outer_key,inner_dict in new_dict.items():
+           result[outer_key] = inner_dict.copy()
+           copy_elements = inner_dict[dict_key].copy()
+           result[outer_key][dict_key] = [duplicated_elements.pop(0)]           
+           if len(copy_elements) >0:
+              result[outer_key][dict_key].extend(copy_elements)
+
+    # in this case we slice out the elements and create packages which then get added
+    if number_of_elements > 1:
+       #Second-CASE .1 the number of elements is equal to the len of the list
+       # In this case we dont_need to take into account any combinatoris, because there is just one combination to choose out of
+       if number_of_elements == len(elements) and len(elements) <= (len(dictionary_inner.items())):
+          while idx < len(dictionary_inner.items()):
+             copy_of_the_dictionary = dictionary_inner[idx].copy()
+             for key,value in copy_of_the_dictionary.items():
+                 if key == dict_key:
+                    new_dict.setdefault(idx,copy_of_the_dictionary)
+                    idx += 1
+           
+          for outer_key,inner_dict in new_dict.items():
+              result[outer_key] = inner_dict.copy()
+              for element in elements: # maybe do this with zip, but is fine for now
+                  if element not in result[outer_key][dict_key]:
+                     result[outer_key][dict_key].extend(elements)
+       # Second-Case .2 if the length of the elements is bigger then the dictionary we create new elements
+         #TODO i think this case is pointess and can be combined with the upper one
+       if number_of_elements == len(elements) and len(elements) >= (len(dictionary_inner.items())):
+          while idx < len(dictionary_inner.items()):
+             copy_of_the_dictionary = dictionary_inner[idx].copy()
+             for key,value in copy_of_the_dictionary.items():
+                 if key == dict_key:
+                    new_dict.setdefault(idx,copy_of_the_dictionary)
+                    idx += 1
+           
+          for outer_key,inner_dict in new_dict.items():
+              result[outer_key] = inner_dict.copy()
+              for element in elements: # maybe do this with zip, but is fine for now
+                  if element not in result[outer_key][dict_key]:
+                     result[outer_key][dict_key].extend(elements)
+ 
+       if number_of_elements != len(elements):
+          # This is our fist combinatoric case, we have now n choose k and need to evaluate the possibilities
+          # for example 8 choose 2 gives us 28 possible combinations which we have to consider
+          # We then have to evaluate the number of possible combinations via multiplication with the length of the list
+          element_combinations = [list(perm) for perm in itertools.combinations(elements,number_of_elements)]
+          possible_combinations = len(element_combinations)
+          length_of_the_dictionary = len(dictionary_inner.items())
+          combinations = possible_combinations * length_of_the_dictionary
+          # And in order to do this pop method we have to duplicate the list n times --> n is the length of the dictionar<
+          duplicated_element_combinations = [tup for _ in range(length_of_the_dictionary) for tup in element_combinations]
+          print("Combinations after combinations with the dict:", combinations)
+          subindex = 1 # we let the subindex rise according to the number of dictionarys thus  far 
+          while idx < combinations:
+             # Now we have to take pairs according to the length of the dictionary = 84 / 3 = 28 per dictionary
+             copy_of_the_dictionary = dictionary_inner[subindex-1].copy()
+             for key,value in copy_of_the_dictionary.items():
+                 if key == dict_key:
+                    new_dict.setdefault(idx,copy_of_the_dictionary)
+                    if idx < possible_combinations * subindex:
+                       idx += 1
+                    else:
+                       subindex +=1
+          # The dictionary therefore needs the length of the combinations
+          for outer_key,inner_dict in new_dict.items():
+              result[outer_key] = inner_dict.copy()
+              #Fix elements to append
+              copy_elements = inner_dict[dict_key].copy()
+              if length_of_the_dictionary == 1:
+                 result[outer_key][dict_key] = element_combinations.pop(0)
+              elif length_of_the_dictionary > 1:
+                 result[outer_key][dict_key] = duplicated_element_combinations.pop(0)
+              # this is a safety function because for some strange reason the elements get copied 3 times ?? 
+              if len(copy_elements) >0:
+                 unique_items = [item for item in copy_elements if item not in result[outer_key][dict_key]]
+                 result[outer_key][dict_key] = list(itertools.chain(result[outer_key][dict_key],unique_items)) # at this point just ask Kemal         
+    return [result]
+    
+'''
+General Intermolecular Systems
+'''
+# In the general systems the oop angles are normally not considered
+
+
+def intermolecular_general_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                     num_atoms, a_1, l, specification):
+    
+    
+    n_r = num_bonds
+    n_phi = 4 * num_bonds - 3 * num_atoms + a_1 - (l - 1)
+    n_gamma = 0
+    planar_subunits_list = specification["planar submolecule(s)"]
+    n_phi_prime = 2 * (l - 1)
+    n_tau = num_bonds - a_1 - (l - 1)
+    
+    # If planar submolecules exist we have to change our definition of n_phi and n_gamma
+    # remove angles at the specified coordinate, as we else would have linear dependencies
+    if len(planar_subunits_list) != 0:
+        n_phi, n_gamma, angles = get_param_planar_submolecule(planar_subunits_list, specification["multiplicity"],
+                                                              angles)
+
+       
+    #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list, _ = atoms_list.detect_submolecules() 
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+    summarized_submolecule_ic_dict =[]
+    # every submolecule gets its own specification 
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+       
+        # Transform into a Molecule Class
+        submolecule_atom = Molecule(submolecule_atom)
+
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph)        
+ 
+        # Step 2: Initialize Internal Coordinates: 
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds)
+        sub_dihedrals  = submolecule_atom.generate_dihedrals(submolecule_bonds) 
+         
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles) 
+
+        # Step 4: According to the specification create OOP ICs
+        if specification["planar"] == "yes":
+            sub_oop = submolecule_atom.generate_out_of_plane(submolecule_bonds) 
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+
+        
+        # Step 5: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+            
+    # Combine the Dictionary with all possible combinations: 
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict)
+
+    # Now we evaluate the number of internal coordinates we have so far
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+     
+
+    # Now we can specify how much of the different intermolecular coordinates we need in our sets:
+
+    ic_bonds_needed = n_r - max(bonds_length)
+    ic_angles_needed = n_phi - max(angles_length)
+    ic_linear_angles_needed = n_phi_prime - max(linear_angles_length)
+    ic_dihedrals_needed = n_tau - max(dihedrals_length)
+
+    # using the total_ic_dict define all intermolecular_coordinates
+    intermolecular_bonds = Total_IC_dict["h_bond"] + Total_IC_dict["acc_don"]
+    intermolecular_angles = Total_IC_dict["h_bond_angles"] + Total_IC_dict["acc_don_angles"]
+    intermolecular_linear_angles = Total_IC_dict["h_bond_linear_angles"] + Total_IC_dict["acc_don_linear_angles"]
+    intermolecular_dihedrals = Total_IC_dict["h_bond_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
+
+    ic_dict_list = distribute_elements(fixed_ic_dict,intermolecular_bonds,'bonds',ic_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,intermolecular_angles,'angles',ic_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,intermolecular_linear_angles,'linear valence angles', ic_linear_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,intermolecular_dihedrals,'dihedrals',ic_dihedrals_needed)
+    
+    ic_dict = dict()
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict 	
+ 
+
+def intermolecular_general_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                       num_atoms, a_1, specification):
+    
+    n_r = num_bonds
+    n_phi = 4 * num_bonds - 3 * num_atoms + a_1
+    n_gamma = 0
+    planar_subunits_list = specification["planar submolecule(s)"]
+    n_tau = num_bonds - a_1
+     
+    # If planar submolecules exist we have to change our definition of n_phi and n_gamma
+    # remove angles at the specified coordinate, as we else would have linear dependencies
+    if len(planar_subunits_list) != 0:
+        n_phi, n_gamma, angles = get_param_planar_submolecule(planar_subunits_list, specification["multiplicity"],
+                                                              angles)
+    
+   
+    #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list, _ = atoms_list.detect_submolecules()
+
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+    
+     
+    summarized_submolecule_ic_dict =[]
+    # now the hard part every submolecule gets its own specification:
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+        
+        # Conversion into Molecule Class
+        
+        submolecule_atom = Molecule(submolecule_atom)
+
+          
+        # Step 1.1: Calculate the Connectivity C and pass it to specification
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph)
+
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds)
+        sub_dihedrals  = submolecule_atom.generate_dihedrals(submolecule_bonds)
+        
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles) 
+        
+        # Step 4: According to the specification create OOP ICs
+        if specification["planar"] == "yes":
+            sub_oop = submolecule_atom.generate_out_of_plane(submolecule_bonds)     
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+
+        # Step 5: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict) 
+     
+
+    # Now we evaluate the number of internal coordinates we have so far
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+    
+    # Now we can specify how much of the different intermolecular coordinates we need in our sets:
+
+    ic_bonds_needed = n_r - max(bonds_length)
+    ic_angles_needed = n_phi - max(angles_length)
+    ic_dihedrals_needed = n_tau - max(dihedrals_length)
+    
+    intermolecular_bonds = Total_IC_dict["h_bond"] + Total_IC_dict["acc_don"]
+    intermolecular_angles = Total_IC_dict["h_bond_angles"] + Total_IC_dict["acc_don_angles"]
+    intermolecular_dihedrals = Total_IC_dict["h_bond_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
+
+    ic_dict_list = distribute_elements(fixed_ic_dict,intermolecular_bonds,'bonds',ic_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,intermolecular_angles,'angles',ic_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,intermolecular_dihedrals,'dihedrals',ic_dihedrals_needed)
+    ic_dict = dict()
+    
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict
+
+
+def intermolecular_general_cyclic_nolinsub(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                      num_atoms, num_of_red,a_1,specification):
+     
+    #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list, _  =  atoms_list.detect_submolecules()  
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)   
+    summarized_submolecule_ic_dict =[]
+    
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+        
+        # Convert into Molecule Class
+        submolecule_atom = Molecule(submolecule_atom)
+
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph) 
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds)
+        sub_dihedrals = submolecule_atom.generate_dihedrals(submolecule_bonds)
+
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification_submolecule, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles)
+        
+        # Step 4: With the specification generate OOP ICs
+ 
+        if specification["planar"] == "yes":
+            sub_oop = submolecule_atoms.generate_out_of_plane(submolecule_bonds)
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+        
+        # Step 5: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict) 
+    
+    # Redundancies mu get taken out of the intermolecular coordinates taking symmetry into account
+    n_r = num_bonds-specification["mu"]
+    n_phi = 4 * (num_bonds-specification["mu"]) - 3* num_atoms + a_1
+    n_tau = (num_bonds-specification["mu"])-a_1
+   
+    # First we delete the h-bond coordinate then the corresponding acc_don_coordinate
+
+    symmetric_intermolecular_bonds = icsel.get_symm_bonds(Total_IC_dict["h_bond"], specification)
+    symmetric_intermolecular_bonds_list = icsel.get_bond_subsets(symmetric_intermolecular_bonds)
+    valide_atoms = valide_atoms_to_cut(Total_IC_dict["h_bond"], specification["multiplicity"])
+    removed_bonds = []
+    
+    # initilize a bond dict for removal of acc_don bond
+    bond_dict = atoms_list.bond_dict(Total_IC_dict["cov_bond"] + Total_IC_dict["h_bond"])
+
+
+    for symmetric_bond_group in symmetric_intermolecular_bonds_list:
+        if len(symmetric_bond_group) >= specification["mu"] and bonds_are_in_valide_atoms(
+                symmetric_bond_group, valide_atoms):
+            removed_bonds, random_var = delete_bonds_symmetry(symmetric_bond_group, Total_IC_dict["h_bond"], specification["mu"], valide_atoms)
+        if not removed_bonds:
+            continue
+    
+    # If the symmetric cut was possible we update the corresponding internal coordinates
+    
+    intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+    intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+    intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+    
+    # when no symmetric cutting is possible we cut a random bond
+    # this is not ideal and leads to more possible solution of the decomposition process
+    
+    if len(removed_bonds) == 0:
+       removed_bonds = Total_IC_dict["h_bond"][:specification["mu"]]
+       
+       intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+       intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+       intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+    
+    
+    
+    removed_acc_don_bonds = []
+    # basically we use the hydrogen as a key to get our element out
+    for removed_bond in removed_bonds:
+        if removed_bond[0].strip(string.digits) == "H":
+            removed_acc_don_bonds.append(bond_dict[removed_bond[0]])
+        else:
+            removed_acc_don_bonds.append(bond_dict[removed_bond[1]])
+    
+    intermolecular_acc_don_bonds_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don"])
+    intermolecular_acc_don_angle_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_angles"])
+    intermolecular_acc_don_dihedrals_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_dihedrals"])
+    
+    
+
+
+    # evaluate the amount of internal coordinates fixed by the submolecules
+   
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    oop_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+            oop_length.append(len(value.get('out of plane angles',[])))
+    
+    intermolecular_bonds_needed = n_r - max(bonds_length)
+    intermolecular_angles_needed = n_phi - max(angles_length)
+    intermolecular_dihedrals_needed = n_tau - max(dihedrals_length)
+    
+    # now we distribute the total elements after taking out the redundancies
+    # if the count of total IC is to high --> comment out acc don coordinates
+
+    total_intermolecular_bonds = intermolecular_h_bonds_updated  + intermolecular_acc_don_bonds_updated
+    total_intermolecular_angles = intermolecular_h_angles_updated  + intermolecular_acc_don_angle_updated
+    total_intermolecular_dihedrals = intermolecular_h_dihedrals_updated + intermolecular_acc_don_dihedrals_updated
+
+    ic_dict_list = distribute_elements(fixed_ic_dict,total_intermolecular_bonds,'bonds',intermolecular_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_angles, 'angles', intermolecular_angles_needed)
+    # safety feature if not enough dihedrals are present include all acc_don_dihedrals
+    if len(total_intermolecular_dihedrals) < intermolecular_dihedrals_needed:
+        total_intermolecular_dihedrals = intermolecular_h_dihedrals_updated + Total_IC_dict["acc_don_dihedrals"]
+        ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_dihedrals,"dihedrals", intermolecular_dihedrals_needed)
+    else:
+        ic_dict_list = distribute_elements(ic_dict_list, total_intermolecular_dihedrals, 'dihedrals',intermolecular_dihedrals_needed)
+    
+    ic_dict = dict()
+    
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict
+
+
+def intermolecular_general_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                    num_atoms, num_of_red, a_1, l, specification):
+   
+    
+    #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    
+    # first we determine the two disconnected submolecules
+    
+    connected_components, submolecules_bond_list, _  =  atoms_list.detect_submolecules()  
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+    
+    summarized_submolecule_ic_dict =[]
+    # now the hard part every submolecule gets its own specification:
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+        
+        submolecule_atom = Molecule(submolecule_atom)
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph)
+
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds)
+        sub_dihedrals = submolecule_atom.generate_dihedrals(submolecule_bonds)
+        
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification_submolecule, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles)
+        # Step 4: With the specification generate OOP ICs
+        if specification["planar"] == "yes":
+            sub_oop = submolecule_atom.generate_out_of_plane(submolecule_bonds)     
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+        
+        # Step 5: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+    
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict)
+
+    symmetric_intermolecular_bonds = icsel.get_symm_bonds(Total_IC_dict["h_bond"], specification)
+    symmetric_intermolecular_bonds_list = icsel.get_bond_subsets(symmetric_intermolecular_bonds)
+    valide_atoms = valide_atoms_to_cut(Total_IC_dict["h_bond"], specification["multiplicity"])
+    removed_bonds = []
+
+
+    # initialize a bond dictionary for removal of acc don bond
+    bond_dict = atoms_list.bond_dict(Total_IC_dict["cov_bond"] + Total_IC_dict["h_bond"])
+
+
+    # Beta is used to determine if there are intramolecular redundancies present 
+    if specification["beta"] == 0:
+       for symmetric_bond_group in symmetric_intermolecular_bonds_list:
+           if len(symmetric_bond_group) >= specification["mu"] and bonds_are_in_valide_atoms(
+                symmetric_bond_group, valide_atoms):
+                removed_bonds, random_var = delete_bonds_symmetry(symmetric_bond_group, Total_IC_dict["h_bond"], specification["mu"], valide_atoms)
+           if not removed_bonds:
+              continue
+      
+       intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+       intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+       intermolecular_h_linear_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_linear_angles"])
+       intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+       
+    
+       
+
+       # If the symmetric cutting didnt work one can simply take the first random cut
+       if len(removed_bonds) == 0:
+           removed_bonds = Total_IC_dict["h_bond"][:specficiation["mu"]]
+ 
+           intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+           intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+           intermolecular_h_linear_angles_updated = update_internal_coordinates_cyclic(removed_bonds,Total_IC_dict["h_bond_linear_angles"])
+           intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+
+       removed_acc_don_bonds = []
+       # basically we use the hydrogen as a key to get our element out
+       for removed_bond in removed_bonds:
+           if removed_bond[0].strip(string.digits) == "H":
+              removed_acc_don_bonds.append(bond_dict[removed_bond[0]])
+           else:
+              removed_acc_don_bonds.append(bond_dict[removed_bond[1]])
+       
+       intermolecular_acc_don_bonds_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don"])
+       intermolecular_acc_don_angle_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_angles"])
+       intermolecular_acc_don_linear_angle_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_linear_angles"])
+       intermolecular_acc_don_dihedrals_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_dihedrals"])
+       
+       # with the redundancies taken out we generate the total ICs for the appending algorithm
+
+       total_intermolecular_bonds = intermolecular_h_bonds_updated #+ intermolecular_acc_don_bonds_updated
+       total_intermolecular_angles = intermolecular_h_angles_updated #+ intermolecular_acc_don_angle_updated
+       total_intermolecular_linear_angles = intermolecular_h_linear_angles_updated
+       total_intermolecular_dihedrals = intermolecular_h_dihedrals_updated[:4]  # + intermolecular_acc_don_dihedrals_updated
+
+    # when beta is not equal to zero we now the redundancies have been taken out of the intramolecular coordinates
+    # thus we can just define our intermolecular coordinates using the Total_IC_dict
+    # again comment out acc don coordinate if set size is not feasable
+    else:
+        total_intermolecular_bonds = Total_IC_dict["h_bond"] + Total_IC_dict["acc_don"]
+        total_intermolecular_angles = Total_IC_dict["h_bond_angles"] + Total_IC_dict["acc_don_angles"]
+        total_intermolecular_linear_angles = Total_IC_dict["h_bond_linear_angles"] 
+        total_intermolecular_dihedrals = Total_IC_dict["h_bond_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
+    
+    # evaluate the amount of internal coordinates fixed by the submolecules
+
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    oop_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+            oop_length.append(len(value.get('out of plane angles',[])))
+    
+    if len(removed_bonds) != 0: 
+       linear_bonds = specifications.get_linear_bonds(linear_angles)
+       swapped_removed_bonds = removed_bonds[0][::-1]
+    # for n_r we just substract the mu 
+    
+     
+       if removed_bonds[0] in linear_bonds or swapped_removed_bonds in linear_bonds:
+          print("The bond removed", removed_bonds, "was linear")
+          # Decius for this topology : n_phi = 4 * b - 3a - a_1 - (l-1) 
+          # because the bond removed was linear we also reduce the number l by two because the whole linear system is destroyed
+          n_phi = 4 * (num_bonds-specification["mu"]) - 3*num_atoms +a_1 -  ((l-2*specification["mu"]) - 1)
+          # for n_phi_prime l gets also reduced by two 
+          n_phi_prime = 2 * ((l-2*specification["mu"]) - 1)
+          n_tau = (num_bonds -specification["mu"]) - a_1 - (l-2*specification["mu"] - 1)
+    else:
+          n_phi = 4*(num_bonds-specification["mu"]) - 3*num_atoms + a_1 - (l-1)
+          n_phi_prime = 2*(l-1)
+          n_tau = (num_bonds-specification["mu"]) - a_1 - (l-1)
+    
+    n_r = num_bonds-specification["mu"]
+ 
+    intermolecular_bonds_needed = n_r - max(bonds_length)
+    intermolecular_angles_needed = n_phi - max(angles_length)
+    intermolecular_linear_angles_needed = n_phi_prime - max(linear_angles_length)
+    intermolecular_dihedrals_needed = n_tau - max(dihedrals_length)
+    
+    # With the cleaned up coordinates we can define out total ICs for the appending algorithm:
+
+
+    # Using the distribute elements function we append the missing ICs out of the updated intermolecular ones
+    
+    ic_dict_list = distribute_elements(fixed_ic_dict,total_intermolecular_bonds,'bonds',intermolecular_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_angles, 'angles', intermolecular_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_linear_angles, 'linear valence angles', intermolecular_linear_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_dihedrals, 'dihedrals', intermolecular_dihedrals_needed) 
+    
+    ic_dict = dict()
+    
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict
+  
+
+'''
+Planar Molecules
+'''
+
+
+def intermolecular_planar_acyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                    num_atoms, a_1, l, specification):
+    
+  
+   #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list, _  = atoms_list.detect_submolecules() 
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+    
+    summarized_submolecule_ic_dict =[]
+    # now the hard part every submolecule gets its own specification:
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+       
+        submolecule_atom = Molecule(submolecule_atom)
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph) 
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds)
+        sub_dihedrals = submolecule_atom.generate_dihedrals(submolecule_bonds)
+ 
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles) 
+        
+        # Step 4: With the specification generate OOP ICs
+        
+        if specification["planar"] == "yes":
+            sub_oop = submolecule_atom.generate_out_of_plane(submolecule_bonds)
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+
+        
+        # Step 5: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+    
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict) 
+    
+
+    # Now we evaluate the number of internal coordinates we have so far
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    out_of_plane_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+            out_of_plane_length.append(len(value.get('out of plane angles', [])))
+    
+    # Now we can specify how much of the different intermolecular coordinates we need in our sets:
+    # According to Decius the out of plane anges are defined as n_gamma = 2*(b-a) + a_1 - x
+    # And the Dihedral Angles are defined as n_tau = b- a_1 - y 
+    # in the end x + y = l - 1 
+    
+    n_r = num_bonds
+    n_phi = 2* num_bonds - num_atoms - (l-1) 
+    n_phi_prime = 2*(l-1)
+    n_gamma = 2*(num_bonds - num_atoms) + a_1
+    n_tau = num_bonds - a_1
+    
+    # so therefore we have to update the whole definition
+    linear_bonds = specifications.get_linear_bonds(linear_angles) 
+    
+    
+
+    # remove dihedrals if terminal
+    
+    for linear_bond in linear_bonds:
+        if get_multiplicity(linear_bond[0], specification["multiplicity"]) == 1 or get_multiplicity(
+                linear_bond[1], specification["multiplicity"]) == 1:
+            intermolecular_dihedrals_updated = update_internal_coordinates_cyclic([linear_bond], Total_IC_dict["h_bond_dihedrals"])
+            n_tau -= (l - 1)
+        else:
+            # if there are no terminal dihedrals present
+            intermolecular_dihedrals_updated = Total_IC_dict["h_bond_dihedrals"]
+   
+
+    # correct n_gamma if it defined for a linear submolecule
+    # as we have 3 oop angles per central unit we need to divide by 3!
+    
+    intermolecular_out_of_plane_updated = update_internal_coordinates_cyclic(linear_bonds, Total_IC_dict["h_bond_oop"])
+    n_gamma = n_gamma - ((len(Total_IC_dict["h_bond_oop"]) - len(intermolecular_out_of_plane_updated)) // 3)
+    
+   
+    ic_bonds_needed = n_r - max(bonds_length)
+    ic_angles_needed = n_phi - max(angles_length)
+    ic_dihedrals_needed = n_tau - max(dihedrals_length)
+    ic_linear_angles_needed = n_phi_prime - max(linear_angles_length) 
+    ic_out_of_plane_angles_needed = n_gamma - max(out_of_plane_length)
+    
+    # Again we can define out Total ICs using Total_IC_Dict and the updated internal coordinates
+    # TODO Cleanup strategy for Acc_Don Dihedrals and OOP
+    # TODO Acc Don weirldy defined here check HCN Aldehyd
+
+    total_intermolecular_bonds = Total_IC_dict["h_bond"]  + Total_IC_dict["acc_don"]
+    total_intermolecular_angles = Total_IC_dict["h_bond_angles"]  + Total_IC_dict["acc_don_angles"]
+    total_intermolecular_linear_angles = Total_IC_dict["h_bond_linear_angles"] # + Total_IC_dict["acc_don_linear_angles"]
+    total_intermolecular_dihedrals = intermolecular_dihedrals_updated 
+    total_intermolecular_oop = intermolecular_out_of_plane_updated
+    
+
+    ic_dict_list = distribute_elements(fixed_ic_dict,total_intermolecular_bonds,'bonds',ic_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_angles,'angles',ic_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_linear_angles,'linear valence angles', ic_linear_angles_needed) 
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_dihedrals,'dihedrals',ic_dihedrals_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_oop,'out of plane angles', ic_out_of_plane_angles_needed)
+
+    ic_dict = dict()
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict
+ 
+    
+
+  
+ 
+ 
+def intermolecular_planar_cyclic_linunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                   num_atoms, a_1, l, specification):
+    
+    #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list, _  =  atoms_list.detect_submolecules()  
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+    
+    
+    summarized_submolecule_ic_dict =[]
+    # now the hard part every submolecule gets its own specification:
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+        
+        # Convert Submolecule_Atom into Molecule Class
+        submolecule_atom = Molecule(submolecule_atom)
+        
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph) 
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds)
+        sub_dihedrals= submolecule_atom.generate_dihedrals(submolecule_bonds)
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification_submolecule, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles)
+        
+        
+        if specification["planar"] == "yes":
+            sub_oop = submolecule_atom.generate_out_of_plane(submolecule_bonds)     
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+        
+        # Step 4: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+    
+
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict) 
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    oop_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+            oop_length.append(len(value.get('out of plane angles',[])))
+
+    # n_r = b so therefore this can get appended out of the pool of intermolecular ics
+    # n_phi = 2b-a-(l-1) here it generally makes a difference if the bond that gets deleted is of the linear type
+  
+    # before randomly cutting the redundancies in the intermolecular set we first check for symmetry in the intermolecular bonds
+    
+    symmetric_intermolecular_bonds = icsel.get_symm_bonds(Total_IC_dict["h_bond"], specification)
+    symmetric_intermolecular_bonds_list = icsel.get_bond_subsets(symmetric_intermolecular_bonds)
+    valide_atoms = valide_atoms_to_cut(Total_IC_dict["h_bond"], specification["multiplicity"])
+    removed_bonds = []
+    
+    
+    # initialize a bond dictionary for removal of acc don bond
+    bond_dict = atoms_list.bond_dict(Total_IC_dict["cov_bond"] + Total_IC_dict["h_bond"])
+
+
+    # if its possible we cut according to symmetry
+    
+    for symmetric_bond_group in symmetric_intermolecular_bonds_list:
+        if len(symmetric_bond_group) >= specification["mu"] and bonds_are_in_valide_atoms(
+                symmetric_bond_group, valide_atoms):
+            removed_bonds, random_var = delete_bonds_symmetry(symmetric_bond_group, Total_IC_dict["h_bond"], specification["mu"], valide_atoms)
+        if not removed_bonds:
+            continue
+    
+    intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+    intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+    intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+    intermolecular_h_linear_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_linear_angles"])   
+    
+    # when no symmetric cutting is possible we cut a random bond
+    # this is not ideal and leads to more possible solution of the decomposition process
+    
+    if len(removed_bonds) == 0:
+       removed_bonds = Total_IC_dict["h_bond"][:specification["mu"]]
+       
+       intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+       intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+       intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+       intermolecular_h_linear_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_linear_angles"])   
+ 
+    
+    
+    removed_acc_don_bonds = []
+    # basically we use the hydrogen as a key to get our element out
+    for removed_bond in removed_bonds:
+        if removed_bond[0].strip(string.digits) == "H":
+            removed_acc_don_bonds.append(bond_dict[removed_bond[0]])
+        else:
+            removed_acc_don_bonds.append(bond_dict[removed_bond[1]])
+    
+    intermolecular_acc_don_bonds_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don"])
+    intermolecular_acc_don_angle_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_angles"])
+    intermolecular_acc_don_dihedrals_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_dihedrals"])
+    
+    
+    total_intermolecular_bonds = intermolecular_h_bonds_updated #+ intermolecular_acc_don_bonds_updated
+    total_intermolecular_angles = intermolecular_h_angles_updated + intermolecular_acc_don_angle_updated
+    total_intermolecular_linear_angles = intermolecular_h_linear_angles_updated
+    total_intermolecular_dihedrals =   intermolecular_h_dihedrals_updated #+ intermolecular_acc_don_dihedrals_updated 
+
+
+
+     
+    # now we check our descriptions for the acyclic case according to decius first we also determine if the bond we removed was linear
+    # this alters the decius description of the amount of angles needed because l can be reduced
+    # in this case we also generate one terminal atom through the deletion of a bond 
+    
+    linear_bonds = specifications.get_linear_bonds(linear_angles)
+    swapped_removed_bonds = removed_bonds[0][::-1]
+     
+    n_r = num_bonds-specification["mu"] 
+    n_gamma = 2 * (num_bonds - num_atoms) + a_1
+    n_tau = (num_bonds-specification["mu"]) - a_1
+       
+    if removed_bonds[0] in linear_bonds or swapped_removed_bonds in linear_bonds:
+        n_phi = 2 * (num_bonds-specification["mu"]) - num_atoms - (l-2*specification["mu"]-1)
+        n_phi_prime = 2 * ((l-2*specification["mu"]) - 1)
+    
+    # what we can do immediatly is to find the number of bonds needed for a complete set also the normal angles provide no problem
+    intermolecular_bonds_needed = n_r - max(bonds_length)
+    intermolecular_angles_needed = n_phi - max(angles_length)
+    intermolecular_linear_angles_needed = n_phi_prime - max(linear_angles_length)
+   
+   
+
+    # remove dihedrals if terminal
+    
+    for linear_bond in linear_bonds:
+        if get_multiplicity(linear_bond[0], specification["multiplicity"]) == 1 or get_multiplicity(
+                linear_bond[1], specification["multiplicity"]) == 1:
+            intermolecular_dihedrals_updated = update_internal_coordinates_cyclic([linear_bond], Total_IC_dict["h_bond_dihedrals"])
+            n_tau -= (l - 1)
+     
+    
+    # correct n_gamma if it defined for a linear submolecule
+    # as we have 3 oop angles per central unit we need to divide by 3!
+    
+    intermolecular_out_of_plane_updated = update_internal_coordinates_cyclic(linear_bonds, Total_IC_dict["h_bond_oop"])
+    n_gamma = n_gamma - ((len(Total_IC_dict["h_bond_oop"]) - len(intermolecular_out_of_plane_updated)) // 3)
+    
+    # Calculate Dihedrals and OOP after Cleanup
+    intermolecular_dihedrals_needed = n_tau - max(dihedrals_length)    
+    intermolecular_out_of_plane_needed = n_gamma - max(oop_length)
+  
+    # TODO For the Formic Acid Dimer no linear angles get appended, a set is created with additional dihedral and angle coordinates
+    # AT THE MOMENT MANUAL GENERATION OF ALTERNATIVE SETS
+
+    
+    ic_dict_list = distribute_elements(fixed_ic_dict,total_intermolecular_bonds,'bonds',intermolecular_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_linear_angles, 'linear valence angles',intermolecular_linear_angles_needed) 
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_angles,'angles',intermolecular_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_dihedrals, 'dihedrals',intermolecular_dihedrals_needed) 
+ 
+    
+    ic_dict = dict()
+    
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict
+
+     
+
+def intermolecular_planar_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                     num_atoms, a_1, specification):
+    
+    #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list, _ =  atoms_list.detect_submolecules()  
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+     
+    summarized_submolecule_ic_dict =[]
+    # now the hard part every submolecule gets its own specification:
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+       
+        # Convert submolecule_atom into Molecule_Class
+        submolecule_atom = Molecule(submolecule_atom)
+
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph)
+        
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds)
+        sub_dihedrals = submolecule_atom.generate_dihedrals(submolecule_bonds)
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification_submolecule, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles)
+        if specification["planar"] == "yes":
+            sub_oop =submolecule_atom.generate_out_of_plane(submolecule_bonds)     
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+        
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+    
+
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict) 
+    # next we evaluate the length of the internal coordinates fixed by this procedure 
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    oop_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+            oop_length.append(len(value.get('out of plane angles',[])))
+    
+    # before randomly cutting the redundancies in the intermolecular set we first check for symmetry in the intermolecular bonds
+    symmetric_intermolecular_bonds = icsel.get_symm_bonds(Total_IC_dict["h_bond"], specification)
+    symmetric_intermolecular_bonds_list = icsel.get_bond_subsets(symmetric_intermolecular_bonds)
+    valide_atoms = valide_atoms_to_cut(Total_IC_dict["h_bond"], specification["multiplicity"])
+    removed_bonds = []
+    
+    
+    # initialize a bond dictionary for removal of acc don bond
+    bond_dict = atoms_list.bond_dict(Total_IC_dict["cov_bond"] + Total_IC_dict["h_bond"])
+
+    # if its possible we cut according to symmetry
+    
+    for symmetric_bond_group in symmetric_intermolecular_bonds_list:
+        if len(symmetric_bond_group) >= specification["mu"] and bonds_are_in_valide_atoms(
+                symmetric_bond_group, valide_atoms):
+            removed_bonds, random_var = delete_bonds_symmetry(symmetric_bond_group, Total_IC_dict["h_bond"], specification["mu"], valide_atoms)
+        if not removed_bonds:
+            continue
+    
+    intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+    intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+    intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+    intermolecular_h_linear_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_linear_angles"])   
+    
+    # when no symmetric cutting is possible we cut a random bond
+    # this is not ideal and leads to more possible solution of the decomposition process
+    
+    if len(removed_bonds) == 0:
+       removed_bonds = Total_IC_dict["h_bond"][:specification["mu"]]
+       
+       intermolecular_h_bonds_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond"])
+       intermolecular_h_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_angles"])
+       intermolecular_h_dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_dihedrals"])
+       intermolecular_h_linear_angles_updated = update_internal_coordinates_cyclic(removed_bonds, Total_IC_dict["h_bond_linear_angles"])   
+ 
+    
+    
+    removed_acc_don_bonds = []
+    # basically we use the hydrogen as a key to get our element out
+    for removed_bond in removed_bonds:
+        if removed_bond[0].strip(string.digits) == "H":
+            removed_acc_don_bonds.append(bond_dict[removed_bond[0]])
+        else:
+            removed_acc_don_bonds.append(bond_dict[removed_bond[1]])
+    
+    intermolecular_acc_don_bonds_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don"])
+    intermolecular_acc_don_angle_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_angles"])
+    intermolecular_acc_don_dihedrals_updated = update_internal_coordinates_cyclic(removed_acc_don_bonds,Total_IC_dict["acc_don_dihedrals"])
+    
+    # Here one can define which coordinates get added! 
+    total_intermolecular_bonds = intermolecular_h_bonds_updated + intermolecular_acc_don_bonds_updated
+    total_intermolecular_angles = intermolecular_h_angles_updated + intermolecular_acc_don_angle_updated
+    total_intermolecular_linear_angles = intermolecular_h_linear_angles_updated
+    total_intermolecular_dihedrals =   intermolecular_h_dihedrals_updated + intermolecular_acc_don_dihedrals_updated 
+
+    
+
+    # Evaluate the Internal Coordinates needed
+    n_r = num_bonds - specification["mu"]
+    n_phi = 2*(num_bonds - specification["mu"]) - num_atoms 
+    n_gamma = 2*((num_bonds - specification["mu"])-num_atoms) + a_1
+    n_tau = (num_bonds-specification["mu"]) - a_1
+    intermolecular_bonds_needed = n_r - max(bonds_length)
+    intermolecular_angles_needed = n_phi -  max(angles_length)
+    intermolecular_oop_needed = n_gamma - max(oop_length)
+    intermolecular_dihedrals_needed = n_tau - max(dihedrals_length)
+    
+    
+    # We also need to make a safety feature if the amount of one intermolecular coordinate is not large enough
+      # for this we take the heavy coordinate
+     
+    ic_dict_list = distribute_elements(fixed_ic_dict,total_intermolecular_bonds,'bonds',intermolecular_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_angles, 'angles', intermolecular_angles_needed)
+    # If not enough dihedrals present just append acc don dihedrals, ignore deletion
+    if len(total_intermolecular_dihedrals) < intermolecular_dihedrals_needed:
+       total_intermolecular_dihedrals = intermolecular_h_dihedrals_updated + Total_IC_dict["acc_don_dihedrals"]
+       ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_dihedrals, "dihedrals", intermolecular_dihedrals_needed)
+    else:
+       ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_dihedrals, "dihedrals", intermolecular_dihedrals_needed) 
+
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict 
+
+def intermolecular_planar_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                      num_atoms, a_1, specification):
+    
+
+  
+    #Open up the dictionary
+    
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list, _  =  atoms_list.detect_submolecules()  
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+    
+    summarized_submolecule_ic_dict =[]
+    # now the hard part every submolecule gets its own specification:
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+        
+        # Transform into Molecule Class
+        submolecule_atom = Molecule(submolecule_atom)
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = submolecule_atom.graph_rep()
+        specifications.connectivity_c = submolecule_atom.count_connected_components(molecular_graph)
+
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = submolecule_atom.generate_angles(submolecule_bonds) 
+        sub_dihedrals  = submolecule_atom.generate_dihedrals(submolecule_bonds) 
+
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,sub_linear_angles) 
+
+        if specification["planar"] == "yes":
+            sub_oop = submolecule_atom.generate_out_of_plane(submolecule_bonds)    
+        elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
+            sub_oop = []
+        elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
+            sub_oop = icgen.initialize_oop_planar_subunits(submolecule_atom, specification["planar submolecule(s)"])
+
+
+        # Step 4: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict) 
+    
+
+    # Now we evaluate the number of internal coordinates we have so far
+    bonds_length = []
+    angles_length = []
+    linear_angles_length = []
+    dihedrals_length = []
+    out_of_plane_length = []
+    for d in fixed_ic_dict:
+        for key,value in d.items(): 
+            bonds_length.append(len(value.get('bonds',[])))
+            angles_length.append(len(value.get('angles',[])))
+            linear_angles_length.append(len(value.get('linear valence angles',[])))
+            dihedrals_length.append(len(value.get('dihedrals',[])))
+            out_of_plane_length.append(len(value.get('out of plane angles', [])))
+    # Now we can specify how much of the different intermolecular coordinates we need in our sets:
+    n_r = num_bonds
+    n_phi = 2* num_bonds - num_atoms
+    n_gamma = 2*(num_bonds - num_atoms) + a_1
+    n_tau = num_bonds - a_1
+    
+    
+    ic_bonds_needed = n_r - max(bonds_length)
+    ic_angles_needed = n_phi - max(angles_length)
+    ic_dihedrals_needed = n_tau - max(dihedrals_length)
+    ic_out_of_plane_angles_needed = n_gamma - max(out_of_plane_length)
+
+    # Here we define out total bonds using to Total_IC_dict
+
+    # Again if the set size is not feasible the Acc_Don Coordinate can be commented out
+
+    total_intermolecular_bonds = Total_IC_dict["h_bond"] + Total_IC_dict["acc_don"]
+    total_intermolecular_angles = Total_IC_dict["h_bond_angles"] + Total_IC_dict["acc_don_angles"]
+    total_intermolecular_dihedrals = Total_IC_dict["h_bond_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
+    total_intermolecular_oop = Total_IC_dict["h_bond_oop"]
+
+    ic_dict_list = distribute_elements(fixed_ic_dict,total_intermolecular_bonds,'bonds',ic_bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_angles,'angles',ic_angles_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_dihedrals,'dihedrals',ic_dihedrals_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,total_intermolecular_oop,'out of plane angles', ic_out_of_plane_angles_needed)
+
+    ic_dict = dict()
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict
+
+
+
+'''
+Fully Linear
+'''
+
+def intermolecular_fully_linear_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane, dihedrals, num_bonds,
+                                       num_atoms, a_1, specification):
+    
+    n_phi_prime = 2*(num_atoms-2)
+    # for fully linear molecules Decius work gives us n_r = b and npi = 2(a-2)
+    # yet again we first fix the two submolecules, evaluate the missing angles and append them out of the pool of linear angles
+    covalent_bonds = list(set(bonds).difference(set(intermolecular_bonds)))
+    #Open up the dictionary
+    ic_dict_list = []    
+    ic_dic_list_1d_complex = []
+    # first we determine the two disconnected submolecules
+    connected_components, submolecules_bond_list =  detect_submolecules(covalent_bonds)  
+    submolecules_atoms_coordinates = extract_atoms_of_submolecules(connected_components,atoms_list)
+    
+     
+    summarized_submolecule_ic_dict =[]
+    # now the hard part every submolecule gets its own specification:
+    for submolecule_atom,submolecule_bonds in zip(submolecules_atoms_coordinates,submolecules_bond_list):
+        # Step 1: Point Group
+        
+        molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in submolecule_atom], [atom.coordinates for atom in submolecule_atom])
+        molecule_pg = PointGroupAnalyzer(molecule)
+        point_group_sch = molecule_pg.sch_symbol   
+        
+        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
+        
+        molecular_graph = dfs_connected.graph_rep(submolecule_bonds)
+        specifications.connectivity_c = dfs_connected.count_connected_components(molecular_graph)
+
+ 
+        # Step 2: Initialize Internal Coordinates:
+        sub_angles, sub_linear_angles = alt_icgen.initialize_angles(atoms_list,submolecule_bonds)
+        sub_dihedrals,sub_improper_dihedrals = alt_icgen.initialize_dihedrals(atoms_list,submolecule_bonds)
+        sub_oop = alt_icgen.alt_oop(atoms_list,submolecule_bonds)
+  
+        # Step 3: Give the Specification for each molecule
+        specification_submolecule = dict()
+        specification_submolecule = specifications.calculation_specification(specification_submolecule, submolecule_atom, molecule_pg, submolecule_bonds, sub_angles,
+                                                                                   sub_linear_angles) 
+
+        # Step 4: Calculate IDOF for the given Submolecules:
+        idof_submolecule = 0
+        if specification_submolecule["linearity"] == "fully linear":
+           idof_submolecule = 3 * len(submolecule_atom) - 5
+        else:
+           idof_submolecule = 3 * len(submolecule_atom) - 6
+         
+        # Step 5: With the Given Specification we can calculate the submolecule ic_dict:
+        ic_dict_submolecule = icsel.get_sets(idof_submolecule, out, submolecule_atom, submolecule_bonds, sub_angles, sub_linear_angles, sub_oop, sub_dihedrals, specification_submolecule)
+        summarized_submolecule_ic_dict.append(ic_dict_submolecule)
+    # What we now do with this list of dictionary is to fix the internal coordinates of the two submolecules, now we need to evaluate the missing coordinates for a complete set
+    fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict)
+     
+    fixed_bonds = []
+    fixed_linear_angles = []
+    
+    for d in fixed_ic_dict:
+        for key,value in d.items():
+            fixed_bonds.extend(value.get('bonds'))
+            fixed_linear_angles.extend(value.get('linear valence angles'))
+    
+    linear_angles_needed = n_phi_prime - len(fixed_linear_angles)
+    bonds_needed = num_bonds - len(fixed_bonds)
+    
+    ic_dict_list = distribute_elements(fixed_ic_dict,intermolecular_bonds,'bonds',bonds_needed)
+    ic_dict_list = distribute_elements(ic_dict_list,intermolecular_linear_angles,'linear valence angles',linear_angles_needed)
+    
+    ic_dict = dict()
+    
+    new_key = 0
+    for dictionary in ic_dict_list:
+        for key, value in dictionary.copy().items():
+            ic_dict[new_key] = value
+            new_key += 1
+    return ic_dict
+   
+
+
+

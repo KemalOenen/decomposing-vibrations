@@ -1,5 +1,10 @@
 import numpy as np
 import pandas as pd
+from .nomodeco_classes import Molecule
+
+
+
+
 
 def get_linear_bonds(linear_angles):
     linear_bonds = []
@@ -22,12 +27,16 @@ def is_string_in_tuples(string, list_of_tuples):
             return True
     return False 
 
-def is_system_planar(coordinates, tolerance=1e-3):
+
+# TODO Redefine this function
+def is_system_planar(coordinates, tolerance=1e-1):
     # convert tuples first to arrays
     if len(coordinates) == 0:
         return True
+    # Also if the length of the molecule is 2 this is always gtrue
+    if len(coordinates) == 2:
+       return True
     coordinates = [np.array(coord) for coord in coordinates]
-
     # select three non-linearly aligned atoms (already pre-filtered)
     atom1, atom2, atom3 = coordinates[:3]
 
@@ -40,6 +49,9 @@ def is_system_planar(coordinates, tolerance=1e-3):
     for atom in coordinates[3:]:
         vec3 = atom - atom1
         dot_product = np.dot(normal_vector, vec3)
+        
+        #if connectivity_c > 1:
+        #   tolerance = 1e-1
         # Check if dot product is close to zero within the tolerance
         if abs(dot_product) > tolerance:
             return False
@@ -68,6 +80,7 @@ def calculation_specification(specification, atoms, molecule_pg, bonds, angles, 
     specification = {"multiplicity": atoms_multiplicity_list}
     
     # check if molecule is planar or general
+    
     all_coordinates = []
     for atom in atoms:
         # atoms should not be colinear, otherwise we can not form a useful cross product
@@ -105,16 +118,41 @@ def calculation_specification(specification, atoms, molecule_pg, bonds, angles, 
         specification.update({"length of linear submolecule(s) l": len(linear_bonds)})
     if (not linear_angles and angles):
         specification.update({"linearity": "not linear"})
+    
 
-    # check if molecule is acyclic or cyclic 
-    mu = len(bonds) - len(atoms) + 1
-    if mu > 0:
+    atoms = Molecule(atoms)
+    connectivity_c = atoms.count_connected_components(atoms.graph_rep())
+    mu = atoms.mu()
+    beta = atoms.beta()
+        
+    if connectivity_c >= 2:
+       specification.update({"intermolecular": "yes"})
+       if mu > 0 and beta == 0:
+          specification.update({"cyclic": "yes"})
+          specification.update({"beta": beta})
+          specification.update({"mu": mu})
+          specification.update({"intermolecular ring": "yes"})
+       elif mu > 0 and beta == mu:
+          specification.update({"beta" : beta})
+          specification.update({"mu" : mu})
+          specification.update({"intermolecular ring": "no"})
+       elif mu <= 0:
+          specification.update({"cyclic": "no"})
+          specification.update({"mu": mu})
+    else:   
+      # check if molecule is acyclic or cyclic
+       if mu > 0:
         specification.update({"cyclic": "yes"})
         specification.update({"mu": mu})
-    else:
+        specification.update({"intermolecular": "no"})
+       elif mu <= 0:
+        specification.update({"cyclic": "no"})
+        specification.update({"mu": 0})
+        specification.update({"intermolecular": "no"})
+       else:
         specification.update({"cyclic": "no"})
         specification.update({"mu": mu})
-
+        specification.update({"intermolecular": "no"})
 
     # define which atoms are equal or not, based on group theory
     equivalent_atoms = molecule_pg.get_equivalent_atoms()

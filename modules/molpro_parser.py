@@ -3,9 +3,9 @@ from typing import NamedTuple
 from scipy import constants
 from collections import Counter
 
-class Atom(NamedTuple):
-    symbol: str
-    coordinates: tuple
+
+from .nomodeco_classes import Molecule
+
 
 def numerate_strings(string_list):
     string_counts = Counter(string_list)
@@ -46,7 +46,7 @@ def parse_xyz_from_inputfile(inputfile):
         coordinates.append(xyz)
     
     names = numerate_strings(names)
-    return [Atom(name, tuple(coordinate)) for name, coordinate in zip(names, coordinates)]
+    return [Molecule.Atom(name, tuple(coordinate)) for name, coordinate in zip(names, coordinates)]
 
 #TODO: general parsing
 

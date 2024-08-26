@@ -52,14 +52,14 @@ Important the entries are different for the Central Atom and the Side Atoms
 ''''' 
 
 def B_Matrix_Entry_Angle_AtomB(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
-    return (normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB) * 
+         return (normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB) * 
             np.cos(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB)) - 
             normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC))/(
                 bond_length(Coordinates_AtomA,Coordinates_AtomB) * 
                 np.sin(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB)))
 
-def B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC):
-    return (normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC) * 
+def B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA,Coordinates_AtomB,Coordinates_AtomC): 
+        return (normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC) * 
             np.cos(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB)) - 
             normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB))/(
                 bond_length(Coordinates_AtomA,Coordinates_AtomC) * 

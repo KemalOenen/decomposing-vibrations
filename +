@@ -33,8 +33,12 @@ from modules import alt_icgen
 from modules import specifications as sp
 from modules import dfs_connected
 from modules import topology as tp
-from modules.nomodeco_classes import Molecule, InternalCoordinates
-from modules import icset_opt_multproc
+
+
+class Atom(NamedTuple):
+    symbol: str
+    coordinates: tuple
+
 
 # TODO: isotopes for all elements with command line input?
 def get_mass_information() -> pd.DataFrame:
@@ -45,16 +49,6 @@ def get_mass_information() -> pd.DataFrame:
     mass_info.set_index("symbol", inplace=True)
     return mass_info
 
-def get_bond_information() -> pd.DataFrame:
-    df = fetch_table('elements')
-
-    bond_info = df.loc[:, ['symbol', 'covalent_radius_pyykko', 'vdw_radius']]
-
-    bond_info.set_index("symbol", inplace=True)
-    bond_info /= 100
-    return bond_info
-
-BOND_INFO = get_bond_information()
 
 def reciprocal_square_massvector(atoms):
     n_atoms = len(atoms)
@@ -100,6 +94,7 @@ def main():
                 os.rename(outputfile, new_outputfile_name)
                 break
             i += 1
+
     out = logfile.setup_logger('outputfile', outputfile)
     logfile.write_logfile_header(out)
 
@@ -111,79 +106,78 @@ def main():
     molecule = mg.Molecule([strip_numbers(atom.symbol) for atom in atoms], [atom.coordinates for atom in atoms])
     molecule_pg = PointGroupAnalyzer(molecule)
     point_group_sch = molecule_pg.sch_symbol   
-    
 
-    atoms = Molecule(atoms)
+    '''
+    Generation of Intermolecular Coordinates
+    '''
     
     '''
-    IC Generation
+    Bonds
     '''
-    # Intermolecular Bonds:
-    # Use Degree of Covalance https://doi.org/10.1002/qua.21049 for hydrogen bond detection
-    degofc_table = atoms.degree_of_covalance()    
-    cov_bonds = atoms.covalent_bonds(degofc_table)
-    sp.covalent_bonds = cov_bonds   
+    # For the Bonds in the Context of the Bachelor Thesis we take covalent bonds, and H-Donor / Akzeptor-Donor as valid coordinates
+    # The primary calculation is run with H-Donor as a IC
+ 
+    alt_covalent_bonds = alt_icgen.initialize_bonds(atoms)
+    alt_heavy_hbonds = alt_icgen.initialize_heavy_hbonds(atoms,alt_covalent_bonds)
+    alt_h_bonds = alt_icgen.initialize_hbonds(atoms,alt_covalent_bonds)
+    print("H-Bonds found", alt_h_bonds)  
     
-    # Detect and generate covalent submolecules
-    _, _, cov_submolecules_symbols = atoms.detect_submolecules()
+    # This are the bonds used in the primary analyis
+    alt_bonds = list(set(alt_covalent_bonds).union(set(alt_h_bonds)))
+    # This are the bonds used if later on the metric is ill defined
+    alt_bonds_with_heavy_hbonds = list(set(alt_covalent_bonds).union(alt_heavy_hbonds))
+    #alt_bonds = alt_bonds_with_heavy_hbonds 
 
-    # Generate Hydrogen Bond and the Acceptor-Donor Coordinate
+    '''
+    Angles
+    '''
+    # For the angles we generate angles with both the H-Donor and / Akzeptor-Donor as Bonds   
+    alt_angles, alt_linear_angles = alt_icgen.initialize_angles(atoms,alt_bonds)
+    alt_angles_heavy_hbonds, alt_linear_angles_heavy_hbonds = alt_icgen.initialize_angles(atoms,alt_bonds_with_heavy_hbonds)
     
-    h_bonds = atoms.intermolecular_h_bond(degofc_table,cov_submolecules_symbols)
-    acc_don_bonds = atoms.intermolecular_acceptor_donor(degofc_table,cov_submolecules_symbols)
+    '''
+    Dihedrals
+    '''
+    # For the Dihedrals we generate also both, a dihedral with a Angle > 169 ° is ill defined and gets set as improper 
+    alt_dihedrals, alt_improper_dihedrals = alt_icgen.initialize_dihedrals(atoms,alt_bonds)
+    alt_dihedrals_heavy_hbonds, alt_improper_dihedrals_heavy_hbond = alt_icgen.initialize_dihedrals(atoms,alt_bonds_with_heavy_hbonds)
+   
+    '''
+    Out of plane angles
+    '''
+    # For the Out of Plane angles we also generate both variantes, though the specification decides if they are used at all
+    alt_oop = alt_icgen.alt_oop(atoms,alt_bonds)
+    alt_oop_heavy_hbonds = alt_icgen.alt_oop(atoms,alt_dihedrals_heavy_hbonds)
+
+
+
+    '''
+    Calculation of Connectivity
+    '''
+    # Using DFS algorithm a graph of the molecule gets determined, then the connectivity c gets calculated
+    # The connectivity is used for the later determination of intermolecular cyclic system  
     
-            
-    Total_IC_dict = InternalCoordinates()
-
-    #Add covalent ICs
-    Total_IC_dict.add_coordinate("cov_bond", cov_bonds)
-    Total_IC_dict.add_coordinate("h_bond", h_bonds)
-    Total_IC_dict.add_coordinate("acc_don", acc_don_bonds)
-    Total_IC_dict.add_coordinate("cov_angles", atoms.generate_angles(cov_bonds)[0])
-    Total_IC_dict.add_coordinate("cov_linear_angles", atoms.generate_angles(cov_bonds)[1])
-    Total_IC_dict.add_coordinate("cov_dihedrals", atoms.generate_dihedrals(cov_bonds))
-    Total_IC_dict.add_coordinate("cov_oop", atoms.generate_out_of_plane(cov_bonds))
-     
-
-
-    # Define Total Bonds
-    bonds = list(set(cov_bonds).union(set(h_bonds)))
-    bond_acc_don = list(set(cov_bonds).union(set(acc_don_bonds)))
+    molecular_graph = dfs_connected.graph_rep(alt_covalent_bonds)
+    sp.covalent_bonds = alt_covalent_bonds
+    sp.connectivity_c = dfs_connected.count_connected_components(molecular_graph)
     
-
-    Total_IC_dict.add_coord_diff("h_bond_angles",atoms.generate_angles(bonds)[0],Total_IC_dict["cov_angles"])
-    Total_IC_dict.add_coord_diff_linear("h_bond_linear_angles", atoms.generate_angles(bonds)[1],Total_IC_dict["cov_linear_angles"])
-    Total_IC_dict.add_coord_diff("h_bond_dihedrals", atoms.generate_dihedrals(bonds),Total_IC_dict["cov_dihedrals"])
-    Total_IC_dict.add_coord_diff("h_bond_oop", atoms.generate_out_of_plane(bonds),Total_IC_dict["cov_oop"])
-    Total_IC_dict.add_coord_diff("acc_don_angles", atoms.generate_angles(bond_acc_don)[0],Total_IC_dict["cov_angles"])
-    Total_IC_dict.add_coord_diff_linear("acc_don_linear_angles",atoms.generate_angles(bond_acc_don)[1],Total_IC_dict["cov_linear_angles"])
-    Total_IC_dict.add_coord_diff("acc_don_dihedrals", atoms.generate_dihedrals(bond_acc_don),Total_IC_dict["cov_dihedrals"])
-    Total_IC_dict.add_coord_diff("acc_don_oop", atoms.generate_out_of_plane(bond_acc_don), Total_IC_dict["cov_oop"])
-
-    print(Total_IC_dict)  
-    # Assing Coordinates from IC Dict to Variables
-    angles = Total_IC_dict["cov_angles"] + Total_IC_dict["h_bond_angles"] 
-    linear_angles = Total_IC_dict["cov_linear_angles"] + Total_IC_dict["h_bond_linear_angles"]
-    dihedrals = Total_IC_dict["cov_dihedrals"] + Total_IC_dict["h_bond_dihedrals"]
-    
-    # If no valid dihedrals found append acc_don_dihedrals
-    if len(dihedrals) == 0:
-       dihedrals = Total_IC_dict["cov_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
-
 
     '''
     Generating the Specification for the primary calculation
     '''
+    bonds = alt_bonds
+    angles,linear_angles = alt_angles, alt_linear_angles
    
     # Setting specifications for calculation: check if molecule is linear, planar or a general molecule
     specification = dict()
     specification = specifications.calculation_specification(specification, atoms, molecule_pg, bonds, angles,
                                                                                    linear_angles)
+    print(specification) 
     
     # Generation of all possible out-of-plane motions
 
     if specification["planar"] == "yes":
-         out_of_plane = Total_IC_dict["cov_oop"] + Total_IC_dict["h_bond_oop"]   
+         out_of_plane = alt_icgen.alt_oop(atoms,bonds)     
     elif specification["planar"] == "no" and specification["planar submolecule(s)"] == []:
         out_of_plane = []
     elif specification["planar"] == "no" and not (specification["planar submolecule(s)"] == []):
@@ -192,28 +186,90 @@ def main():
     else:
         return out.error("Classification of whether topology is planar or not could not be determined!")
     
+    dihedrals = icgen.initialize_dihedrals(atoms)
+    dihedrals = alt_dihedrals
+    
+  # if no dihedral angles are found we take the heavy coordinate for the dihedrals angle
+    if len(dihedrals) == 0: 
+       alt_bonds_heavy = alt_icgen.initialize_bonds(atoms) + alt_heavy_hbonds
+       dihedrals, alt_improper_dihedrals_heavy_bonds = alt_icgen.initialize_dihedrals(atoms,alt_bonds_heavy) 
+       if len(dihedrals) == 0:
+          dihedrals = alt_improper_dihedrals_heavy_bonds	
+               
     # determine internal degrees of freedom 
     idof = 0
     if specification["linearity"] == "fully linear":
-        idof = atoms.idof_linear()
+        idof = 3 * n_atoms - 5
     else:
-        idof = atoms.idof_general()
+        idof = 3 * n_atoms - 6
 
     # update out file
     
-    print(specification)
     logfile.write_logfile_oop_treatment(out, specification["planar"], specification["planar submolecule(s)"])
     logfile.write_logfile_symmetry_treatment(out, specification, point_group_sch)
 
     '''
     Passing Section for Topology.py
     '''
+    # in this section we specify the information needed for topology.py
+    # for the BA Thesis all the intermolecular coordinates get passed to topology.py and are therefore shared variables
+    
     tp.atoms_list = atoms
-    tp.Total_IC_dict = Total_IC_dict
+    '''
+    Passing for Donor-H Coordinate
+    '''
+    # Bonds
+    intermolecular_bonds = list(set(alt_bonds).difference(set(alt_covalent_bonds)))
+    # Angles
+    intermolecular_angles = list(set(alt_angles).difference(set(alt_icgen.initialize_angles(atoms,alt_covalent_bonds)[0])))
+    # Linear Angles
+    intermolecular_linear_angles = list(set(alt_linear_angles).difference(set(alt_icgen.initialize_angles(atoms,alt_covalent_bonds)[1])))
+    # Dihedrals
+    intermolecular_dihedrals = list(set(alt_dihedrals).difference(set(alt_icgen.initialize_dihedrals(atoms,alt_covalent_bonds)[0])))
+    # Out of Plane
+    intermolecular_oop = list(set(alt_oop).difference(set(alt_icgen.alt_oop(atoms,alt_covalent_bonds))))
+    # Generate the degenerate angles for the passing
+    intermolecular_linear_angles_degenerate = []
+    for element in intermolecular_linear_angles:
+        intermolecular_linear_angles_degenerate.extend([element,element]) 
+    
+    # if there are no dihedrals in the intermolecular list we take donor - akzeptor dihedrals instead:
+    if len(intermolecular_dihedrals) == 0:
+       intermolecular_dihedrals = list(set(alt_dihedrals_heavy_hbonds).difference(set(alt_icgen.initialize_dihedrals(atoms,alt_covalent_bonds)[0])))
+    
+    tp.intermolecular_bonds = intermolecular_bonds
+    tp.intermolecular_angles = intermolecular_angles
+    tp.intermolecular_linear_angles = intermolecular_linear_angles_degenerate
+    tp.intermolecular_oop = intermolecular_oop 
+    tp.intermolecular_dihedrals = intermolecular_dihedrals
+    
+    
     
     '''
-    Diag Mass Matrix and Reciprocal Square root masses
+    Passing for Donor-Akzeptor Coordinate
     '''
+    # Bonds
+    tp.intermolecular_heavy_hbonds = alt_heavy_hbonds
+    # Angles
+    intermolecular_heavy_hbonds_angles = list(set(alt_angles_heavy_hbonds).difference(set(alt_icgen.initialize_angles(atoms,alt_covalent_bonds)[0])))
+    # Linear angles
+    intermolecular_heavy_hbonds_linear_angles = list(set(alt_linear_angles_heavy_hbonds).difference(set(alt_icgen.initialize_angles(atoms,alt_covalent_bonds)[1])))
+    # Dihedrals
+    intermolecular_heavy_hbonds_dihedrals = list(set(alt_dihedrals_heavy_hbonds).difference(set(alt_icgen.initialize_dihedrals(atoms,alt_covalent_bonds)[0])))
+    # Out of Plane
+    intermolecular_heavy_hbonds_oop = list(set(alt_oop_heavy_hbonds).difference(set(alt_icgen.alt_oop(atoms,alt_covalent_bonds))))
+    # Generate degenerate Linear angles for passing 
+    intermolecular_heavy_hbonds_linear_angles_degenerate = []
+    for element in intermolecular_heavy_hbonds_linear_angles:
+        intermolecular_heavy_hbonds_linear_angles_degenerate.extend([element,element]) 
+    
+    tp.intermolecular_heavy_hbonds_angles = intermolecular_heavy_hbonds_angles
+    tp.intermolecular_heavy_hbonds_linear_angles = intermolecular_heavy_hbonds_linear_angles_degenerate
+    tp.intermolecular_heavy_hbonds_dihedrals = intermolecular_heavy_hbonds_dihedrals
+    tp.intermolecular_heavy_hbonds_oop = intermolecular_heavy_hbonds_oop
+    
+        
+
 
 
     # Computation of the diagonal mass matrices with 
@@ -248,18 +304,10 @@ def main():
         symmetric_coordinates = dict()
 
     ic_dict = icsel.get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification)
-    
-    # Here also a multiprocessing variant is implemented to use comment out!
-
-    optimal_set = icset_opt_multproc.find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix,
+    optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix,
                                                         reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms,
                                                         symmetric_coordinates, L, args.penalty1, args.penalty2) 
-    #optimal_set = icset_opt.find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix,
-    #                                                    reciprocal_square_massmatrix, rottra, CartesianF_Matrix, atoms,
-    #                                                    symmetric_coordinates, L, args.penalty1, args.penalty2) 
-    
-
-
+   
     '''
     Baker Description of Internal Coordinates
     '''
@@ -269,11 +317,17 @@ def main():
     import sympy
 
     B_baker  = bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
+    print(bonds, angles)
+    print("Shape B-matrix", np.shape(B_baker))
+    print("Rank_B_matrix", np.linalg.matrix_rank(B_baker))
 
     # in order to evaluate which internal coordinates are linearly independent we first transpose the b matrix
     # row space --> internal coordinates
     B_baker_transpose = np.transpose(B_baker)
+    print(np.shape(B_baker_transpose))
     _, inds = sympy.Matrix(B_baker).T.rref()
+    print(inds)
+    print("Rank_Transpose", np.linalg.matrix_rank(B_baker_transpose))
     G_baker = np.matmul(B_baker, B_baker_transpose)
     G_eigenvalues, G_eigenvectors = np.linalg.eig(G_baker)
      
@@ -475,27 +529,23 @@ def main():
     Results = Results.rename(columns=columns)
     DiagonalElementsPED = DiagonalElementsPED.rename(columns=columns)
     ContributionTable = ContributionTable.rename(columns=columns)
+    
+
+    ContributionTable_T = ContributionTable.transpose()
     ContributionTable_Index = ContributionTable.set_index("Internal Coordinate")
-  
+    
     Contribution_Sliced = []
     for freq in ContributionTable_Index.columns[1:]:
         row = {"Frequency" : freq}
         details = []
         for i,coord in enumerate(ContributionTable["Internal Coordinate"]):
             percentage = ContributionTable.loc[i,freq]
-            # weird quickfix maybe repair this some time
-            if isinstance(percentage, pd.Series):
-               percentage = float(percentage[1])
-            elif isinstance(percentage, str) and percentage != ".":
-               percentage = float(percentage)
+            percentage = float(percentage)
             if percentage > 10:
                details.append(f"{coord}: {percentage:.2f}\%")
         row["Details"] = "; ".join(details)
         Contribution_Sliced.append(row)
     annotated_df = pd.DataFrame(Contribution_Sliced)
-    
-    ContributionTable_T = ContributionTable.transpose()
-   
     latex_table = annotated_df.to_latex(column_format="c|c",
                                         index = False,
                                         multicolumn = True,
