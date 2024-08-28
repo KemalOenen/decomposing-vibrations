@@ -56,14 +56,14 @@ In this section the general usage and the arguments for tthe command line are fu
 ```
 nomodeco.py [-h] [--log] [--matrix_opt [matrix]] [--penalty1 [INTFREQ-PENALTY]] [--penalty2 [INTFC-PENALTY]] [--heatmap matrix [matrix ...]] [--csv matrix [matrix...]] [--latex_tab]
 ``` 
-+ [-h] --help shows the help message for the arguments of Nomodeco.py
-+ [--log] displays an additional .log file that containes results for every tested internal coordinate set
-+ [--matrix_opt [matrix]] chooses which matrix is used for the optimization: i.e VED matrix (keyword: ved) diagonal elements of PED (keyword: diag) and Contribution Table (keyword: contr) (default: contr)
-+ [--penalty1 [INTFREQ-PENALTLY]] penalty value for asymmetric intrinsic frequency values, which can be helpful for cyclic systems (default: 0)
-+ [--penalty2 [INTFC-PENALTY]] penalty value for unphysical contributons per internal coordinate (default: 0)
-+ [--heatmap matrix [matrix ...]] return a heatmap for the specified matrix: i.e, VED matrix (keyword: ved), Diagonal elements of PED matrix (keyword: diag) and Contribution Table (keyword: contr)
-+ [--csv matrix [matrix...]] return a csv file for the specified matrix: i.e VED matrix (keyword: ved), Diagonal elements of PED matrix (keyword: diag) and Contribution Table (keyword: contr)
-+ [--latextab] generate additional latex table file which displayes the Contribution Table
++ **[-h]** --help shows the help message for the arguments of Nomodeco.py
++ **[--log]** displays an additional .log file that containes results for every tested internal coordinate set
++ **[--matrix_opt [matrix]]** chooses which matrix is used for the optimization: i.e VED matrix (keyword: ved) diagonal elements of PED (keyword: diag) and Contribution Table (keyword: contr) (default: contr)
++ **[--penalty1 [INTFREQ-PENALTLY]]** penalty value for asymmetric intrinsic frequency values, which can be helpful for cyclic systems (default: 0)
++ **[--penalty2 [INTFC-PENALTY]]** penalty value for unphysical contributons per internal coordinate (default: 0)
++ **[--heatmap matrix [matrix ...]]** return a heatmap for the specified matrix: i.e, VED matrix (keyword: ved), Diagonal elements of PED matrix (keyword: diag) and Contribution Table (keyword: contr)
++ **[--csv matrix [matrix...]]** return a csv file for the specified matrix: i.e VED matrix (keyword: ved), Diagonal elements of PED matrix (keyword: diag) and Contribution Table (keyword: contr)
++ **[--latextab]** generate additional latex table file which displayes the Contribution Table
 
 
 
