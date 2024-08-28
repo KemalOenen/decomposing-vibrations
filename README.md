@@ -44,6 +44,16 @@ molpro -n6 template_molpro.inp
 ```
 Using the Molpro.out file one can now carry out the automatic normal mode decompositon and generate a contribution table
 
+## Command Line Arguments:
+
+In this section the general usage and the arguments for tthe command line are further explained:
+
+```
+nomodeco.py [-h] [--log] [--matrix_opt [matrix]] [--penalty1 [INTFREQ-PENALTY]] [--penalty2 [INTFC-PENALTY]] [--heatmap matrix [matrix ...]] [--csv matrix [matrix...]] [--latex_tab]
+``` 
++ $[-h]$ --help shows the help message for the arguments of Nomodeco.py
++ $[--log]$ displays an additional .log file that containes results for every tested internal coordinate set
+
 ```
 nomodeco --log --heatmap contr --latex_tab template_molpro.out
 ```
