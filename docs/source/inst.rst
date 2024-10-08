@@ -1,6 +1,8 @@
 Installation
 ==========
 
+Hello world
+
 Nomodeco can be manually installed from the github repository::
 
     git clone https://github.com/KemalOenen/decomposing-vibrations.git
