@@ -1,11 +1,13 @@
 [tool.poetry]
 name = "nomodeco"
-version = "0.2.3"
-description = "a python package for the automated normal mode decomposition"
+version = "0.2.5"
+description = "a python package for the determination of optimal internal coordinate systems for molecular structures"
 authors = ["KemalÖnen","LukasMeinschad <lukas.meinschad@gmail.com>"]
 readme = "README.md"
+
+
 packages = [
-    {include = "nomodeco"}
+    {include = "nomodeco"}, {include = "nomodeco/libraries"}
 ]
 [tool.poetry.dependencies]
 python = ">=3.12.5,<3.13"

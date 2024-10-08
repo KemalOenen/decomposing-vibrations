@@ -31,19 +31,19 @@ logging.getLogger("matplotlib").setLevel(logging.ERROR)
 Nomodeco Modules
 """
 
-from libraries import icsel
-from libraries import bmatrix
-from libraries import logfile
-from libraries import molpro_parser
-from libraries import specifications
-from libraries import icset_opt
-from libraries import arguments
-from libraries import specifications as sp
-from libraries import topology as tp
-from libraries.nomodeco_classes import Molecule, InternalCoordinates
-from libraries import icset_opt_multproc
-from libraries import gaussian_parser
-from libraries import orca_parser
+from nomodeco.libraries import icsel
+from nomodeco.libraries import bmatrix
+from nomodeco.libraries import logfile
+from nomodeco.libraries import molpro_parser
+from nomodeco.libraries import specifications
+from nomodeco.libraries import icset_opt
+from nomodeco.libraries import arguments
+from nomodeco.libraries import specifications as sp
+from nomodeco.libraries import topology as tp
+from nomodeco.libraries.nomodeco_classes import Molecule, InternalCoordinates
+from nomodeco.libraries import icset_opt_multproc
+from nomodeco.libraries import gaussian_parser
+from nomodeco.libraries import orca_parser
 
 
 def get_mass_information() -> pd.DataFrame:
