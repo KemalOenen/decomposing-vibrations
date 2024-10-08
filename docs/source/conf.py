@@ -28,6 +28,7 @@ nomodeco_path = current_dir / '../../nomodeco'
 sys.path.append(str(module_path.resolve()))
 sys.path.append(str(nomodeco_path.resolve()))
 
+
 project = 'nomodeco'
 copyright = '2024, Lukas'
 author = 'Lukas'
@@ -36,7 +37,7 @@ release = '0.2.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.autodoc"]
+extensions = ["sphinx.ext.autodoc"] 
 
 templates_path = ['_templates']
 exclude_patterns = []
