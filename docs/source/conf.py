@@ -12,7 +12,7 @@ from pathlib import Path
 # Autodoc Inport
 current_dir = os.path.abspath(os.path.dirname(__file__))
 parent_dir = os.path.abspath(os.path.join(current_dir, '../..'))
-module_path = os.path.join(parent_dir,"nomodeco","modules")
+module_path = os.path.join(parent_dir,"nomodeco","libraries")
 nomodeco_path = os.path.join(parent_dir,"nomdeco")
 sys.path.append(module_path)
 #sys.path.append(nomodeco_path)

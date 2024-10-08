@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction &mdash; nomodeco 0.2.0 documentation</title>
+  <title>bmatrix &mdash; nomodeco 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -21,8 +21,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation" href="inst.html" />
-    <link rel="prev" title="Welcome to the Nomodeco.py Documentation" href="index.html" /> 
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="nomodeco_classes" href="module_nomodeco_classes.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,16 +46,17 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#welcome-to-the-nomodeco-py-documentation">Welcome to the Nomodeco.py documentation!</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#f">F</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#special-thanks">Special Thanks</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inst.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html">Nomodeco Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco_classes.html">nomodeco_classes</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">bmatrix</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bmatrix.bond_length"><code class="docutils literal notranslate"><span class="pre">bond_length()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
@@ -73,9 +74,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Introduction</li>
+          <li class="breadcrumb-item"><a href="api.html">API</a></li>
+      <li class="breadcrumb-item active">bmatrix</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/main.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/module_bmatrix.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -83,42 +85,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
-<section id="welcome-to-the-nomodeco-py-documentation">
-<h2>Welcome to the Nomodeco.py documentation!<a class="headerlink" href="#welcome-to-the-nomodeco-py-documentation" title="Link to this heading"></a></h2>
-<p>This is the online documentation for the python package Nomoceco.py.</p>
-<p>Nomodeco.py enables the automatic determination of an optimal coordinate set for a given molecular structure. Using the atomic coordinates of the given molecule Nomodeco constructs all possible primitive internal coordinates:</p>
-<ul class="simple">
-<li><p>bond stretching</p></li>
-<li><p>in-plane angle bending</p></li>
-<li><p>linear valance bending</p></li>
-<li><p>torsion</p></li>
-<li><p>out-of-plane angle bending</p></li>
-</ul>
-<p>The transformation between cartesian and internal coordinates is given by the <em>Wilson B Matrix</em>, Nomodeco initializes all possible internal coordinates sets and selects the optimal set based on topolgy and symmetry considerations.</p>
-<p>For further information on the algorithm an theory: <a class="reference external" href="https://pubs.aip.org/aip/jcp/article/160/1/014104/2932467/Determining-internal-coordinate-sets-for-optimal">Determining internal coordinate sets for optimal representation of molecular vibration</a></p>
-</section>
-<section id="f">
-<h2>F<a class="headerlink" href="#f" title="Link to this heading"></a></h2>
-<section id="special-thanks">
-<h3>Special Thanks<a class="headerlink" href="#special-thanks" title="Link to this heading"></a></h3>
-<p>I would like to extend my deepest thanks to:</p>
-<ul class="simple">
-<li><p>Kemal Önen for initializing the project and guiding the future development</p></li>
-<li><p>Klaus R. Liedl for the supervision of the project</p></li>
-<li><p>Dennis F. Dinu for important contributions of theory aspects</p></li>
-</ul>
-</section>
-</section>
+  <section id="module-bmatrix">
+<span id="bmatrix"></span><h1>bmatrix<a class="headerlink" href="#module-bmatrix" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="bmatrix.bond_length">
+<span class="sig-prename descclassname"><span class="pre">bmatrix.</span></span><span class="sig-name descname"><span class="pre">bond_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Coordinates_AtomA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Coordinates_AtomB</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#bmatrix.bond_length" title="Link to this definition"></a></dt>
+<dd><p>Calculates the bond_length using the euclidean norm between two coordinates</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>Coordinates_AtomA:</dt><dd><p>a tuple of the x,y,z coords of atom a</p>
+</dd>
+<dt>Coordinates_AtomB:</dt><dd><p>a tuple of the x,y,z coords of atom b</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to the Nomodeco.py Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="inst.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="module_nomodeco_classes.html" class="btn btn-neutral float-left" title="nomodeco_classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

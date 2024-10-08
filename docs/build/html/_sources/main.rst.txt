@@ -13,14 +13,15 @@ Nomodeco.py enables the automatic determination of an optimal coordinate set for
 * torsion
 * out-of-plane angle bending
 
-The transformation between cartesian and internal coordinates is given by the *Wilson B Matrix*, Nomodeco initializes all possible internal coordinates sets and selects the optimal set based on topolgy and symmetry considerations
-
+The transformation between cartesian and internal coordinates is given by the *Wilson B Matrix*, Nomodeco initializes all possible internal coordinates sets and selects the optimal set based on topolgy and symmetry considerations.
 
 For further information on the algorithm an theory: `Determining internal coordinate sets for optimal representation of molecular vibration`_
 
 .. _Determining internal coordinate sets for optimal representation of molecular vibration: https://pubs.aip.org/aip/jcp/article/160/1/014104/2932467/Determining-internal-coordinate-sets-for-optimal
 
-.. _special-thanks:
+
+F
+===================================
 
 Special Thanks
 --------------

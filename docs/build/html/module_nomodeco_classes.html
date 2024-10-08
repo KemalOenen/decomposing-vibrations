@@ -21,6 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
     <link rel="prev" title="Nomodeco Functions" href="module_nomodeco.html" /> 
 </head>
 
@@ -45,7 +46,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="main.html">Main module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inst.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html">Nomodeco Functions</a></li>
@@ -55,11 +56,18 @@
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.actual_length"><code class="docutils literal notranslate"><span class="pre">Molecule.actual_length()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.append"><code class="docutils literal notranslate"><span class="pre">Molecule.append()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.bond_angle"><code class="docutils literal notranslate"><span class="pre">Molecule.bond_angle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.bond_dict"><code class="docutils literal notranslate"><span class="pre">Molecule.bond_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.count_connected_components"><code class="docutils literal notranslate"><span class="pre">Molecule.count_connected_components()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.covalent_bonds"><code class="docutils literal notranslate"><span class="pre">Molecule.covalent_bonds()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.degree_of_covalance"><code class="docutils literal notranslate"><span class="pre">Molecule.degree_of_covalance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.detect_submolecules"><code class="docutils literal notranslate"><span class="pre">Molecule.detect_submolecules()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.dfs"><code class="docutils literal notranslate"><span class="pre">Molecule.dfs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.get_atom_coords_by_symbol"><code class="docutils literal notranslate"><span class="pre">Molecule.get_atom_coords_by_symbol()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.get_donor_atoms"><code class="docutils literal notranslate"><span class="pre">Molecule.get_donor_atoms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.graph_rep"><code class="docutils literal notranslate"><span class="pre">Molecule.graph_rep()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.idof_general"><code class="docutils literal notranslate"><span class="pre">Molecule.idof_general()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.idof_linear"><code class="docutils literal notranslate"><span class="pre">Molecule.idof_linear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.is_connected"><code class="docutils literal notranslate"><span class="pre">Molecule.is_connected()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.list_of_atom_symbols"><code class="docutils literal notranslate"><span class="pre">Molecule.list_of_atom_symbols()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.num_atoms"><code class="docutils literal notranslate"><span class="pre">Molecule.num_atoms()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#nomodeco_classes.Molecule.theoretical_length"><code class="docutils literal notranslate"><span class="pre">Molecule.theoretical_length()</span></code></a></li>
@@ -70,6 +78,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
         </div>
@@ -210,6 +219,38 @@ value: a object of the Atom Class</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="nomodeco_classes.Molecule.bond_dict">
+<span class="sig-name descname"><span class="pre">bond_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#nomodeco_classes.Molecule.bond_dict" title="Link to this definition"></a></dt>
+<dd><p>Created a dictionary where for each atom the corresponding “bonded” atoms are stored</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>self:</dt><dd><p>a object of the Molecule class</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing the bonds which are used for the dict creation</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>A dictionary containing the bonded atom for each atom e.q {H1: [O1,O2]}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nomodeco_classes.Molecule.count_connected_components">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">count_connected_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#nomodeco_classes.Molecule.count_connected_components" title="Link to this definition"></a></dt>
+<dd><p>Using the dfs algorithm counts the fully covalently connected components inside a molecule</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>graph:</dt><dd><p>a molecular graph created by Molecule.graph_rep()</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a integer which represents the total count of connected components ranges from 1..N</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="nomodeco_classes.Molecule.covalent_bonds">
 <span class="sig-name descname"><span class="pre">covalent_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degofc_table</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#nomodeco_classes.Molecule.covalent_bonds" title="Link to this definition"></a></dt>
 <dd><p>Searches for covalent bonds between two atoms. A covalent bond is found when the degree of covalence is greater than 0.75</p>
@@ -238,9 +279,73 @@ value: a object of the Atom Class</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="nomodeco_classes.Molecule.detect_submolecules">
+<span class="sig-name descname"><span class="pre">detect_submolecules</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nomodeco_classes.Molecule.detect_submolecules" title="Link to this definition"></a></dt>
+<dd><p>A graph theory oriented function to detect the covalent submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>self:</dt><dd><p>a object of the molecule class</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>connected_components: more information see networkx.connected_components
+submolecules: a dictionary containing the subgraphs of the molecule
+submolecule_symbols: a list of the atomic symbols of the submolecules</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nomodeco_classes.Molecule.dfs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visited</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nomodeco_classes.Molecule.dfs" title="Link to this definition"></a></dt>
+<dd><p>A static method that applies dfs algorithm on a given graph</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>graph:</dt><dd><p>a molecular graph created by Molecule.graph_rep()</p>
+</dd>
+<dt>start:</dt><dd><p>start node for the dfs algorithm</p>
+</dd>
+<dt>visitied:</dt><dd><p>visited list for the dfs algorithm</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nomodeco_classes.Molecule.get_atom_coords_by_symbol">
+<span class="sig-name descname"><span class="pre">get_atom_coords_by_symbol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nomodeco_classes.Molecule.get_atom_coords_by_symbol" title="Link to this definition"></a></dt>
+<dd><p>Retries a atom by specifying a atomic symbol</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>self:</dt><dd><p>a object of the Molecule class</p>
+</dd>
+<dt>symbol:</dt><dd><p>a atomic symbol as a string</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="nomodeco_classes.Molecule.get_donor_atoms">
 <span class="sig-name descname"><span class="pre">get_donor_atoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#nomodeco_classes.Molecule.get_donor_atoms" title="Link to this definition"></a></dt>
 <dd><p>Returns the class variable donor_atom of the Atom class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nomodeco_classes.Molecule.graph_rep">
+<span class="sig-name descname"><span class="pre">graph_rep</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nomodeco_classes.Molecule.graph_rep" title="Link to this definition"></a></dt>
+<dd><p>Generates the covalent bonds and using the covalent bonds a graph representation of a molecule</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>self:</dt><dd><p>a object of the Molecule class</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where the graph representation of the molecule is stored</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -253,6 +358,21 @@ value: a object of the Atom Class</p>
 <dt class="sig sig-object py" id="nomodeco_classes.Molecule.idof_linear">
 <span class="sig-name descname"><span class="pre">idof_linear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#nomodeco_classes.Molecule.idof_linear" title="Link to this definition"></a></dt>
 <dd><p>Returns the degrees of freedom in the linear case 3N-5</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nomodeco_classes.Molecule.is_connected">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_connected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nomodeco_classes.Molecule.is_connected" title="Link to this definition"></a></dt>
+<dd><p>Uses the dfs method and a molecular graph to check if a graph is connected</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>graph:</dt><dd><p>a molecular graph created by Molecule.graph_rep()</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>True if the length of the visited list is equal in length of the total graph</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -317,6 +437,7 @@ value: a object of the Atom Class</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="module_nomodeco.html" class="btn btn-neutral float-left" title="Nomodeco Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

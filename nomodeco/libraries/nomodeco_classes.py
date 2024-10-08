@@ -369,6 +369,18 @@ class Molecule(list):
     '''
     
     def detect_submolecules(self):
+        """
+        A graph theory oriented function to detect the covalent submolecules
+
+        Attributes:
+            self:
+                a object of the molecule class
+        Returns:
+            connected_components: more information see networkx.connected_components
+            submolecules: a dictionary containing the subgraphs of the molecule
+            submolecule_symbols: a list of the atomic symbols of the submolecules
+
+        """
         bonds = self.covalent_bonds(self.degree_of_covalance())
         molecular_graph = nx.Graph()
         molecular_graph.add_edges_from(bonds)
@@ -392,6 +404,16 @@ class Molecule(list):
         return connected_components, submolecules, submolecule_symbols
     
     def graph_rep(self):
+        """
+        Generates the covalent bonds and using the covalent bonds a graph representation of a molecule
+
+        Attributes:
+            self:
+                a object of the Molecule class
+        
+        Returns:
+            a dictionary where the graph representation of the molecule is stored
+        """
         graph = {}
         bonds = self.covalent_bonds(self.degree_of_covalance())
         for bond in bonds:
@@ -403,6 +425,17 @@ class Molecule(list):
     
     @staticmethod
     def dfs(graph,start,visited):
+        """
+        A static method that applies dfs algorithm on a given graph
+
+        Attributes:
+            graph:
+                a molecular graph created by Molecule.graph_rep()
+            start:
+                start node for the dfs algorithm
+            visitied:
+                visited list for the dfs algorithm
+        """
         visited.add(start)
         for neighbor in graph.get(start,[]):
             if neighbor not in visited:
@@ -410,6 +443,16 @@ class Molecule(list):
 
     @staticmethod
     def is_connected(graph):
+        """
+        Uses the dfs method and a molecular graph to check if a graph is connected
+
+        Attributes:
+            graph:
+                a molecular graph created by Molecule.graph_rep()
+        
+        Returns:
+            True if the length of the visited list is equal in length of the total graph
+        """
         if not graph:
             return True
         visited = set()
@@ -418,7 +461,17 @@ class Molecule(list):
         return len(visited) == len(graph)
     
     @staticmethod
-    def count_connected_components(graph):
+    def count_connected_components(graph) -> int:
+        """
+        Using the dfs algorithm counts the fully covalently connected components inside a molecule
+
+        Attributes:
+            graph:
+                a molecular graph created by Molecule.graph_rep()
+        
+        Returns:
+            a integer which represents the total count of connected components ranges from 1..N
+        """
         if not graph:
             return 0
         visited = set()
@@ -430,7 +483,19 @@ class Molecule(list):
         return count
    
     # Is used in Topology.py
-    def bond_dict(self,bonds):
+    def bond_dict(self,bonds) -> dict:
+        """
+        Created a dictionary where for each atom the corresponding "bonded" atoms are stored
+
+        Attributes:
+            self:
+                a object of the Molecule class
+            bonds:
+                a list of tuples containing the bonds which are used for the dict creation
+        
+        Returns:
+            A dictionary containing the bonded atom for each atom e.q {H1: [O1,O2]}
+        """
         bond_dict = {}
         for atom_1,atom_2 in bonds:
             if atom_1 not in bond_dict:
@@ -447,7 +512,15 @@ class Molecule(list):
     '''
 
     def get_atom_coords_by_symbol(self,symbol):
+        """
+        Retries a atom by specifying a atomic symbol
 
+        Attributes:
+            self:
+                a object of the Molecule class
+            symbol:
+                a atomic symbol as a string
+        """
         for atom in self:
             if atom.symbol == symbol:
                 return atom.coordinates

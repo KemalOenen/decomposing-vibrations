@@ -6,7 +6,16 @@ import scipy
 
 
 # Note: Vector points from Atom A to Atom B
-def bond_length(Coordinates_AtomA, Coordinates_AtomB):  # ANG
+def bond_length(Coordinates_AtomA, Coordinates_AtomB) -> float:  # ANG
+    """
+    Calculates the bond_length using the euclidean norm between two coordinates
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom a
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom b
+    """
     return np.linalg.norm((Coordinates_AtomB - Coordinates_AtomA))
 
 

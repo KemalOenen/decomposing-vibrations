@@ -1,0 +1,5 @@
+bmatrix
+=================
+
+.. automodule:: bmatrix
+    :members:
