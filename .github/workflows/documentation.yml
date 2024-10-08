@@ -17,6 +17,7 @@ jobs:
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser
           pip install poetry
+          pip install -e .
       - name: Install dependencies
         run: |
           poetry install 
