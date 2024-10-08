@@ -1,0 +1,105 @@
+ .__   __.   ______   .___  ___.   ______    _______   _______   ______   ______      .______   ____    ____ 
+ |  \ |  |  /  __  \  |   \/   |  /  __  \  |       \ |   ____| /      | /  __  \     |   _  \  \   \  /   / 
+ |   \|  | |  |  |  | |  \  /  | |  |  |  | |  .--.  ||  |__   |  ,----'|  |  |  |    |  |_)  |  \   \/   /  
+ |  . `  | |  |  |  | |  |\/|  | |  |  |  | |  |  |  ||   __|  |  |     |  |  |  |    |   ___/    \_    _/   
+ |  |\   | |  `--'  | |  |  |  | |  `--'  | |  '--'  ||  |____ |  `----.|  `--'  |  __|  |          |  |     
+ |__| \__|  \______/  |__|  |__|  \______/  |_______/ |_______| \______| \______/  (__) _|          |__|     
+                                                                                                             
+
+
+**************************************************************************************************************
+                         Kemal Önen, Lukas Meinschad, Dennis F. Dinu, Klaus R. Liedl                          
+                                      Liedl Lab, University of Innsbruck                                      
+**************************************************************************************************************
+
+Non-planar system detected. Therefore out-of-plane angles are NOT used in your analysis. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The detected point group is C1
+The following equivalent atoms were found: [['C1'], ['C2'], ['C3'], ['H1'], ['H4'], ['H2'], ['H3'], ['H5'], ['O1'], ['H6'], ['O2'], ['H7'], ['H8']] 
+
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
+bonds: [('C2', 'H3'), ('H6', 'O2'), ('C1', 'H1'), ('O1', 'H6'), ('C2', 'C3'), ('C1', 'C3'), ('C3', 'O1'),
+ ('C2', 'H4'), ('C3', 'H5'), ('O2', 'H7'), ('C1', 'H2'), ('O2', 'H8'), ('C1', 'C2')]
+in-plane angles: [('C2', 'C1', 'C3'), ('C2', 'C1', 'H1'), ('C2', 'C1', 'H2'), ('C3', 'C1', 'H1'), ('C3', 'C1', 'H2'),
+ ('H1', 'C1', 'H2'), ('C1', 'C2', 'C3'), ('C1', 'C2', 'H3'), ('C1', 'C2', 'H4'), ('C3', 'C2', 'H3'),
+ ('C3', 'C2', 'H4'), ('H3', 'C2', 'H4'), ('C1', 'C3', 'C2'), ('C1', 'C3', 'H5'), ('C1', 'C3', 'O1'),
+ ('C2', 'C3', 'H5'), ('C2', 'C3', 'O1'), ('H5', 'C3', 'O1'), ('C3', 'O1', 'H6'), ('H7', 'O2', 'H8'),
+ ('H6', 'O2', 'H7'), ('H6', 'O2', 'H8')]
+linear valence-angles: [('O2', 'H6', 'O1'), ('O2', 'H6', 'O1')]
+out-of-plane angles: []
+dihedrals: [('H3', 'C2', 'C3', 'H5'), ('C3', 'C2', 'C1', 'H2'), ('H2', 'C1', 'C2', 'H4'), ('C2', 'C1', 'C3', 'O1'),
+ ('C2', 'C1', 'C3', 'H5'), ('H2', 'C1', 'C3', 'O1'), ('H1', 'C1', 'C2', 'H4'), ('C1', 'C3', 'C2', 'H4'),
+ ('C2', 'C3', 'O1', 'H6'), ('C3', 'C1', 'C2', 'H3'), ('H2', 'C1', 'C3', 'H5'), ('C1', 'C2', 'C3', 'O1'),
+ ('H1', 'C1', 'C3', 'O1'), ('C1', 'C2', 'C3', 'H5'), ('H1', 'C1', 'C3', 'H5'), ('C2', 'C3', 'C1', 'H1'),
+ ('H2', 'C1', 'C2', 'H3'), ('H1', 'C1', 'C2', 'H3'), ('C1', 'C3', 'C2', 'H3'), ('C2', 'C3', 'C1', 'H2'),
+ ('C1', 'C3', 'O1', 'H6'), ('C3', 'C1', 'C2', 'H4'), ('H4', 'C2', 'C3', 'O1'), ('H5', 'C3', 'O1', 'H6'),
+ ('H3', 'C2', 'C3', 'O1'), ('C3', 'C2', 'C1', 'H1'), ('H4', 'C2', 'C3', 'H5'), ('H7', 'O2', 'H6', 'O1'),
+ ('H8', 'O2', 'H6', 'O1'), ('C3', 'O1', 'H6', 'O2')]
+
+33 internal coordinates are at least needed for the decomposition scheme.
+
+------------------------------Generation of intermolecular internal coordinates-------------------------------
+
+The following intermolecular internal coordinates (bonds, (in-plane) angles, linear valance angles, out-of-plane angles and torsions) were generated:
+Hydrogen bonds: [('H6', 'O2')]
+Acceptor donor bonds: [('O1', 'O2')]
+Hydrogen bond in-plane angles: [('H6', 'O2', 'H7'), ('H6', 'O2', 'H8')]
+Acceptor donor in-plane angles: [('H7', 'O2', 'O1'), ('C3', 'O1', 'O2'), ('H8', 'O2', 'O1')]
+Hydrogen bond bond linear valence-angles: [('O2', 'H6', 'O1'), ('O2', 'H6', 'O1')]
+Acceptor donor bond linear valence-angles: []
+Hydrogen bond dihedrals: [('H7', 'O2', 'H6', 'O1'), ('H8', 'O2', 'H6', 'O1'), ('C3', 'O1', 'H6', 'O2')]
+Acceptor donor bond dihedrals: [('H6', 'O1', 'O2', 'H7'), ('C1', 'C3', 'O1', 'O2'), ('H6', 'O1', 'O2', 'H8'), ('C3', 'O1', 'O2', 'H8'), ('C3', 'O1', 'O2', 'H7'), ('C2', 'C3', 'O1', 'O2'), ('H5', 'C3', 'O1', 'O2')]
+Hydrogen bond out-of-plane angles: []
+Acceptor donor bond out-of-plane angles: []
+
+Due to having a cyclic molecule, 1 bond(s) is/are removed in the analysis
+
+The following updated Internal Coordinates are used in your analysis:
+bonds: [('C1', 'C3'), ('C1', 'H1'), ('C1', 'H2'), ('C2', 'C3'), ('C2', 'H3'), ('C2', 'H4'), ('C3', 'H5'),
+ ('C3', 'O1'), ('O1', 'H6')]
+in-plane angles: [('C3', 'C1', 'H1'), ('C3', 'C1', 'H2'), ('H1', 'C1', 'H2'), ('C3', 'C2', 'H3'), ('C3', 'C2', 'H4'),
+ ('H3', 'C2', 'H4'), ('C1', 'C3', 'H5'), ('C1', 'C3', 'O1'), ('C2', 'C3', 'H5'), ('C2', 'C3', 'O1'),
+ ('H5', 'C3', 'O1'), ('C3', 'O1', 'H6')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('H3', 'C2', 'C3', 'H5'), ('H2', 'C1', 'C3', 'O1'), ('C2', 'C3', 'O1', 'H6'), ('H2', 'C1', 'C3', 'H5'),
+ ('H1', 'C1', 'C3', 'O1'), ('H1', 'C1', 'C3', 'H5'), ('C1', 'C3', 'O1', 'H6'), ('H4', 'C2', 'C3', 'O1'),
+ ('H5', 'C3', 'O1', 'H6'), ('H3', 'C2', 'C3', 'O1'), ('H4', 'C2', 'C3', 'H5')]
+
+
+Due to having a cyclic molecule, 1 bond(s) is/are removed in the analysis
+
+The following updated Internal Coordinates are used in your analysis:
+bonds: [('C1', 'H1'), ('C1', 'H2'), ('C2', 'C3'), ('C2', 'H3'), ('C2', 'H4'), ('C3', 'H5'), ('C3', 'O1'),
+ ('O1', 'H6'), ('C1', 'C2')]
+in-plane angles: [('C2', 'C1', 'H1'), ('C2', 'C1', 'H2'), ('H1', 'C1', 'H2'), ('C1', 'C2', 'H3'), ('C1', 'C2', 'H4'),
+ ('C3', 'C2', 'H3'), ('C3', 'C2', 'H4'), ('H3', 'C2', 'H4'), ('C2', 'C3', 'H5'), ('C2', 'C3', 'O1'),
+ ('H5', 'C3', 'O1'), ('C3', 'O1', 'H6')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('H3', 'C2', 'C3', 'H5'), ('H2', 'C1', 'C2', 'H4'), ('H1', 'C1', 'C2', 'H4'), ('C2', 'C3', 'O1', 'H6'),
+ ('H2', 'C1', 'C2', 'H3'), ('H1', 'C1', 'C2', 'H3'), ('H4', 'C2', 'C3', 'O1'), ('H5', 'C3', 'O1', 'H6'),
+ ('H3', 'C2', 'C3', 'O1'), ('H4', 'C2', 'C3', 'H5')]
+
+
+Due to having a cyclic molecule, 1 bond(s) is/are removed in the analysis
+
+The following updated Internal Coordinates are used in your analysis:
+bonds: [('C1', 'H1'), ('C1', 'H2'), ('C2', 'H3'), ('C2', 'H4'), ('C3', 'H5'), ('C3', 'O1'), ('O1', 'H6'),
+ ('C1', 'C2'), ('C1', 'C3')]
+in-plane angles: [('C2', 'C1', 'H1'), ('C2', 'C1', 'H2'), ('C3', 'C1', 'H1'), ('C3', 'C1', 'H2'), ('H1', 'C1', 'H2'),
+ ('C1', 'C2', 'H3'), ('C1', 'C2', 'H4'), ('H3', 'C2', 'H4'), ('C1', 'C3', 'H5'), ('C1', 'C3', 'O1'),
+ ('H5', 'C3', 'O1'), ('C3', 'O1', 'H6')]
+linear valence-angles: []
+out-of-plane angles: []
+dihedrals: [('H2', 'C1', 'C2', 'H4'), ('H2', 'C1', 'C3', 'O1'), ('H1', 'C1', 'C2', 'H4'), ('H2', 'C1', 'C3', 'H5'),
+ ('H1', 'C1', 'C3', 'O1'), ('H1', 'C1', 'C3', 'H5'), ('H2', 'C1', 'C2', 'H3'), ('H1', 'C1', 'C2', 'H3'),
+ ('C1', 'C3', 'O1', 'H6'), ('H5', 'C3', 'O1', 'H6')]
+
+---------------------------Generation of internal coordinate sets for submolecules----------------------------
+
+The following covalent submolecules where found in the structure: [{'H6', 'H1', 'H5', 'H4', 'O1', 'C1', 'C2', 'C3', 'H2', 'H3'}, {'O2', 'H8', 'H7'}]
+Generated IC sets for submolecule 0: 405
+Generated IC sets for submolecule 1: 1

@@ -1,0 +1,58 @@
+
+ Working directory              : /tmp/lme/molpro.zzKevFKhwW/
+ Global scratch directory       : /tmp/lme/molpro.zzKevFKhwW/
+ Wavefunction directory         : /home/lme/wfu/
+ Main file repository           : /tmp/lme/molpro.zzKevFKhwW/
+
+ id        : liedlgroup
+
+ Nodes     nprocs
+ sv1-c724     1
+ GA implementation: MPI file
+ GA implementation (serial work in mppx): MPI file
+
+ Using customized tuning parameters: mindgm=1; mindgv=20; mindgc=4; mindgr=1; noblas=0; minvec=7
+ default implementation of scratch files=df  
+
+
+ Variables initialized (1042), CPU time= 0.01 sec
+ ***,Methanol_Methanol
+ imemory, 200, m                                                                 ! Memory Requirements
+ orient,mass
+ geometry = {
+   O,    -0.00001000,   0.00000000,   0.00000000
+   H,     0.94422200,  -0.02379700,  -0.20413500
+   C,    -0.51594000,  -1.28800600,  -0.26533900
+   H,    -1.57382000,  -1.27298300,  -0.01664300
+   H,    -0.42048500,  -1.56938900,  -1.31679000
+   H,    -0.03871100,  -2.06299100,   0.33991200
+   O,     2.84654400,  -0.09884000,  -0.29270200
+   H,     3.31533400,   0.51554500,  -0.86236800
+   C,     3.35537800,   0.05817900,   1.02901600
+   H,     2.80180900,  -0.63001700,   1.65914700
+   H,     4.41437400,  -0.19226000,   1.08573900
+   H,     3.20293800,   1.06887300,   1.4069080
+ }
+ mass, iso
+ basis=6-311g(d,p)
+ 
+ {hf
+ start,atden}
+ 
+ optg
+ {frequencies, symm=auto, print=0,analytical}
+ put,molden,ch3oh_dimer.molden
+ Commands initialized (847), CPU time= 0.01 sec, 718 directives.
+ Default parameters read. Elapsed time= 0.07 sec
+
+ Checking input...
+
+ Unknown command or directive IMEMORY
+
+    1 input errors found
+
+ ? Error
+ ? Input errors!
+ ? The problem occurs in check_input
+
+ GLOBAL ERROR fehler on processor   0                                         

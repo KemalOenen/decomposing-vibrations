@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<plist>
+	<dict>
+		<key>backend</key>
+		<string>local</string>
+		<key>project_hash</key>
+		<string>8266657536519204591</string>
+		<key>run_input_hash</key>
+		<string>12958800811528634528</string>
+		<key>run_directories</key>
+		<string>Ammonia_dimer_1 </string>
+		<key>current_run</key>
+		<string>0</string>
+		<key>jobnumber</key>
+		<string>3905639</string>
+		<key>_status</key>
+		<string>3</string>
+	</dict>
+</plist>

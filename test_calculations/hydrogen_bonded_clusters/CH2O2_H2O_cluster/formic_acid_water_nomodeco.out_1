@@ -1,0 +1,51 @@
+ .__   __.   ______   .___  ___.   ______    _______   _______   ______   ______      .______   ____    ____ 
+ |  \ |  |  /  __  \  |   \/   |  /  __  \  |       \ |   ____| /      | /  __  \     |   _  \  \   \  /   / 
+ |   \|  | |  |  |  | |  \  /  | |  |  |  | |  .--.  ||  |__   |  ,----'|  |  |  |    |  |_)  |  \   \/   /  
+ |  . `  | |  |  |  | |  |\/|  | |  |  |  | |  |  |  ||   __|  |  |     |  |  |  |    |   ___/    \_    _/   
+ |  |\   | |  `--'  | |  |  |  | |  `--'  | |  '--'  ||  |____ |  `----.|  `--'  |  __|  |          |  |     
+ |__| \__|  \______/  |__|  |__|  \______/  |_______/ |_______| \______| \______/  (__) _|          |__|     
+                                                                                                             
+
+
+**************************************************************************************************************
+                         Kemal Önen, Lukas Meinschad, Dennis F. Dinu, Klaus R. Liedl                          
+                                      Liedl Lab, University of Innsbruck                                      
+**************************************************************************************************************
+
+Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The detected point group is Cs
+The following equivalent atoms were found: [['O1'], ['H1'], ['H2'], ['H3'], ['H4'], ['C'], ['O2'], ['O3']] 
+
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
+bonds: [('H2', 'O2'), ('O3', 'H4'), ('C', 'O2'), ('C', 'O3'), ('O1', 'H2'), ('O1', 'H1'), ('C', 'H3')]
+in-plane angles: [('H1', 'O1', 'H2'), ('H3', 'C', 'O2'), ('H3', 'C', 'O3'), ('O2', 'C', 'O3'), ('C', 'O3', 'H4'),
+ ('O2', 'H2', 'O1'), ('H2', 'O2', 'C')]
+linear valence-angles: []
+out-of-plane angles: [('C', 'H3', 'O2', 'O3'), ('C', 'O2', 'H3', 'O3'), ('C', 'O3', 'H3', 'O2'), ('C', 'O2', 'O3', 'H3'),
+ ('C', 'O3', 'O2', 'H3')]
+dihedrals: [('H4', 'O3', 'C', 'O2'), ('H3', 'C', 'O3', 'H4'), ('H1', 'O1', 'H2', 'O2'), ('C', 'O2', 'H2', 'O1'),
+ ('H2', 'O2', 'C', 'O3'), ('H2', 'O2', 'C', 'H3')]
+
+18 internal coordinates are at least needed for the decomposition scheme.
+
+------------------------------Generation of intermolecular internal coordinates-------------------------------
+
+The following intermolecular internal coordinates (bonds, (in-plane) angles, linear valance angles, out-of-plane angles and torsions) were generated:
+Hydrogen bonds: [('H2', 'O2')]
+Acceptor donor bonds: []
+Hydrogen bond in-plane angles: [('O2', 'H2', 'O1'), ('H2', 'O2', 'C')]
+Acceptor donor in-plane angles: []
+Hydrogen bond bond linear valence-angles: []
+Acceptor donor bond linear valence-angles: []
+Hydrogen bond dihedrals: [('H1', 'O1', 'H2', 'O2'), ('C', 'O2', 'H2', 'O1'), ('H2', 'O2', 'C', 'O3'), ('H2', 'O2', 'C', 'H3')]
+Acceptor donor bond dihedrals: []
+Hydrogen bond out-of-plane angles: [('C', 'O2', 'O3', 'H3'), ('C', 'O3', 'O2', 'H3')]
+Acceptor donor bond out-of-plane angles: [('C', 'O2', 'O3', 'H3'), ('C', 'O3', 'O2', 'H3')]
+---------------------------Generation of internal coordinate sets for submolecules----------------------------
+
+The following covalent submolecules where found in the structure: [{'O1', 'H1', 'H2'}, {'C', 'H4', 'O3', 'H3', 'O2'}]
+Generated IC sets for submolecule 0: 1
+Generated IC sets for submolecule 1: 6

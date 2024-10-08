@@ -1,0 +1,464 @@
+*************************************************
+******************* ORCA 6.0.0 ******************
+*************************************************
+$Calculation_Status
+   &GeometryIndex 5
+   &ListStatus       OUT
+   &VERSION [&Type "String"] "6.0.0"
+   &PROGNAME [&Type "String"] "LeanSCF"
+   &STATUS [&Type "String"] "NORMAL TERMINATION"
+$End
+$Geometry
+   &GeometryIndex 1
+   &ListStatus       OUT
+   &NATOMS [&Type "Integer"] 3
+   &NCORELESSECP [&Type "Integer"] 0
+   &NGHOSTATOMS [&Type "Integer"] 0
+   &CartesianCoordinates [&Type "Coordinates", &Dim(3,4), &Units "Bohr"] 
+              H      1.416100671470    0.000000000000    0.836077013637
+              O      0.000000000000    0.000000000000   -0.312467539052
+              H     -1.416100671470    0.000000000000    0.836077013637
+$End
+$SCF_Energy
+   &GeometryIndex 1
+   &ListStatus       FIRST
+   &SCF_ENERGY [&Type "Double"]      -7.6045624140006197e+01
+$End
+$Mulliken_Population_Analysis
+   &GeometryIndex 1
+   &ListStatus       FIRST
+   &NATOMS [&Type "Integer"] 3
+   &ATNO [&Type "ArrayOfIntegers", &Dim (3,1)] 
+                                                         0
+
+0                                                        1
+1                                                        8
+2                                                        1
+   &ATOMICCHARGES [&Type "ArrayOfDoubles", &Dim (3,1)] 
+                                                         0
+
+0                                      2.4537215864790174e-01
+1                                     -4.9074431729580326e-01
+2                                      2.4537215864791184e-01
+$End
+$Loewdin_Population_Analysis
+   &GeometryIndex 1
+   &ListStatus       FIRST
+   &NATOMS [&Type "Integer"] 3
+   &ATNO [&Type "ArrayOfIntegers", &Dim (3,1)] 
+                                                         0
+
+0                                                        1
+1                                                        8
+2                                                        1
+   &ATOMICCHARGES [&Type "ArrayOfDoubles", &Dim (3,1)] 
+                                                         0
+
+0                                      4.0588355479786675e-02
+1                                     -8.1176710959557141e-02
+2                                      4.0588355479785787e-02
+$End
+$Mayer_Population_Analysis
+   &GeometryIndex 1
+   &ListStatus       FIRST
+   &NATOMS [&Type "Integer"] 3 "Total number of atoms"
+   &BONDTHRESH [&Type "Double"]       1.0000000000000001e-01  "The threshold for printing"
+   &NBONDORDERSPRINT [&Type "Integer"] 2 "The number of bond orders larger than threshold"
+   &BONDORDERS [&Type "ArrayOfDoubles", &Dim (2,1)] "The bond orders"
+                                                         0
+
+0                                      9.6251674391190600e-01
+1                                      9.6251674391190545e-01
+   &COMPONENTS [&Type "ArrayOfIntegers", &Dim (2,4)] "The indices and atomic numbers of the bonding atoms"
+                                                         0                           1                           2                           3
+
+0                                                        0                           1                           1                           8
+1                                                        1                           8                           2                           1
+   &ATNO [&Type "ArrayOfIntegers", &Dim (3,1)] "Atomic number of the elements"
+                                                         0
+
+0                                                        1
+1                                                        8
+2                                                        1
+   &NA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mulliken gross atomic population"
+                                                         0
+
+0                                      7.5462784135209870e-01
+1                                      8.4907443172958086e+00
+2                                      7.5462784135208794e-01
+   &ZA [&Type "ArrayOfDoubles", &Dim (3,1)] "Total nuclear charge"
+                                                         0
+
+0                                      1.0000000000000000e+00
+1                                      8.0000000000000000e+00
+2                                      1.0000000000000000e+00
+   &QA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mulliken gross atomic charge"
+                                                         0
+
+0                                      2.4537215864790130e-01
+1                                     -4.9074431729580859e-01
+2                                      2.4537215864791206e-01
+   &VA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mayer's total valence"
+                                                         0
+
+0                                      9.6864150939944194e-01
+1                                      1.9250334878238446e+00
+2                                      9.6864150939944116e-01
+   &BVA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mayer's bonded valence"
+                                                         0
+
+0                                      9.6864150939944060e-01
+1                                      1.9250334878238116e+00
+2                                      9.6864150939944005e-01
+   &FA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mayer's free valence"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      0.0000000000000000e+00
+$End
+$SCF_Nuc_Gradient
+   &GeometryIndex 1
+   &ListStatus       FIRST
+   &NATOMS [&Type "Integer"] 3
+   &GRADNORM [&Type "Double"]       5.1548921492726191e-02
+   &GRAD [&Type "ArrayOfDoubles", &Dim (9,1)] 
+                                                         0
+
+0                                      1.6031564691879385e-02
+1                                      0.0000000000000000e+00
+2                                      1.8900040450238853e-02
+3                                      0.0000000000000000e+00
+4                                      0.0000000000000000e+00
+5                                     -3.7800080900469712e-02
+6                                     -1.6031564691883382e-02
+7                                      0.0000000000000000e+00
+8                                      1.8900040450236411e-02
+$End
+$Geometry
+   &GeometryIndex 2
+   &ListStatus       OUT
+   &NATOMS [&Type "Integer"] 3
+   &NCORELESSECP [&Type "Integer"] 0
+   &NGHOSTATOMS [&Type "Integer"] 0
+   &CartesianCoordinates [&Type "Coordinates", &Dim(3,4), &Units "Bohr"] 
+              H      1.393614983743    0.000000000000    0.820129182266
+              O      0.000000000000    0.000000000000   -0.280571876311
+              H     -1.393614983743    0.000000000000    0.820129182266
+$End
+$SCF_Energy
+   &GeometryIndex 2
+   &ListStatus       IN
+   &SCF_ENERGY [&Type "Double"]      -7.6046889227371707e+01
+$End
+$SCF_Nuc_Gradient
+   &GeometryIndex 2
+   &ListStatus       IN
+   &NATOMS [&Type "Integer"] 3
+   &GRADNORM [&Type "Double"]       6.8402242121979769e-03
+   &GRAD [&Type "ArrayOfDoubles", &Dim (9,1)] 
+                                                         0
+
+0                                     -4.2698969392662711e-03
+1                                      0.0000000000000000e+00
+2                                      1.3117817100594120e-03
+3                                      0.0000000000000000e+00
+4                                      0.0000000000000000e+00
+5                                     -2.6235634202387281e-03
+6                                      4.2698969391867792e-03
+7                                      0.0000000000000000e+00
+8                                      1.3117817101355733e-03
+$End
+$Geometry
+   &GeometryIndex 3
+   &ListStatus       OUT
+   &NATOMS [&Type "Integer"] 3
+   &NCORELESSECP [&Type "Integer"] 0
+   &NGHOSTATOMS [&Type "Integer"] 0
+   &CartesianCoordinates [&Type "Coordinates", &Dim(3,4), &Units "Bohr"] 
+              H      1.406911215202    0.000000000000    0.815570650004
+              O     -0.000000000000    0.000000000000   -0.271454811788
+              H     -1.406911215202    0.000000000000    0.815570650004
+$End
+$SCF_Energy
+   &GeometryIndex 3
+   &ListStatus       IN
+   &SCF_ENERGY [&Type "Double"]      -7.6046992842512608e+01
+$End
+$SCF_Nuc_Gradient
+   &GeometryIndex 3
+   &ListStatus       IN
+   &NATOMS [&Type "Integer"] 3
+   &GRADNORM [&Type "Double"]       2.7319332012639679e-03
+   &GRAD [&Type "ArrayOfDoubles", &Dim (9,1)] 
+                                                         0
+
+0                                     -1.3599841038050009e-03
+1                                      0.0000000000000000e+00
+2                                      7.9208011914588816e-04
+3                                      0.0000000000000000e+00
+4                                      0.0000000000000000e+00
+5                                     -1.5841602383233067e-03
+6                                      1.3599841038027805e-03
+7                                      0.0000000000000000e+00
+8                                      7.9208011914144727e-04
+$End
+$Geometry
+   &GeometryIndex 4
+   &ListStatus       OUT
+   &NATOMS [&Type "Integer"] 3
+   &NCORELESSECP [&Type "Integer"] 0
+   &NGHOSTATOMS [&Type "Integer"] 0
+   &CartesianCoordinates [&Type "Coordinates", &Dim(3,4), &Units "Bohr"] 
+              H      1.414897055763    0.000000000000    0.812194950384
+              O      0.000000000000    0.000000000000   -0.264703412548
+              H     -1.414897055763    0.000000000000    0.812194950384
+$End
+$SCF_Energy
+   &GeometryIndex 4
+   &ListStatus       IN
+   &SCF_ENERGY [&Type "Double"]      -7.6047012018505015e+01
+$End
+$SCF_Nuc_Gradient
+   &GeometryIndex 4
+   &ListStatus       LAST
+   &NATOMS [&Type "Integer"] 3
+   &GRADNORM [&Type "Double"]       9.4958157960900417e-05
+   &GRAD [&Type "ArrayOfDoubles", &Dim (9,1)] 
+                                                         0
+
+0                                     -6.0156372229780430e-05
+1                                      0.0000000000000000e+00
+2                                     -1.7221466892314297e-05
+3                                      0.0000000000000000e+00
+4                                      0.0000000000000000e+00
+5                                      3.4442933679823540e-05
+6                                      6.0156372225783628e-05
+7                                      0.0000000000000000e+00
+8                                     -1.7221466886319092e-05
+$End
+$Geometry
+   &GeometryIndex 5
+   &ListStatus       OUT
+   &NATOMS [&Type "Integer"] 3
+   &NCORELESSECP [&Type "Integer"] 0
+   &NGHOSTATOMS [&Type "Integer"] 0
+   &CartesianCoordinates [&Type "Coordinates", &Dim(3,4), &Units "Bohr"] 
+              H      1.415075383127    0.000000000000    0.812165419497
+              O      0.000000000000    0.000000000000   -0.264644350773
+              H     -1.415075383127    0.000000000000    0.812165419497
+$End
+$SCF_Energy
+   &GeometryIndex 5
+   &ListStatus       LAST
+   &SCF_ENERGY [&Type "Double"]      -7.6047012027824650e+01
+$End
+$Mulliken_Population_Analysis
+   &GeometryIndex 5
+   &ListStatus       LAST
+   &NATOMS [&Type "Integer"] 3
+   &ATNO [&Type "ArrayOfIntegers", &Dim (3,1)] 
+                                                         0
+
+0                                                        1
+1                                                        8
+2                                                        1
+   &ATOMICCHARGES [&Type "ArrayOfDoubles", &Dim (3,1)] 
+                                                         0
+
+0                                      2.4913877303316223e-01
+1                                     -4.9827754606633334e-01
+2                                      2.4913877303319687e-01
+$End
+$Loewdin_Population_Analysis
+   &GeometryIndex 5
+   &ListStatus       LAST
+   &NATOMS [&Type "Integer"] 3
+   &ATNO [&Type "ArrayOfIntegers", &Dim (3,1)] 
+                                                         0
+
+0                                                        1
+1                                                        8
+2                                                        1
+   &ATOMICCHARGES [&Type "ArrayOfDoubles", &Dim (3,1)] 
+                                                         0
+
+0                                      2.6296900759437136e-02
+1                                     -5.2593801518844074e-02
+2                                      2.6296900759446906e-02
+$End
+$Mayer_Population_Analysis
+   &GeometryIndex 5
+   &ListStatus       LAST
+   &NATOMS [&Type "Integer"] 3 "Total number of atoms"
+   &BONDTHRESH [&Type "Double"]       1.0000000000000001e-01  "The threshold for printing"
+   &NBONDORDERSPRINT [&Type "Integer"] 2 "The number of bond orders larger than threshold"
+   &BONDORDERS [&Type "ArrayOfDoubles", &Dim (2,1)] "The bond orders"
+                                                         0
+
+0                                      9.6291742460504237e-01
+1                                      9.6291742460503715e-01
+   &COMPONENTS [&Type "ArrayOfIntegers", &Dim (2,4)] "The indices and atomic numbers of the bonding atoms"
+                                                         0                           1                           2                           3
+
+0                                                        0                           1                           1                           8
+1                                                        1                           8                           2                           1
+   &ATNO [&Type "ArrayOfIntegers", &Dim (3,1)] "Atomic number of the elements"
+                                                         0
+
+0                                                        1
+1                                                        8
+2                                                        1
+   &NA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mulliken gross atomic population"
+                                                         0
+
+0                                      7.5086122696683799e-01
+1                                      8.4982775460663262e+00
+2                                      7.5086122696680291e-01
+   &ZA [&Type "ArrayOfDoubles", &Dim (3,1)] "Total nuclear charge"
+                                                         0
+
+0                                      1.0000000000000000e+00
+1                                      8.0000000000000000e+00
+2                                      1.0000000000000000e+00
+   &QA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mulliken gross atomic charge"
+                                                         0
+
+0                                      2.4913877303316201e-01
+1                                     -4.9827754606632624e-01
+2                                      2.4913877303319709e-01
+   &VA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mayer's total valence"
+                                                         0
+
+0                                      9.7018323400336393e-01
+1                                      1.9258348492100963e+00
+2                                      9.7018323400335893e-01
+   &BVA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mayer's bonded valence"
+                                                         0
+
+0                                      9.7018323400336004e-01
+1                                      1.9258348492100796e+00
+2                                      9.7018323400335482e-01
+   &FA [&Type "ArrayOfDoubles", &Dim (3,1)] "Mayer's free valence"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      0.0000000000000000e+00
+$End
+$SCF_Dipole_Moment
+   &GeometryIndex 5
+   &ListStatus       OUT
+   &METHOD [&Type "String"] "SCF"
+   &LEVEL [&Type "String"] "Relaxed density"
+   &MULT [&Type "Integer"] 1
+   &STATE [&Type "Integer"] -1
+   &IRREP [&Type "Integer"] 0
+   &NATOMS [&Type "Integer"] 3
+   &DODIPOLEATOM [&Type "Boolean"] false
+   &DIPOLEELECCONTRIB [&Type "ArrayOfDoubles", &Dim (3,1)] "Electronic contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                     -1.0756489824541392e-01
+   &DIPOLENUCCONTRIB [&Type "ArrayOfDoubles", &Dim (3,1)] "Nuclear contribution"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      9.4859678346882759e-01
+   &DIPOLETOTAL [&Type "ArrayOfDoubles", &Dim (3,1)] "Total"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      8.4103188522341366e-01
+   &DIPOLEMAGNITUDE [&Type "Double", &Units "a.u."]       8.4103188522341366e-01
+$End
+$THERMOCHEMISTRY_Energies
+   &GeometryIndex 5
+   &ListStatus       OUT
+   &TEMPERATURE [&Type "Double"]       2.9814999999999998e+02
+   &PRESSURE [&Type "Double"]       1.0000000000000000e+00
+   &TOTALMASS [&Type "Double"]       1.8015000000000001e+01
+   &SPINDEGENERACY [&Type "Integer"] 1
+   &ELENERGY [&Type "Double"]      -7.6047012027824650e+01
+   &TRANSENERGY [&Type "Double"]       1.4162714244859817e-03
+   &ROTENERGY [&Type "Double"]       1.4162714244859817e-03
+   &VIBENERGY [&Type "Double"]       1.7092547706942410e-06
+   &NUMOFFREQS [&Type "Integer"] 9
+   &FREQSCALINGFACTOR [&Type "Double"]       1.0000000000000000e+00
+   &FREQ [&Type "ArrayOfDoubles", &Dim (9,1)] "In cm^-1"
+                                                         0
+
+0                                      0.0000000000000000e+00
+1                                      0.0000000000000000e+00
+2                                      0.0000000000000000e+00
+3                                      0.0000000000000000e+00
+4                                      0.0000000000000000e+00
+5                                      0.0000000000000000e+00
+6                                      1.7507894231030612e+03
+7                                      4.1415721171752939e+03
+8                                      4.2368872329722035e+03
+   &ZPE [&Type "Double"]       2.3076126666751417e-02
+   &INNERENERGYU [&Type "Double"]      -7.6021101649054145e+01
+   &ENTHALPYH [&Type "Double"]      -7.6020157440011886e+01
+   &QEL [&Type "Double"]       0.0000000000000000e+00
+   &QROT [&Type "Double"]       4.9112460909830442e-03
+   &QVIB [&Type "Double"]       1.9112125274861154e-06
+   &QTRANS [&Type "Double"]       1.6443801841798250e-02
+   &ENTROPYS [&Type "Double"]       2.1356959145308781e-02
+   &FREEENERGYG [&Type "Double"]      -7.6041514399157194e+01
+   &ISLINEAR [&Type "Boolean"] false
+$End
+$Hessian
+   &GeometryIndex 5
+   &ListStatus       OUT
+   &HESSIAN [&Type "ArrayOfDoubles", &Dim (9,9)] "The Hessian"
+                                                         0                           1                           2                           3                           4                           5                           6                           7
+
+0                                      4.3539960611115797e-01         0.0000000000000000e+00         2.7314457811096343e-01        -4.0162177642866154e-01         0.0000000000000000e+00        -2.4067160188602321e-01        -3.3777829682496451e-02         0.0000000000000000e+00
+1                                      0.0000000000000000e+00        -1.9056232402822615e-07         0.0000000000000000e+00         0.0000000000000000e+00        -3.8142690018672099e-06         0.0000000000000000e+00         0.0000000000000000e+00         4.0048313258954360e-06
+2                                      2.7314457811096343e-01         0.0000000000000000e+00         2.5042448538684237e-01        -3.0561755433590437e-01         0.0000000000000000e+00        -2.6828166658808850e-01         3.2476663401376463e-02         0.0000000000000000e+00
+3                                     -4.0162177642866154e-01         0.0000000000000000e+00        -3.0561755433590437e-01         8.0324355285730387e-01         0.0000000000000000e+00         0.0000000000000000e+00        -4.0162177642864227e-01         0.0000000000000000e+00
+4                                      0.0000000000000000e+00        -3.8142690018672099e-06         0.0000000000000000e+00         0.0000000000000000e+00         7.6285380029433858e-06         0.0000000000000000e+00         0.0000000000000000e+00        -3.8142690010761759e-06
+5                                     -2.4067160188602321e-01         0.0000000000000000e+00        -2.6828166658808850e-01         0.0000000000000000e+00         0.0000000000000000e+00         5.3656333317616978e-01         2.4067160188599729e-01         0.0000000000000000e+00
+6                                     -3.3777829682496451e-02         0.0000000000000000e+00         3.2476663401376463e-02        -4.0162177642864227e-01         0.0000000000000000e+00         2.4067160188599729e-01         4.3539960611113870e-01         0.0000000000000000e+00
+7                                      0.0000000000000000e+00         4.0048313258954360e-06         0.0000000000000000e+00         0.0000000000000000e+00        -3.8142690010761759e-06         0.0000000000000000e+00         0.0000000000000000e+00        -1.9056232481926005e-07
+8                                     -3.2476663401375706e-02         0.0000000000000000e+00         1.7857181201246110e-02         3.0561755433589260e-01         0.0000000000000000e+00        -2.6828166658808128e-01        -2.7314457811094528e-01         0.0000000000000000e+00
+                                                         8
+
+0                                     -3.2476663401375706e-02
+1                                      0.0000000000000000e+00
+2                                      1.7857181201246110e-02
+3                                      3.0561755433589260e-01
+4                                      0.0000000000000000e+00
+5                                     -2.6828166658808128e-01
+6                                     -2.7314457811094528e-01
+7                                      0.0000000000000000e+00
+8                                      2.5042448538683515e-01
+   &MODES [&Type "ArrayOfDoubles", &Dim (9,9)] "The modes of vibrations"
+                                                         0                           1                           2                           3                           4                           5                           6                           7
+
+0                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00        -4.1340282480368507e-01         5.7020158757735229e-01
+1                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+2                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         5.3735056286250416e-01         3.8958544738674816e-01
+3                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+4                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+5                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00        -6.7710402820851723e-02        -4.9090834547918807e-02
+6                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         4.1340282480368179e-01        -5.7020158757796313e-01
+7                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00
+8                                      0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         0.0000000000000000e+00         5.3735056286250349e-01         3.8958544738721301e-01
+                                                         8
+
+0                                      5.3936741469277905e-01
+1                                      0.0000000000000000e+00
+2                                      4.1043474349969511e-01
+3                                     -6.7964542035126724e-02
+4                                      0.0000000000000000e+00
+5                                      0.0000000000000000e+00
+6                                      5.3936741469213445e-01
+7                                      0.0000000000000000e+00
+8                                     -4.1043474349925191e-01
+$End

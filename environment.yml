@@ -1,0 +1,8 @@
+name: nomodeco_conda
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12.5
+  - poetry = 1.4.0
+  - pymolpro

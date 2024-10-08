@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<plist>
+	<dict>
+		<key>backend</key>
+		<string>local</string>
+		<key>project_hash</key>
+		<string>1377676610666507370</string>
+		<key>run_input_hash</key>
+		<string>5885129944034392185</string>
+		<key>run_directories</key>
+		<string>Water_dimer_1 </string>
+		<key>current_run</key>
+		<string>0</string>
+		<key>jobnumber</key>
+		<string>3768450</string>
+		<key>_status</key>
+		<string>3</string>
+	</dict>
+</plist>
