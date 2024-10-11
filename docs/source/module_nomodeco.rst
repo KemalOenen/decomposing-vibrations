@@ -1,5 +1,5 @@
 Nomodeco Functions 
 =====================
 
-.. automodule:: nomodeco  
+.. automodule:: nomodeco 
     :members:

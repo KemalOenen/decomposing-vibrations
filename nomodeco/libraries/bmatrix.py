@@ -20,35 +20,59 @@ def bond_length(Coordinates_AtomA, Coordinates_AtomB) -> float:  # ANG
 
 
 def normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB):
-    return (Coordinates_AtomB - Coordinates_AtomA) / (
-        bond_length(Coordinates_AtomA, Coordinates_AtomB)
-    )
+     return (Coordinates_AtomB - Coordinates_AtomA) / (
+         bond_length(Coordinates_AtomA, Coordinates_AtomB)
+     )
 
 
 # Angle for the Atoms in the conformation A-B-C.
 # Note: B is the central Atom, the bond vectors start from Atom B therefore
-def bond_angle(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC):  # RAD
-    cosine_angle = np.clip(
-        (
-            np.inner(
-                (Coordinates_AtomA - Coordinates_AtomB),
-                (Coordinates_AtomC - Coordinates_AtomB),
+def bond_angle(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:  # RAD
+     """
+     Calculate the bond angle between atom A, B and C using their coordinates
+
+     Attributes:
+         Coordinates_AtomA:
+             a tuple of the x,y,z coords of atom A
+         Coordinates_AtomB:
+             a tuple of the x,y,z coords of atom B
+         Coordinates_AtomC:
+             a tuple of the coordinates of atom C
+     """
+     cosine_angle = np.clip(
+         (
+             np.inner(
+                 (Coordinates_AtomA - Coordinates_AtomB),
+                    (Coordinates_AtomC - Coordinates_AtomB),
+                )
             )
+            / (
+                bond_length(Coordinates_AtomA, Coordinates_AtomB)
+                * (bond_length(Coordinates_AtomC, Coordinates_AtomB))
+            ),
+            -1.0,
+            1.0,
         )
-        / (
-            bond_length(Coordinates_AtomA, Coordinates_AtomB)
-            * (bond_length(Coordinates_AtomC, Coordinates_AtomB))
-        ),
-        -1.0,
-        1.0,
-    )
-    return np.arccos(cosine_angle)
+     return np.arccos(cosine_angle)
 
 
-# Dihedral for the Atoms in the conformation
+    # Dihedral for the Atoms in the conformation
 def torsion_angle(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculate the torsion angle between atoms A,B,C and D. The dihedral angle is the angle between the two intersecting planes where a set of three atoms define a half-plane
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomD:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomD:
+            a tuple of the x,y,z coords of atom D 
+    """
     cosine_torsion_angle = np.clip(
         (
             np.cos(bond_angle(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC))
@@ -79,7 +103,16 @@ Atom A then you need the NEGATIVE value of this function-call, for Atom B you ju
 """ ""
 
 
-def B_Matrix_Entry_BondLength(Coordinates_AtomA, Coordinates_AtomB):
+def B_Matrix_Entry_BondLength(Coordinates_AtomA, Coordinates_AtomB) -> float:
+    """
+    Calculates the B-Matrix entries for the bond stretching coordinate
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+    """
     return normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
 
 
@@ -92,7 +125,18 @@ Important the entries are different for the Central Atom and the Side Atoms
 """ ""
 
 
-def B_Matrix_Entry_Angle_AtomB(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC):
+def B_Matrix_Entry_Angle_AtomB(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:
+    """
+    Calculates the B-Matrix entries for the in-plane angle bending coordinate (ABC) for Atom B
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+    """
     return (
         normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
         * np.cos(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB))
@@ -103,7 +147,19 @@ def B_Matrix_Entry_Angle_AtomB(Coordinates_AtomA, Coordinates_AtomB, Coordinates
     )
 
 
-def B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC):
+def B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:
+    """
+    Calculates the B-Matrix entries for the in-plane angle bending coordinate (ABC) for Atom C
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+
+    """
     return (
         normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
         * np.cos(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB))
@@ -114,7 +170,19 @@ def B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA, Coordinates_AtomB, Coordinates
     )
 
 
-def B_Matrix_Entry_Angle_AtomA(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC):
+def B_Matrix_Entry_Angle_AtomA(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:
+    """
+    Calculates the B-Matrix entries for the in-plane angle bending coordinate (ABC) for Atom A
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+
+    """
     return -(
         B_Matrix_Entry_Angle_AtomB(
             Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
@@ -138,7 +206,18 @@ to the right and then dividing through
 
 def B_Matrix_Entry_LinearAngleFirstPlane_AtomB(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-):
+) -> float:
+    """
+    Calculates the B-matrix entries for the linear angle bending coordinate for atom B
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+    """
     rotation_radians = np.pi / 2
     rotation_axis = np.array([0, 1, 0])
     rotation_vector = rotation_radians * rotation_axis
@@ -150,7 +229,18 @@ def B_Matrix_Entry_LinearAngleFirstPlane_AtomB(
 
 def B_Matrix_Entry_LinearAngleFirstPlane_AtomC(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-):
+) -> float:
+    """
+    Calculates the B-matrix entries for the linear angle bending coordinate for atom C
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+    """
     rotation_radians = np.pi / 2
     rotation_axis = np.array([0, 1, 0])
     rotation_vector = rotation_radians * rotation_axis
@@ -162,7 +252,18 @@ def B_Matrix_Entry_LinearAngleFirstPlane_AtomC(
 
 def B_Matrix_Entry_LinearAngleFirstPlane_AtomA(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-):
+)-> float:
+    """
+    Calculates the B-matrix entries for the linear angle bending coordinate for atom A
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+    """
     return -(
         B_Matrix_Entry_LinearAngleFirstPlane_AtomB(
             Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
@@ -175,7 +276,18 @@ def B_Matrix_Entry_LinearAngleFirstPlane_AtomA(
 
 def B_Matrix_Entry_LinearAngleSecondPlane_AtomB(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-):
+)-> float:
+    """
+    Calculates the B-matrix entries for the perpendicular plane in the linear case (atom B)
+    
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+    """
     rotation_radians = np.pi / 2
     rotation_axis = np.array([0, 1, 0])
     rotation_vector = rotation_radians * rotation_axis
@@ -188,7 +300,18 @@ def B_Matrix_Entry_LinearAngleSecondPlane_AtomB(
 
 def B_Matrix_Entry_LinearAngleSecondPlane_AtomC(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-):
+) -> float:
+    """
+    Calculates the B-matrix entries for the perpendicular plane in the linear case (atom C)
+    
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+    """
     rotation_radians = np.pi / 2
     rotation_axis = np.array([0, 1, 0])
     rotation_vector = rotation_radians * rotation_axis
@@ -201,7 +324,18 @@ def B_Matrix_Entry_LinearAngleSecondPlane_AtomC(
 
 def B_Matrix_Entry_LinearAngleSecondPlane_AtomA(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-):
+) -> float:
+    """
+    Calculates the B-matrix entries for the perpendicular plane in the linear case (atom C)
+    
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coordinates of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coordinates of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coordinates of atom C
+    """
     return -(
         B_Matrix_Entry_LinearAngleSecondPlane_AtomB(
             Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
@@ -226,7 +360,20 @@ Important the entries are different for the 'Central Atoms' (A,C) and the 'Side 
 
 def B_Matrix_Entry_Torsion_AtomB(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculates the B-matrix elements for the torsion coordinate (AtomB)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D        
+    """
     return np.cross(
         normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC),
         normalized_bond_vector(Coordinates_AtomB, Coordinates_AtomA),
@@ -241,7 +388,20 @@ def B_Matrix_Entry_Torsion_AtomB(
 #  Vector from C to A (!) x Vector from D -> C(!)
 def B_Matrix_Entry_Torsion_AtomD(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculates the B-matrix elements for the torsion coordinate (AtomD)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D        
+    """
     return np.cross(
         normalized_bond_vector(Coordinates_AtomC, Coordinates_AtomA),
         normalized_bond_vector(Coordinates_AtomD, Coordinates_AtomC),
@@ -255,7 +415,20 @@ def B_Matrix_Entry_Torsion_AtomD(
 
 def B_Matrix_Entry_Torsion_AtomA(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculates the B-matrix elements for the torsion coordinate (AtomA)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D        
+    """
     return (
         (
             np.cross(
@@ -320,7 +493,20 @@ def B_Matrix_Entry_Torsion_AtomA(
 
 def B_Matrix_Entry_Torsion_AtomC(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculates the B-matrix elements for the torsion coordinate (AtomB)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D        
+    """
     return (
         (
             np.cross(
@@ -401,7 +587,20 @@ The expressions are simplified for planar wages (i.e. theta = 0 degrees)
 
 def B_Matrix_Entry_OutOfPlane_AtomB(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculates the B-matrix elements for the out-of-plane coordinate (atom B)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D            
+    """
     r_ab = bond_length(Coordinates_AtomA, Coordinates_AtomB)
     e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
     e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
@@ -419,9 +618,22 @@ def B_Matrix_Entry_OutOfPlane_AtomB(
         )
 
 
-def B_Matrix_Entry_OutOfPlane_AtomC(
+def B_Matrix_Entry_OutOfPlane_AtomC(    
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """ 
+    Calculates the B-matrix elements for the out-of-plane coordinate (atom C)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D            
+    """
     r_ac = bond_length(Coordinates_AtomA, Coordinates_AtomC)
     e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
     e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
@@ -448,7 +660,21 @@ def B_Matrix_Entry_OutOfPlane_AtomC(
 
 def B_Matrix_Entry_OutOfPlane_AtomD(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculates the B-matrix elements for the out-of-plane coordinate (atom D)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D            
+
+    """
     r_ad = bond_length(Coordinates_AtomA, Coordinates_AtomD)
     e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
     e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
@@ -475,7 +701,21 @@ def B_Matrix_Entry_OutOfPlane_AtomD(
 
 def B_Matrix_Entry_OutOfPlane_AtomA(
     Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-):
+) -> float:
+    """
+    Calculates the B-matrix elements for the out-of-plane coordinate (atom A)
+
+    Attributes:
+        Coordinates_AtomA:
+            a tuple of the x,y,z coords of atom A
+        Coordinates_AtomB:
+            a tuple of the x,y,z coords of atom B
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom C
+        Coordinates_AtomC:
+            a tuple of the x,y,z coords of atom D            
+
+    """
     return -(
         B_Matrix_Entry_OutOfPlane_AtomB(
             Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
@@ -490,7 +730,26 @@ def B_Matrix_Entry_OutOfPlane_AtomA(
 
 
 # TODO: current linear valence angles only useful for degenerate linear valence angle modes - make more generic
-def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof):
+def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof) -> np.array:
+    """
+    Generates the Wilson B matrix and evaluates the elements using the functions defined in the script
+
+    Attributes:
+        atoms:
+            a object of the molecule class
+        bonds:
+            a list of tuples where each tuple is a bond (A,B)
+        angles:
+            a list of tuples where each tuple is a angle (A,B,C)
+        linear_angles:
+            a list of tuples where each tuple is a linear angle (A,B,C)
+        out_of_plane:
+            a list of tuples where each tuples is a out-of-plane angle (A,B,C,D)
+        dihedrals:
+            a list of tuples where each tuple is a dihedral angle (A,B,C,D)
+        idof:
+            the vibrational degrees of freedom of the molecule (int) 
+    """
     n_atoms = len(atoms)
     coordinates = np.array([a.coordinates for a in atoms])
     atom_index = {a.symbol: i for i, a in enumerate(atoms)}

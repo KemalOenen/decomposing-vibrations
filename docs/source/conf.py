@@ -22,16 +22,17 @@ from pathlib import Path
 # Set the path relative to the location of conf.py
 current_dir = Path(__file__).parent.resolve()  # Directory where conf.py is located
 module_path = current_dir / '../../nomodeco/libraries'
-nomodeco_path = current_dir / '../../nomodeco'
+nomodeco_path = current_dir / '../..'
 
 # Convert Path objects to strings and append them to sys.path
-sys.path.append(str(module_path.resolve()))
 sys.path.append(str(nomodeco_path.resolve()))
 
+sys.path.append(str(module_path.resolve()))
 
-project = 'nomodeco'
-copyright = '2024, Lukas'
-author = 'Lukas'
+
+project = 'Nomodeco'
+copyright = '2024, Lukas Meinschad'
+author = 'Lukas Meinschad'
 release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
@@ -41,6 +42,7 @@ extensions = ["sphinx.ext.autodoc"]
 
 templates_path = ['_templates']
 exclude_patterns = []
+
 
 
 

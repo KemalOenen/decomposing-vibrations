@@ -15,16 +15,17 @@ class Atom(NamedTuple):
     symbol: str
     coordinates: tuple
 
-#TODO: once integration in nomodeco.py -> remove get_args()
 
-#def get_args():
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument("log")
-#    parser.add_argument("fchk")
-#    args = parser.parse_args()
-#    return args
-
-def numerate_strings(string_list):
+def numerate_strings(string_list) -> list:
+    """
+    Enumerates all strings in a list based on occurence
+    
+    Attributes:
+        a list of strings representing atom symbols ["H","O","H"]
+    
+    Return:
+        Enumerated list based on occurence
+    """
     string_counts = Counter(string_list)
     numeration = {}
     for string, count in string_counts.items():
@@ -41,7 +42,10 @@ def numerate_strings(string_list):
             numerated_strings.append(string)
     return numerated_strings
 
-def parse_xyz(inputfile):
+def parse_xyz(inputfile)-> Molecule():
+    """
+    
+    """
     # Read in lines
     lines = inputfile.readlines()
     elements_list = []

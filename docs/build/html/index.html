@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to the Nomodeco.py Documentation &mdash; nomodeco 0.2.0 documentation</title>
+  <title>Welcome to the Nomodeco.py Documentation &mdash; Nomodeco 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -33,7 +33,7 @@
           
           
           <a href="#" class="icon icon-home">
-            nomodeco
+            Nomodeco
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -47,6 +47,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inst.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arguments.html">Arguments of Nomodeco</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
@@ -57,7 +58,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">nomodeco</a>
+          <a href="#">Nomodeco</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -77,24 +78,22 @@
              
   <section id="welcome-to-the-nomodeco-py-documentation">
 <h1>Welcome to the Nomodeco.py Documentation<a class="headerlink" href="#welcome-to-the-nomodeco-py-documentation" title="Link to this heading"></a></h1>
-<p>Nomodeco.py is a open-source python package and provides an algorithm for the automatic normal mode decomposition.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This project is under active development.</p>
-</div>
+<p>Nomodeco.py is a open-source python package and provides an algorithm for the automatic determination of internal coordinate sets for molecular structures.
+Nomodeco can use the results of either <a class="reference external" href="https://gaussian.com/">Gaussian</a>, <a class="reference external" href="https://www.molpro.net/">Molpro</a> or <a class="reference external" href="https://www.orca-software.com/">Orca</a> to subsequently find and optimize internal coordinate sets for a given structure.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="main.html#welcome-to-the-nomodeco-py-documentation">Welcome to the Nomodeco.py documentation!</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main.html#f">F</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="inst.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arguments.html">Arguments of Nomodeco</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html">Nomodeco Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_nomodeco_classes.html">nomodeco_classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html">bmatrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html">gaussian_parser</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
@@ -115,7 +114,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Lukas.</p>
+    <p>&#169; Copyright 2024, Lukas Meinschad.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

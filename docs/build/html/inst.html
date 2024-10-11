@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; nomodeco 0.2.0 documentation</title>
+  <title>Installation &mdash; Nomodeco 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -21,7 +21,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API" href="api.html" />
+    <link rel="next" title="Arguments of Nomodeco" href="arguments.html" />
     <link rel="prev" title="Introduction" href="main.html" /> 
 </head>
 
@@ -34,7 +34,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            nomodeco
+            Nomodeco
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -48,6 +48,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arguments.html">Arguments of Nomodeco</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
@@ -58,7 +59,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">nomodeco</a>
+          <a href="index.html">Nomodeco</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -78,7 +79,19 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>Hello world</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Nomodeco.py is now on <a class="reference external" href="https://pypi.org/project/nomodeco/">pypi</a> and can be installed using pip</p>
+</div>
+<p>In your conda or virtual enviroment make sure to use <strong>python 3.12.5</strong> or higher. Then Nomodeco can be installed using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nomodeco</span>
+</pre></div>
+</div>
+<p>All the packages are automatically installed in your virtual enviroment now nomodeco can be run using the alias <strong>nomodeco</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nomodeco</span> <span class="o">--</span><span class="n">molpro</span> <span class="n">h2o</span><span class="o">.</span><span class="n">out</span> <span class="o">--</span><span class="n">log</span> <span class="o">--</span><span class="n">heatmap</span> <span class="n">contr</span>
+</pre></div>
+</div>
+<p><strong>Github Installation</strong></p>
 <p>Nomodeco can be manually installed from the github repository:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">KemalOenen</span><span class="o">/</span><span class="n">decomposing</span><span class="o">-</span><span class="n">vibrations</span><span class="o">.</span><span class="n">git</span>
 <span class="n">cd</span> <span class="n">decomposing</span><span class="o">-</span><span class="n">vibrations</span>
@@ -98,9 +111,9 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="nb">list</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Hopefully nomedeco will in future be available on pip</p>
+<p>Now also the conda-enviroment knows the alias and a Nomodeco calculation can be run, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nomodeco</span> <span class="o">--</span><span class="n">gv</span> <span class="n">h2o</span><span class="o">.</span><span class="n">log</span> <span class="o">--</span><span class="n">heatmap</span> <span class="n">contr</span>
+</pre></div>
 </div>
 </section>
 
@@ -109,13 +122,13 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="main.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="arguments.html" class="btn btn-neutral float-right" title="Arguments of Nomodeco" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Lukas.</p>
+    <p>&#169; Copyright 2024, Lukas Meinschad.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

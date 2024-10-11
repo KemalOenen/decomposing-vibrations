@@ -3,6 +3,13 @@
 
 Nomodeco.py enables the automatic determination of an optimal internal coordinate set for a given molecular structure. Using the atomic coordinates of the given molecule Nomodeco.py constructs all possible primitive internal coordinates.
 
+## Documentation
+
+The following links provide further information and documentation about the package
+
+[decomposing vibrations-docs](https://kemaloenen.github.io/decomposing-vibrations/)
+
+
 ## How to Use:
 
 Nomodeco can be installed using pip:

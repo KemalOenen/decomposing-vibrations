@@ -4,6 +4,9 @@ version = "0.2.5"
 description = "a python package for the determination of optimal internal coordinate systems for molecular structures"
 authors = ["KemalÖnen","LukasMeinschad <lukas.meinschad@gmail.com>"]
 readme = "README.md"
+repository = "https://github.com/KemalOenen/decomposing-vibrations"
+keywords = ["internal coordinates", "quantum chemistry"]
+
 
 
 packages = [

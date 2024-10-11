@@ -6,10 +6,13 @@
 Welcome to the Nomodeco.py Documentation
 ========================================
 
-Nomodeco.py is a open-source python package and provides an algorithm for the automatic normal mode decomposition.
+Nomodeco.py is a open-source python package and provides an algorithm for the automatic determination of internal coordinate sets for molecular structures.
+Nomodeco can use the results of either `Gaussian`_, `Molpro`_ or `Orca`_ to subsequently find and optimize internal coordinate sets for a given structure.
 
-.. note::
-   This project is under active development.
+
+.. _Gaussian: https://gaussian.com/
+.. _Molpro:  https://www.molpro.net/
+.. _Orca: https://www.orca-software.com/
 
 .. toctree::
    :maxdepth: 2
@@ -17,5 +20,6 @@ Nomodeco.py is a open-source python package and provides an algorithm for the au
 
    main
    inst
+   arguments
    api
    changelog

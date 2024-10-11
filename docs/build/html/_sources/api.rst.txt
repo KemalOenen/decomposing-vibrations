@@ -10,4 +10,5 @@ API and function definition for nomodeco
    module_nomodeco
    module_nomodeco_classes
    module_bmatrix
+   module_gaussian_parser
    
