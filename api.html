@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API &mdash; Nomodeco 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Nomodeco Functions" href="module_nomodeco.html" />
+    <link rel="prev" title="Arguments of Nomodeco" href="arguments.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nomodeco
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inst.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arguments.html">Arguments of Nomodeco</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html">Nomodeco Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco_classes.html">nomodeco_classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html">bmatrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html">gaussian_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_molpro_parser.html">molpro_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_specifications.html">specifications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html">topology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_icsel.html">icsel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_arguments.html">arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_icset_opt.html">icset_opt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_orca_parser.html">orca_parser</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nomodeco</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
+<p>API and function definition for nomodeco</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="module_nomodeco.html">Nomodeco Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html#nomodeco.nomodeco.get_bond_information"><code class="docutils literal notranslate"><span class="pre">get_bond_information()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html#nomodeco.nomodeco.get_mass_information"><code class="docutils literal notranslate"><span class="pre">get_mass_information()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html#nomodeco.nomodeco.print_welcome_message"><code class="docutils literal notranslate"><span class="pre">print_welcome_message()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html#nomodeco.nomodeco.read_and_enumerate_xyz"><code class="docutils literal notranslate"><span class="pre">read_and_enumerate_xyz()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html#nomodeco.nomodeco.reciprocal_massvector"><code class="docutils literal notranslate"><span class="pre">reciprocal_massvector()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html#nomodeco.nomodeco.reciprocal_square_massvector"><code class="docutils literal notranslate"><span class="pre">reciprocal_square_massvector()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html#nomodeco.nomodeco.strip_numbers"><code class="docutils literal notranslate"><span class="pre">strip_numbers()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_nomodeco_classes.html">nomodeco_classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco_classes.html#nomodeco_classes.Molecule"><code class="docutils literal notranslate"><span class="pre">Molecule</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_bmatrix.html">bmatrix</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_Angle_AtomA"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_Angle_AtomA()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_Angle_AtomB"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_Angle_AtomB()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_Angle_AtomC"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_Angle_AtomC()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_BondLength"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_BondLength()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_LinearAngleFirstPlane_AtomA"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_LinearAngleFirstPlane_AtomA()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_LinearAngleFirstPlane_AtomB"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_LinearAngleFirstPlane_AtomB()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_LinearAngleFirstPlane_AtomC"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_LinearAngleFirstPlane_AtomC()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_LinearAngleSecondPlane_AtomA"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_LinearAngleSecondPlane_AtomA()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_LinearAngleSecondPlane_AtomB"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_LinearAngleSecondPlane_AtomB()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_LinearAngleSecondPlane_AtomC"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_LinearAngleSecondPlane_AtomC()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_OutOfPlane_AtomA"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_OutOfPlane_AtomA()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_OutOfPlane_AtomB"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_OutOfPlane_AtomB()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_OutOfPlane_AtomC"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_OutOfPlane_AtomC()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_OutOfPlane_AtomD"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_OutOfPlane_AtomD()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_Torsion_AtomA"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_Torsion_AtomA()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_Torsion_AtomB"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_Torsion_AtomB()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_Torsion_AtomC"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_Torsion_AtomC()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.B_Matrix_Entry_Torsion_AtomD"><code class="docutils literal notranslate"><span class="pre">B_Matrix_Entry_Torsion_AtomD()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.b_matrix"><code class="docutils literal notranslate"><span class="pre">b_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.bond_angle"><code class="docutils literal notranslate"><span class="pre">bond_angle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.bond_length"><code class="docutils literal notranslate"><span class="pre">bond_length()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html#bmatrix.torsion_angle"><code class="docutils literal notranslate"><span class="pre">torsion_angle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_gaussian_parser.html">gaussian_parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html#gaussian_parser.Atom"><code class="docutils literal notranslate"><span class="pre">Atom</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html#gaussian_parser.numerate_strings"><code class="docutils literal notranslate"><span class="pre">numerate_strings()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html#gaussian_parser.parse_cartesian_force_constants"><code class="docutils literal notranslate"><span class="pre">parse_cartesian_force_constants()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html#gaussian_parser.parse_xyz"><code class="docutils literal notranslate"><span class="pre">parse_xyz()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_molpro_parser.html">molpro_parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_molpro_parser.html#molpro_parser.can_be_float"><code class="docutils literal notranslate"><span class="pre">can_be_float()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_molpro_parser.html#molpro_parser.numerate_strings"><code class="docutils literal notranslate"><span class="pre">numerate_strings()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_molpro_parser.html#molpro_parser.parse_Cartesian_F_Matrix_from_start_of_matrix"><code class="docutils literal notranslate"><span class="pre">parse_Cartesian_F_Matrix_from_start_of_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_molpro_parser.html#molpro_parser.parse_xyz_from_inputfile"><code class="docutils literal notranslate"><span class="pre">parse_xyz_from_inputfile()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_specifications.html">specifications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_specifications.html#specifications.bound_to_atom"><code class="docutils literal notranslate"><span class="pre">bound_to_atom()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_specifications.html#specifications.calculation_specification"><code class="docutils literal notranslate"><span class="pre">calculation_specification()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_specifications.html#specifications.get_linear_bonds"><code class="docutils literal notranslate"><span class="pre">get_linear_bonds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_specifications.html#specifications.is_string_in_tuples"><code class="docutils literal notranslate"><span class="pre">is_string_in_tuples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_specifications.html#specifications.is_system_planar"><code class="docutils literal notranslate"><span class="pre">is_system_planar()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_topology.html">topology</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.Total_IC_dict"><code class="docutils literal notranslate"><span class="pre">Total_IC_dict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.add_element_to_all_entries"><code class="docutils literal notranslate"><span class="pre">add_element_to_all_entries()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.combine_dictionaries"><code class="docutils literal notranslate"><span class="pre">combine_dictionaries()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.distribute_elements"><code class="docutils literal notranslate"><span class="pre">distribute_elements()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.eliminate_symmetric_tuples"><code class="docutils literal notranslate"><span class="pre">eliminate_symmetric_tuples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.fully_linear_molecule"><code class="docutils literal notranslate"><span class="pre">fully_linear_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.general_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.general_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.general_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.general_cyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_cyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_general_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_general_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_general_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_general_cyclic_nolinsub"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_cyclic_nolinsub()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_planar_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_planar_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_planar_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.intermolecular_planar_cyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_cyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.molecule_is_not_split"><code class="docutils literal notranslate"><span class="pre">molecule_is_not_split()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.planar_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.planar_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.planar_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.planar_cyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_cyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.strip_numbers"><code class="docutils literal notranslate"><span class="pre">strip_numbers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.update_internal_coordinates_cyclic"><code class="docutils literal notranslate"><span class="pre">update_internal_coordinates_cyclic()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_topology.html#topology.valide_atoms_to_cut"><code class="docutils literal notranslate"><span class="pre">valide_atoms_to_cut()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_icsel.html">icsel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_icsel.html#icsel.Kemalian_metric"><code class="docutils literal notranslate"><span class="pre">Kemalian_metric()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_icsel.html#icsel.are_two_elements_same"><code class="docutils literal notranslate"><span class="pre">are_two_elements_same()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_icsel.html#icsel.get_different_elements"><code class="docutils literal notranslate"><span class="pre">get_different_elements()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_icsel.html#icsel.get_sets"><code class="docutils literal notranslate"><span class="pre">get_sets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_arguments.html">arguments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_arguments.html#arguments.get_args"><code class="docutils literal notranslate"><span class="pre">get_args()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_icset_opt.html">icset_opt</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_icset_opt.html#icset_opt.find_optimal_coordinate_set"><code class="docutils literal notranslate"><span class="pre">find_optimal_coordinate_set()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_orca_parser.html">orca_parser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_orca_parser.html#orca_parser.numerate_strings"><code class="docutils literal notranslate"><span class="pre">numerate_strings()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_orca_parser.html#orca_parser.parse_cartesian_force_constants"><code class="docutils literal notranslate"><span class="pre">parse_cartesian_force_constants()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_orca_parser.html#orca_parser.parse_xyz_from_inputfile"><code class="docutils literal notranslate"><span class="pre">parse_xyz_from_inputfile()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="arguments.html" class="btn btn-neutral float-left" title="Arguments of Nomodeco" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="module_nomodeco.html" class="btn btn-neutral float-right" title="Nomodeco Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lukas Meinschad.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

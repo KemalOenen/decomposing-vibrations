@@ -1,0 +1,900 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>topology &mdash; Nomodeco 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="icsel" href="module_icsel.html" />
+    <link rel="prev" title="specifications" href="module_specifications.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nomodeco
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inst.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arguments.html">Arguments of Nomodeco</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html">Nomodeco Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco_classes.html">nomodeco_classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html">bmatrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html">gaussian_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_molpro_parser.html">molpro_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_specifications.html">specifications</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">topology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#topology.Total_IC_dict"><code class="docutils literal notranslate"><span class="pre">Total_IC_dict</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.add_element_to_all_entries"><code class="docutils literal notranslate"><span class="pre">add_element_to_all_entries()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.combine_dictionaries"><code class="docutils literal notranslate"><span class="pre">combine_dictionaries()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.distribute_elements"><code class="docutils literal notranslate"><span class="pre">distribute_elements()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.eliminate_symmetric_tuples"><code class="docutils literal notranslate"><span class="pre">eliminate_symmetric_tuples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.fully_linear_molecule"><code class="docutils literal notranslate"><span class="pre">fully_linear_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.general_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.general_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.general_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.general_cyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">general_cyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_general_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_general_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_general_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_general_cyclic_nolinsub"><code class="docutils literal notranslate"><span class="pre">intermolecular_general_cyclic_nolinsub()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_planar_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_planar_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_planar_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.intermolecular_planar_cyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">intermolecular_planar_cyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.molecule_is_not_split"><code class="docutils literal notranslate"><span class="pre">molecule_is_not_split()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.planar_acyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_acyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.planar_acyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_acyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.planar_cyclic_linunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_cyclic_linunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.planar_cyclic_nolinunit_molecule"><code class="docutils literal notranslate"><span class="pre">planar_cyclic_nolinunit_molecule()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.strip_numbers"><code class="docutils literal notranslate"><span class="pre">strip_numbers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.update_internal_coordinates_cyclic"><code class="docutils literal notranslate"><span class="pre">update_internal_coordinates_cyclic()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topology.valide_atoms_to_cut"><code class="docutils literal notranslate"><span class="pre">valide_atoms_to_cut()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="module_icsel.html">icsel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_arguments.html">arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_icset_opt.html">icset_opt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_orca_parser.html">orca_parser</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nomodeco</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">API</a></li>
+      <li class="breadcrumb-item active">topology</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/module_topology.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-topology">
+<span id="topology"></span><h1>topology<a class="headerlink" href="#module-topology" title="Link to this heading"></a></h1>
+<p>This module contains the decision tree derived by Decius’ work on complete sets and redundancies among
+small vibrational coordinates
+(<a class="reference external" href="https://doi.org/10.1063/1.1747158">https://doi.org/10.1063/1.1747158</a>)</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="topology.Total_IC_dict">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">Total_IC_dict</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#topology.Total_IC_dict" title="Link to this definition"></a></dt>
+<dd><p>Arguments for IC Comb</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.add_element_to_all_entries">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">add_element_to_all_entries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#topology.add_element_to_all_entries" title="Link to this definition"></a></dt>
+<dd><p>Adds an element to all entries in a given dictionary.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>dict_list:</dt><dd><p>a list of dictionaries where the dictionaries are IC sets</p>
+</dd>
+<dt>element:</dt><dd><p>a element which gets added to a specific position</p>
+</dd>
+<dt>dict_key:</dt><dd><p>a string which determines where the element gets added</p>
+</dd>
+<dt>amount:</dt><dd><p>determines how often this element gets added to a specific position</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a list of dictionaries</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.combine_dictionaries">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">combine_dictionaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#topology.combine_dictionaries" title="Link to this definition"></a></dt>
+<dd><p>Combines two submolecule dictionaries where in each dictionary all possible IC sets are contained. This combiniation is based on combinatorics</p>
+<p>The length of each dictionary determines how the combination takes place</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>dict_list:</dt><dd><p>a list of dictionarys</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a list that contains the combined IC sets for both covalent submolecules</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.distribute_elements">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">distribute_elements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_elements</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#topology.distribute_elements" title="Link to this definition"></a></dt>
+<dd><p>Distributes elements to a given IC set also generating all possible combinations for the even distribution</p>
+<p>Here all combinatoric cases are considered for example if the there is one IC set and one needs to distribute two IC coordinates out of a list of two
+the total amount of IC sets in the end is two</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>dict_list:</dt><dd><p>a list of dictionaries with possible IC sets</p>
+</dd>
+<dt>elements: </dt><dd><p>a list of possible elements that get distributed</p>
+</dd>
+<dt>dict_key:</dt><dd><p>a str that determines the key where the elements get added</p>
+</dd>
+<dt>number_of_elements: </dt><dd><p>a str with the number of elements that are taken out of the elements list</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a list of dictionaries where each entry in the dictionary is a possible IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.eliminate_symmetric_tuples">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">eliminate_symmetric_tuples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_tuples</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#topology.eliminate_symmetric_tuples" title="Link to this definition"></a></dt>
+<dd><p>Eliminates symmetric tuples in a list of tuples e.q (H2,O,H1) (H1,O,H2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.fully_linear_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">fully_linear_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.fully_linear_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates the IC sets for the covalent fully linear conformation of a structure</p>
+<dl class="simple">
+<dt>Attributes: </dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing IC_sets</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a IC dictionary where each entry is a valid IC set for the further analysis</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.general_acyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">general_acyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.general_acyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the general,acyclic case where linear submolecules are in the structure</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer with the number of linear bonds</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.general_acyclic_nolinunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">general_acyclic_nolinunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.general_acyclic_nolinunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the general acyclic case without linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>contains the number of bonds of the structure</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.general_cyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">general_cyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.general_cyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the general, cyclic case with linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer containing the number of linear bonds</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a valid IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.general_cyclic_nolinunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">general_cyclic_nolinunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.general_cyclic_nolinunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the general cyclic case without linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of bonds</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>num_of_red:</dt><dd><p>a integer containg the redundancies of a given molecular structure</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a valid IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_general_acyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_general_acyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_general_acyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, general acyclic case without linear submolecules.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer with the number of linear bonds</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a possible IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_general_acyclic_nolinunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_general_acyclic_nolinunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_general_acyclic_nolinunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, general, acyclic case without linear submolecules
+Attributes:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a possible IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_general_cyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_general_cyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_general_cyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, general, cyclic case with linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer with the number of linear bonds</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_of_red:</dt><dd><p>a integer with the number of redundancies</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry of the dictionary is a valid IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_general_cyclic_nolinsub">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_general_cyclic_nolinsub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_general_cyclic_nolinsub" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, general cyclic case where no linear submolecules are contained
+Attributes:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>num_of_red:</dt><dd><p>a integer with the number of redundancies of the molecular structure</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a valid IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_planar_acyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_planar_acyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_planar_acyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, planar, acyclic case where linear submolecules are contained</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer with the number of linear bonds</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a possible IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_planar_acyclic_nolinunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_planar_acyclic_nolinunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_planar_acyclic_nolinunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, planar, acyclic case without linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer with the number of linear bonds</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a possible IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_planar_cyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_planar_cyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_planar_cyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, planar, cyclic case with linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer with the number of linear bonds</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a possible IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.intermolecular_planar_cyclic_nolinunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">intermolecular_planar_cyclic_nolinunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.intermolecular_planar_cyclic_nolinunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the intermolecular, planar, cyclic case without linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary containing valid IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples containing bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>a list of tuples containing angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tupels containing oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tupels containing dihedrals</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer with the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer with the number of linear bonds</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer with the number of bonds</p>
+</dd>
+<dt>num_atoms:</dt><dd><p>a integer with the number of atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification dictionary of the given molecule</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:    </dt><dd><p>a dictionary containing all the possible IC sets for a given molecule</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.molecule_is_not_split">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">molecule_is_not_split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#topology.molecule_is_not_split" title="Link to this definition"></a></dt>
+<dd><p>Uses Networkx to check if for a given list of bonds the molecular structure is connected or split</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.planar_acyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">planar_acyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.planar_acyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the planar,acyclic case with linear submoleculesd</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer containing the number of linear bonds</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a valid IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.planar_acyclic_nolinunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">planar_acyclic_nolinunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.planar_acyclic_nolinunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates IC sets for the planar acyclic case without any linear subunits</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>all possible IC sets for this conformation in a dictionary, where each entry is a IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.planar_cyclic_linunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">planar_cyclic_linunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.planar_cyclic_linunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the planar,cyclic case with linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>l:</dt><dd><p>a integer containing the number of linear bonds</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a valid IC set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.planar_cyclic_nolinunit_molecule">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">planar_cyclic_nolinunit_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ic_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idof</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_plane</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedrals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specification</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#topology.planar_cyclic_nolinunit_molecule" title="Link to this definition"></a></dt>
+<dd><p>Generates all possible IC sets for the planar,cyclic case without linear submolecules</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>ic_dict:</dt><dd><p>a dictionary with IC sets</p>
+</dd>
+<dt>out:</dt><dd><p>the output file of nomodeco</p>
+</dd>
+<dt>idof:</dt><dd><p>a integer with the vibrational degrees of freedom</p>
+</dd>
+<dt>bonds:</dt><dd><p>a list of tuples with bonds</p>
+</dd>
+<dt>angles:</dt><dd><p>a list of tuples with angles</p>
+</dd>
+<dt>linear_angles: </dt><dd><p>a list of tuples with linear angles</p>
+</dd>
+<dt>out_of_plane:</dt><dd><p>a list of tuples with oop’s</p>
+</dd>
+<dt>dihedrals:</dt><dd><p>a list of tuples with dihedrals</p>
+</dd>
+<dt>num_bonds:</dt><dd><p>a integer containing the number of atoms</p>
+</dd>
+<dt>a_1:</dt><dd><p>a integer containing the number of terminal atoms</p>
+</dd>
+<dt>specification:</dt><dd><p>the specification for the given molecule (see specifcation documentation)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>a dictionary where each entry is a valid IC set, note that in this case bonds are cut</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.strip_numbers">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">strip_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#topology.strip_numbers" title="Link to this definition"></a></dt>
+<dd><p>Removes the digits from a string e.q H2 -&gt; H</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.update_internal_coordinates_cyclic">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">update_internal_coordinates_cyclic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">removed_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ic_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#topology.update_internal_coordinates_cyclic" title="Link to this definition"></a></dt>
+<dd><p>Given a set of ICs and a removed bond, eliminates this particular IC out of the list</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>removed_bonds: list</dt><dd><p>a list of tuples containing the bonds to remove</p>
+</dd>
+<dt>ic_list: list</dt><dd><p>a list of internal coordinates of a specific type</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="topology.valide_atoms_to_cut">
+<span class="sig-prename descclassname"><span class="pre">topology.</span></span><span class="sig-name descname"><span class="pre">valide_atoms_to_cut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#topology.valide_atoms_to_cut" title="Link to this definition"></a></dt>
+<dd><p>Checks for a given list of bonds if the multiplicity of the atoms is greater then two. If this is the case return the atoms</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="module_specifications.html" class="btn btn-neutral float-left" title="specifications" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="module_icsel.html" class="btn btn-neutral float-right" title="icsel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lukas Meinschad.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
