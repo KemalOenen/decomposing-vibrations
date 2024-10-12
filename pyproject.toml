@@ -1,17 +1,16 @@
 [tool.poetry]
 name = "nomodeco"
-version = "0.2.5"
+version = "0.2.6"
 description = "a python package for the determination of optimal internal coordinate systems for molecular structures"
 authors = ["KemalÖnen","LukasMeinschad <lukas.meinschad@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/KemalOenen/decomposing-vibrations"
 keywords = ["internal coordinates", "quantum chemistry"]
 
-
-
 packages = [
-    {include = "nomodeco"}, {include = "nomodeco/libraries"}
+    { include = "nomodeco"}
 ]
+
 [tool.poetry.dependencies]
 python = ">=3.12.5,<3.13"
 numpy = "^1.26.4"

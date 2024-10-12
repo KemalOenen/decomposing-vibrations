@@ -3,6 +3,9 @@ from argparse import RawTextHelpFormatter
 
 
 def get_args():
+    """
+    This function defines all the possible arguments of the nomodeco python script using the argparse package
+    """
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
   #  parser.add_argument("output",
   #                      help='output file containing '

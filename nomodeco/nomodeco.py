@@ -63,9 +63,9 @@ def get_bond_information() -> pd.DataFrame:
     Get bond information for all elements
 
     Returns:
-    pd.DataFrame
-        A dataframe with symbol, covalent radius and vdw radius
+        A pd.dataframe with symbol, covalent radius and vdw radius
     """
+
     df = fetch_table("elements")
 
     bond_info = df.loc[:, ["symbol", "covalent_radius_pyykko", "vdw_radius"]]

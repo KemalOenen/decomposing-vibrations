@@ -1,13 +1,30 @@
 import numpy as np
 import pandas as pd
-from . import icsel
-from . import bmatrix
-from . import logfile
+from nomodeco.libraries import icsel
+from nomodeco.libraries import bmatrix
+from nomodeco.libraries import logfile
 import os
 import matplotlib.pyplot as plt
 
 def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra,
-                                CartesianF_Matrix, atoms, symmetric_coordinates, L, intfreq_penalty, intfc_penalty):
+                                CartesianF_Matrix, atoms, symmetric_coordinates, L, intfreq_penalty, intfc_penalty) -> dict:
+    """
+    Returns a dictionary with the optimal coordinate set. For each entry in the ic_dict, the metric of Nomodeco gets calculated, then the set with the highest metric gets selected
+
+    Attributes:
+        ic_dict:
+            a dictionary containing all the possible IC sets
+        idof:
+            a integer with the vibrational degrees of freedom
+        reciprocal_massmatrix:
+            a np.array with the reciprocal masses of the atoms
+        reciprocal_square_massmatrix:
+            a np.array with the reciprocal square masses of the atoms
+        CartesianF_Matrix: 
+            the second derivative matrix of the frequency calculation
+        atoms:
+            a object of the Molecule class 
+    """
     metric_analysis = np.zeros(len(ic_dict))
     lambda_analysis = np.zeros(len(ic_dict))
     svd_analysis = np.zeros(len(ic_dict))

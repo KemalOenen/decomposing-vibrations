@@ -1,15 +1,19 @@
-'''''
+
+"""
 This module contains the get_sets method as well as symmetry functions for selecting internal coordinates
-'''''
+"""
 
 import itertools
 import logging
 from collections import Counter
 import numpy as np
-from . import topology
+from nomodeco.libraries import topology
 
 
-def Kemalian_metric(matrix, Diag_elements, counter, intfreq_penalty, intfc_penalty, args):
+def Kemalian_metric(matrix, Diag_elements, counter, intfreq_penalty, intfc_penalty, args) -> float:
+    """
+    Given a matrix calculates the metric implemented in Nomodeco
+    """
     # axis = 0, when maximum of each column
     max_values = np.max(matrix, axis=1)
 
@@ -57,13 +61,19 @@ def Kemalian_metric_log(matrix, Diag_elements, counter, intfreq_penalty, intfc_p
     return np.mean(max_values) - penalty1 - penalty2
 
 
-def are_two_elements_same(tup1, tup2):
+def are_two_elements_same(tup1, tup2) -> bool:
+    """
+    For two given tuples checks if they are the same and return True/False
+    """
     return ((tup1[0] == tup2[0] and tup1[1] == tup2[1]) or
             (tup1[1] == tup2[1] and tup1[2] == tup2[2]) or
             (tup1[0] == tup2[0] and tup1[2] == tup2[2]))
 
 
-def get_different_elements(tup1, tup2):
+def get_different_elements(tup1, tup2) -> list:
+    """
+    Given two tuples calculates the difference in elements and outputs as list
+    """
     differences = []
     for element1 in tup1:
         if element1 not in tup2:
@@ -320,7 +330,33 @@ def not_same_central_atom(list_oop_angles) -> bool:
 def matrix_norm(matrix, matrix_inv, p):
     return np.linalg.norm(matrix, p) * np.linalg.norm(matrix_inv, p)
 
-def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification):
+def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, specification) -> dict:
+    """
+    get_sets is the decicion tree of nomodeco where for a given molecular topology all possible sets are generated
+
+    Attributes:
+        idof:
+            a integer with the vibrational degrees of freedom
+        out:
+            the output file of nomodeco
+        atoms:
+            a object of the molecule class
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing linear angles
+        out_of_plane:
+            a list of tuples containing oop's
+        dihedrals:
+            a list of tuples containing dihedrals
+        specficiation:
+            the specification dictionary of nomodeco
+    
+    Returns:
+        a dictionary of all the possible IC sets this is generated using the Topology module
+    """ 
     ic_dict = dict()
     num_bonds = len(bonds)
     num_atoms = len(atoms)

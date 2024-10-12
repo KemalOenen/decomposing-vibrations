@@ -9,7 +9,7 @@ from scipy import constants
 import re
 from mendeleev import element
 
-from .nomodeco_classes import Molecule
+from nomodeco.libraries.nomodeco_classes import Molecule
 
 
 '''
@@ -17,7 +17,10 @@ Parser for Orca
 '''
 
 
-def numerate_strings(string_list):
+def numerate_strings(string_list) -> list:
+    """
+    For a given list of string enumerates all the strings based on occurence
+    """
     string_counts = Counter(string_list)
     numeration = {}
     for string, count in string_counts.items():
@@ -34,7 +37,10 @@ def numerate_strings(string_list):
             numerated_strings.append(string)
     return numerated_strings
 
-def parse_xyz_from_inputfile(inputfile):
+def parse_xyz_from_inputfile(inputfile) -> Molecule:
+    """
+    Parses the xyz coordinates out of the orca.property.txt file
+    """
 
     # Read in lines
     lines = inputfile.readlines()
@@ -96,7 +102,10 @@ def parse_xyz_from_inputfile(inputfile):
     names = numerate_strings(atom_list) # automatically numerate atoms if they occure more than once
     return [Molecule.Atom(name, tuple(coordinate)) for name, coordinate in zip(names,xyz_coordinates)]
     
-def parse_cartesian_force_constants(inputfile,n_atoms):
+def parse_cartesian_force_constants(inputfile,n_atoms) -> np.array:
+    """
+    Parses the second derivative matrix out of the orca.property.txt file
+    """
     lines = inputfile.readlines()
     sections = []
     capturing = False

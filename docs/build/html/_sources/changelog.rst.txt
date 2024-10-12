@@ -4,7 +4,15 @@ Changelog
 Changelog
 ===========
 
-Version 0.2.0 (2024-10-06)
+Version 0.2.6 (2024-10-12)
+---------------------------
+
+**Added**
+
+* Code restructuring
+* Documentation build
+
+Version 0.2.5 (2024-10-06)
 ---------------------------
 **Added**:
 
@@ -15,6 +23,7 @@ Version 0.2.0 (2024-10-06)
 * a pymolpro integration to automatically run molpro calculates with .xyz files
 
 
-**Planned for Version 0.3.0**:
+
+**Planned for Version 0.2.6**:
 
 * Giving users the possibility to input there own internal coordinates (Z-matrix) and visualize differences to the set optained by the algorithm

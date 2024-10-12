@@ -4,10 +4,19 @@ from scipy import constants
 from collections import Counter
 
 
-from .nomodeco_classes import Molecule
+from nomodeco.libraries.nomodeco_classes import Molecule
 
 
 def numerate_strings(string_list):
+    """
+    Enumerates all strings in a list based on occurence
+    
+    Attributes:
+        a list of strings representing atom symbols ["H","O","H"]
+    
+    Return:
+        Enumerated list based on occurence
+    """
     string_counts = Counter(string_list)
     numeration = {}
     for string, count in string_counts.items():
@@ -24,9 +33,18 @@ def numerate_strings(string_list):
             numerated_strings.append(string)
     return numerated_strings
 
-#TODO: make a parse module
-#TODO: adaption for other output formats like Gaussian, Orca
-def parse_xyz_from_inputfile(inputfile):
+
+def parse_xyz_from_inputfile(inputfile) -> Molecule():
+    """
+    Parses the xyz coordinates form a molpro.out file
+
+    Attributes:
+        inputfile:
+            a molpro.out file as an input
+    
+    Returns:
+        a object of the molecule class
+    """
     bohr = constants.value(u'Bohr radius')
     angstrom = constants.value(u'Angstrom star')
     BOHR_PER_ANGSTROM = angstrom/bohr 
@@ -50,14 +68,24 @@ def parse_xyz_from_inputfile(inputfile):
 
 #TODO: general parsing
 
-def can_be_float(string):
+def can_be_float(string) -> bool:
+    """
+    checks if a string can be turned into a float or not
+    """
     try:
         float(string)
         return True
     except:
         return False
     
-def parse_Cartesian_F_Matrix_from_start_of_matrix(file):
+def parse_Cartesian_F_Matrix_from_start_of_matrix(file) -> np.array:
+    """
+    Parses the second derivative matrix from the molpro.out file
+
+    Attributes:
+        file:
+            a molpro.out file as an inputfile
+    """
     all_columns = []
     all_rows = []
     matrix = dict()

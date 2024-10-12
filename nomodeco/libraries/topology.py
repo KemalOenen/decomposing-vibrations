@@ -14,11 +14,11 @@ import re
 from pymatgen.symmetry.analyzer import PointGroupAnalyzer
 import os
 import matplotlib.pyplot as plt
-from . import logfile
-from . import specifications
-from . import icsel
-from .nomodeco_classes import Molecule
-from . import arguments
+from nomodeco.libraries import logfile
+from nomodeco.libraries import specifications
+from nomodeco.libraries import icsel
+from nomodeco.libraries.nomodeco_classes import Molecule
+from nomodeco.libraries import arguments
 
 """
 Shared Variables for the Intermolecular Functions
@@ -39,7 +39,10 @@ GENERAL PURPOSE FUNCTIONS
 out = None
 
 
-def molecule_is_not_split(bonds):
+def molecule_is_not_split(bonds) -> bool:
+    """
+    Uses Networkx to check if for a given list of bonds the molecular structure is connected or split
+    """
     G = nx.Graph()
     G.add_edges_from(bonds)
     if len(list(nx.connected_components(G))) == 1:
@@ -48,11 +51,17 @@ def molecule_is_not_split(bonds):
         return False
 
 
-def strip_numbers(string):
+def strip_numbers(string) -> str:
+    """
+    Removes the digits from a string e.q H2 -> H
+    """
     return "".join([char for char in string if not char.isdigit()])
 
 
-def eliminate_symmetric_tuples(list_tuples):
+def eliminate_symmetric_tuples(list_tuples) -> list:
+    """
+    Eliminates symmetric tuples in a list of tuples e.q (H2,O,H1) (H1,O,H2)
+    """
     new_list = []
     seen_tuples = set()
     for tp1 in list_tuples:
@@ -63,7 +72,10 @@ def eliminate_symmetric_tuples(list_tuples):
     return new_list
 
 
-def valide_atoms_to_cut(bonds, multiplicity_list):
+def valide_atoms_to_cut(bonds, multiplicity_list) -> list:
+    """
+    Checks for a given list of bonds if the multiplicity of the atoms is greater then two. If this is the case return the atoms
+    """
     # first of all we will identify where cutting bonds is even making sense to a first degree
     valide_atoms = []
     for tup in multiplicity_list:
@@ -125,7 +137,16 @@ def delete_bonds(bonds, mu, valide_atoms):
 
 # TODO: rename method
 # TODO: possible bug here for cyclic systems, when using [:]!
-def update_internal_coordinates_cyclic(removed_bonds, ic_list):
+def update_internal_coordinates_cyclic(removed_bonds, ic_list) -> list:
+    """
+    Given a set of ICs and a removed bond, eliminates this particular IC out of the list
+
+    Attributes:
+        removed_bonds: list
+            a list of tuples containing the bonds to remove
+        ic_list: list
+            a list of internal coordinates of a specific type
+    """
     ic_list_dup = ic_list[:]
     for bond in removed_bonds:
         for ic in ic_list_dup[:]:
@@ -188,7 +209,27 @@ LINEAR SYSTEMS
 
 def fully_linear_molecule(
     ic_dict, bonds, angles, linear_angles, out_of_plane, dihedrals
-):
+) -> dict:
+    """
+    Generates the IC sets for the covalent fully linear conformation of a structure
+
+    Attributes: 
+        ic_dict:
+            a dictionary containing IC_sets
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles:
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+    
+    Returns:
+        a IC dictionary where each entry is a valid IC set for the further analysis
+    """
     # purely linear molecules do not have oop, one can define dihedrals, but they are not significant as
     # the intrinsic frequency equals 0 for them
     ic_dict[0] = {
@@ -219,7 +260,38 @@ def planar_acyclic_nolinunit_molecule(
     num_atoms,
     a_1,
     specification,
-):
+) -> dict:
+    """
+    Generates IC sets for the planar acyclic case without any linear subunits
+
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of atoms
+        a_1:
+            a integer containing the number of terminal atoms
+        specification:
+            the specification for the given molecule (see specifcation documentation)
+
+    Returns:
+        all possible IC sets for this conformation in a dictionary, where each entry is a IC set
+
+    """
     # set length of subsets
     n_r = num_bonds
     n_phi = 2 * num_bonds - num_atoms
@@ -302,7 +374,37 @@ def planar_cyclic_nolinunit_molecule(
     num_atoms,
     a_1,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the planar,cyclic case without linear submolecules
+    
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of atoms
+        a_1:
+            a integer containing the number of terminal atoms
+        specification:
+            the specification for the given molecule (see specifcation documentation) 
+    
+    Returns:
+        a dictionary where each entry is a valid IC set, note that in this case bonds are cut
+    """
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
     # symmetric bonds
@@ -443,7 +545,39 @@ def planar_acyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the planar,acyclic case with linear submoleculesd
+
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of atoms
+        a_1:
+            a integer containing the number of terminal atoms
+        l:
+            a integer containing the number of linear bonds
+        specification:
+            the specification for the given molecule (see specifcation documentation)
+
+    Returns:
+        a dictionary where each entry is a valid IC set
+    """
     # set length of subsets
     # IMPORTANT: there is a distinction to Decius work -> Decius counts one l.A. in n_phi and one in n_phi'!
 
@@ -553,7 +687,39 @@ def planar_cyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the planar,cyclic case with linear submolecules
+
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of atoms
+        a_1:
+            a integer containing the number of terminal atoms
+        l:
+            a integer containing the number of linear bonds
+        specification:
+            the specification for the given molecule (see specifcation documentation)
+    
+    Returns:
+        a dictionary where each entry is a valid IC set
+    """
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
     # symmetric bonds
@@ -699,7 +865,38 @@ def general_acyclic_nolinunit_molecule(
     num_atoms,
     a_1,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the general acyclic case without linear submolecules
+
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of atoms
+        num_atoms:
+            contains the number of bonds of the structure
+        a_1:
+            a integer containing the number of terminal atoms
+        specification:
+            the specification for the given molecule (see specifcation documentation)
+    Returns:
+        a dictionary where each entry is a IC set
+    """
     # set length of subsets
     n_r = num_bonds
     n_phi = 4 * num_bonds - 3 * num_atoms + a_1
@@ -774,7 +971,40 @@ def general_cyclic_nolinunit_molecule(
     num_of_red,
     a_1,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the general cyclic case without linear submolecules
+
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of bonds
+        a_1:
+            a integer containing the number of terminal atoms
+        num_atoms:
+            a integer containing the number of atoms
+        num_of_red:
+            a integer containg the redundancies of a given molecular structure
+        specification:
+            the specification for the given molecule (see specifcation documentation)
+    Returns:
+        a dictionary where each entry is a valid IC set
+    """
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
     # symmetric bonds
@@ -914,7 +1144,38 @@ def general_acyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the general,acyclic case where linear submolecules are in the structure
+
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of bonds
+        num_atoms:
+            a integer containing the number of atoms
+        l:
+            a integer with the number of linear bonds
+        a_1:
+            a integer containing the number of terminal atoms
+        specification:
+            the specification for the given molecule (see specifcation documentation)
+    """
     # set length of subsets
     n_r = num_bonds
     n_phi = 4 * num_bonds - 3 * num_atoms + a_1 - (l - 1)
@@ -1031,7 +1292,40 @@ def general_cyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the general, cyclic case with linear submolecules
+
+    Attributes:
+        ic_dict:
+            a dictionary with IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples with bonds
+        angles:
+            a list of tuples with angles
+        linear_angles: 
+            a list of tuples with linear angles
+        out_of_plane:
+            a list of tuples with oop's
+        dihedrals:
+            a list of tuples with dihedrals
+        num_bonds:
+            a integer containing the number of bonds
+        num_atoms:
+            a integer containing the number of atoms
+        a_1:
+            a integer containing the number of terminal atoms
+        l:
+            a integer containing the number of linear bonds
+        specification:
+            the specification for the given molecule (see specifcation documentation)
+    Returns:
+        a dictionary where each entry is a valid IC set
+    """
     # remove bonds without destroying the molecule
     # if there are several classes of symmetric bonds, we need to remove the corresponding
     # symmetric bonds
@@ -1195,7 +1489,18 @@ def extract_atoms_of_submolecules(connected_components, atoms_list):
 # Evaluate the smaller sub dictionary and make a element wise combination
 
 
-def combine_dictionaries(dict_list):
+def combine_dictionaries(dict_list) -> list:
+    """
+    Combines two submolecule dictionaries where in each dictionary all possible IC sets are contained. This combiniation is based on combinatorics
+
+    The length of each dictionary determines how the combination takes place
+
+    Attributes:
+        dict_list:
+            a list of dictionarys
+    Returns:
+        a list that contains the combined IC sets for both covalent submolecules
+    """
     # First we determine the length of the list
     length_of_dict = []
     for d in dict_list:
@@ -1394,7 +1699,22 @@ def combine_dictionaries(dict_list):
     return [result]
 
 
-def add_element_to_all_entries(dict_list, element, dict_key, amount):
+def add_element_to_all_entries(dict_list, element, dict_key, amount) -> list:
+    """
+    Adds an element to all entries in a given dictionary.
+
+    Attributes:
+        dict_list:
+            a list of dictionaries where the dictionaries are IC sets
+        element:
+            a element which gets added to a specific position
+        dict_key:
+            a string which determines where the element gets added
+        amount:
+            determines how often this element gets added to a specific position
+    Returns:
+        a list of dictionaries
+    """
     # Specify how much elements will be added
     number_elements = element[:amount]
     # Ite rate through each dictionary in the list
@@ -1421,7 +1741,27 @@ def divide_chunks(l, n):
         yield l[i : i + n]
 
 
-def distribute_elements(dict_list, elements, dict_key, number_of_elements):
+def distribute_elements(dict_list, elements, dict_key, number_of_elements) -> list:
+    """
+    Distributes elements to a given IC set also generating all possible combinations for the even distribution
+
+    Here all combinatoric cases are considered for example if the there is one IC set and one needs to distribute two IC coordinates out of a list of two
+    the total amount of IC sets in the end is two
+
+    Attributes:
+        dict_list:
+            a list of dictionaries with possible IC sets
+        elements: 
+            a list of possible elements that get distributed
+        dict_key:
+            a str that determines the key where the elements get added
+        number_of_elements: 
+            a str with the number of elements that are taken out of the elements list
+    
+    Returns:
+        a list of dictionaries where each entry in the dictionary is a possible IC set
+    """
+
 
     # The dict list will always be a list of dict with exactly one dict in it
     dictionary_inner = dict_list[0]
@@ -1586,7 +1926,7 @@ def distribute_elements(dict_list, elements, dict_key, number_of_elements):
     return [result]
 
 
-"""
+""" 
 General Intermolecular Systems
 """
 # In the general systems the oop angles are normally not considered
@@ -1606,7 +1946,41 @@ def intermolecular_general_acyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, general acyclic case without linear submolecules.
+
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        l:
+            a integer with the number of linear bonds
+        num_bonds:
+            a integer with the number of bonds 
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule 
+
+    Returns:
+        a dictionary where each entry is a possible IC set
+    """
 
     args = arguments.get_args()
 
@@ -1827,8 +2201,38 @@ def intermolecular_general_acyclic_nolinunit_molecule(
     num_atoms,
     a_1,
     specification,
-):
-
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, general, acyclic case without linear submolecules
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        num_bonds:
+            a integer with the number of bonds 
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule 
+    
+    Returns:
+        a dictionary where each entry is a possible IC set
+    """
     args = arguments.get_args()
 
     n_r = num_bonds
@@ -2036,7 +2440,40 @@ def intermolecular_general_cyclic_nolinsub(
     num_of_red,
     a_1,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, general cyclic case where no linear submolecules are contained
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        num_of_red:
+            a integer with the number of redundancies of the molecular structure
+        num_bonds:
+            a integer with the number of bonds 
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule
+
+    Returns:
+        a dictionary where each entry is a valid IC set
+    """
 
     args = arguments.get_args()
 
@@ -2319,7 +2756,43 @@ def intermolecular_general_cyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, general, cyclic case with linear submolecules
+
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        l:
+            a integer with the number of linear bonds
+        num_bonds:
+            a integer with the number of bonds 
+        num_of_red:
+            a integer with the number of redundancies
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule 
+
+    Returns:
+        a dictionary where each entry of the dictionary is a valid IC set
+    """
 
     args = arguments.get_args()
 
@@ -2673,7 +3146,41 @@ def intermolecular_planar_acyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, planar, acyclic case where linear submolecules are contained
+
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        l:
+            a integer with the number of linear bonds
+        num_bonds:
+            a integer with the number of bonds 
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule 
+    
+    Returns:
+        a dictionary where each entry is a possible IC set
+    """
 
     args = arguments.get_args()
 
@@ -2912,7 +3419,41 @@ def intermolecular_planar_cyclic_linunit_molecule(
     a_1,
     l,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, planar, cyclic case with linear submolecules
+
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        l:
+            a integer with the number of linear bonds
+        num_bonds:
+            a integer with the number of bonds 
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule 
+    
+    Returns:
+        a dictionary where each entry is a possible IC set
+    """
 
     args = arguments.get_args()
 
@@ -3244,8 +3785,41 @@ def intermolecular_planar_cyclic_nolinunit_molecule(
     num_atoms,
     a_1,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, planar, cyclic case without linear submolecules
 
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        l:
+            a integer with the number of linear bonds
+        num_bonds:
+            a integer with the number of bonds 
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule 
+    
+    Returns:    
+        a dictionary containing all the possible IC sets for a given molecule
+    """
     args = arguments.get_args()
 
     # Open up the dictionary
@@ -3537,7 +4111,41 @@ def intermolecular_planar_acyclic_nolinunit_molecule(
     num_atoms,
     a_1,
     specification,
-):
+) -> dict:
+    """
+    Generates all possible IC sets for the intermolecular, planar, acyclic case without linear submolecules
+
+    Attributes:
+        ic_dict:
+            a dictionary containing valid IC sets
+        out:
+            the output file of nomodeco
+        idof:
+            a integer with the vibrational degrees of freedom
+        bonds:
+            a list of tuples containing bonds
+        angles:
+            a list of tuples containing angles
+        linear_angles:
+            a list of tuples containing angles
+        out_of_plane:
+            a list of tupels containing oop's
+        dihedrals:
+            a list of tupels containing dihedrals
+        a_1:
+            a integer with the number of terminal atoms
+        l:
+            a integer with the number of linear bonds
+        num_bonds:
+            a integer with the number of bonds 
+        num_atoms:
+            a integer with the number of atoms
+        specification:
+            the specification dictionary of the given molecule 
+    
+    Returns:
+        a dictionary where each entry is a possible IC set
+    """
 
     args = arguments.get_args()
 

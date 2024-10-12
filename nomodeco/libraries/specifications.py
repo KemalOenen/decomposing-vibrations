@@ -1,12 +1,15 @@
 import numpy as np
 import pandas as pd
-from .nomodeco_classes import Molecule
+from nomodeco.libraries.nomodeco_classes import Molecule
 
 
 
 
 
-def get_linear_bonds(linear_angles):
+def get_linear_bonds(linear_angles) -> list:
+    """
+    Uses the linear angles (i.e lists of the form ["H","O","H"]) to determine linear bonds and safe them in a list of tuples
+    """
     linear_bonds = []
     for i in range(len(linear_angles)):
         # extract elements from current tuple
@@ -21,15 +24,27 @@ def get_linear_bonds(linear_angles):
     linear_bonds = [tuple(unique_bond) for unique_bond in unique_linear_bonds]
     return linear_bonds
 
-def is_string_in_tuples(string, list_of_tuples):
+def is_string_in_tuples(string, list_of_tuples) -> bool:
+    """
+    checks if a given string is contained in a list of tuples
+    """
     for tuple_ in list_of_tuples:
         if string in tuple_:
             return True
     return False 
 
 
-# TODO Redefine this function
-def is_system_planar(coordinates, tolerance=1e-1):
+def is_system_planar(coordinates, tolerance=1e-1) ->bool:
+    """
+    Calculates if a given system is planar, here three non linear atoms are selected, a normal vector perpenticular to the plane of the three atoms gets calculates.
+    Then one calculates the dot product and compares it with a given tolerance
+
+    Attributes:
+        coordinates:
+            a list of coordinates for each atom
+        tolerance = 1e-1
+            the given tolerance to determine planarity
+    """
     # convert tuples first to arrays
     if len(coordinates) == 0:
         return True
@@ -58,13 +73,31 @@ def is_system_planar(coordinates, tolerance=1e-1):
 
     return True
 
-def bound_to_atom(query_atom, bonds, central_atom):
+def bound_to_atom(query_atom, bonds, central_atom) -> bool:
+    """
+    given a query_atom and a central atom and a bond checks if the query atom is bound to the central atom
+    """
     for bond in bonds:
         if query_atom in bond and central_atom in bond:
             return True
     return False
 
-def calculation_specification(specification, atoms, molecule_pg, bonds, angles, linear_angles):
+def calculation_specification(specification, atoms, molecule_pg, bonds, angles, linear_angles) -> dict:
+    """
+    Calculates the specification dictionary, for example the numbers mu, beta, the planarity of a system, the multiplicity of the atoms, and a list of linear bond
+
+    Attributes:
+        atoms:
+            a object of the Molecule class
+        molecule_pg: 
+            the point group of a given molecular structure
+        bonds:
+            the bonds given as a list of tuples
+        angles:
+            the angles given as a list of tuples
+        linear_angles:
+            the linear angles given as a list of tuples
+    """
     # map every atom on their multiplicity 
     atoms_multiplicity = dict()
     atoms_multiplicity_list = []

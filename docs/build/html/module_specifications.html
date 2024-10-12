@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>specifications &mdash; Nomodeco 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="molpro_parser" href="module_molpro_parser.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nomodeco
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inst.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arguments.html">Arguments of Nomodeco</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco.html">Nomodeco Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_nomodeco_classes.html">nomodeco_classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_bmatrix.html">bmatrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_gaussian_parser.html">gaussian_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_molpro_parser.html">molpro_parser</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">specifications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#specifications.bound_to_atom"><code class="docutils literal notranslate"><span class="pre">bound_to_atom()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specifications.calculation_specification"><code class="docutils literal notranslate"><span class="pre">calculation_specification()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specifications.get_linear_bonds"><code class="docutils literal notranslate"><span class="pre">get_linear_bonds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specifications.is_string_in_tuples"><code class="docutils literal notranslate"><span class="pre">is_string_in_tuples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specifications.is_system_planar"><code class="docutils literal notranslate"><span class="pre">is_system_planar()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nomodeco</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">API</a></li>
+      <li class="breadcrumb-item active">specifications</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/module_specifications.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="specifications">
+<h1>specifications<a class="headerlink" href="#specifications" title="Link to this heading"></a></h1>
+<p>This module evaluates the topological parameters of a given structure, e.q if a molecule is planar/general contains linear submolecules. The final result of the script is the
+specifications dictionary, this dictionary safes all the parameters for the given molecule an is the foundation for the topological analysis</p>
+<dl class="py function" id="module-specifications">
+<dt class="sig sig-object py" id="specifications.bound_to_atom">
+<span class="sig-prename descclassname"><span class="pre">specifications.</span></span><span class="sig-name descname"><span class="pre">bound_to_atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_atom</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#specifications.bound_to_atom" title="Link to this definition"></a></dt>
+<dd><p>given a query_atom and a central atom and a bond checks if the query atom is bound to the central atom</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="specifications.calculation_specification">
+<span class="sig-prename descclassname"><span class="pre">specifications.</span></span><span class="sig-name descname"><span class="pre">calculation_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">specification</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule_pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#specifications.calculation_specification" title="Link to this definition"></a></dt>
+<dd><p>Calculates the specification dictionary, for example the numbers mu, beta, the planarity of a system, the multiplicity of the atoms, and a list of linear bond</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>atoms:</dt><dd><p>a object of the Molecule class</p>
+</dd>
+<dt>molecule_pg: </dt><dd><p>the point group of a given molecular structure</p>
+</dd>
+<dt>bonds:</dt><dd><p>the bonds given as a list of tuples</p>
+</dd>
+<dt>angles:</dt><dd><p>the angles given as a list of tuples</p>
+</dd>
+<dt>linear_angles:</dt><dd><p>the linear angles given as a list of tuples</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="specifications.get_linear_bonds">
+<span class="sig-prename descclassname"><span class="pre">specifications.</span></span><span class="sig-name descname"><span class="pre">get_linear_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">linear_angles</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#specifications.get_linear_bonds" title="Link to this definition"></a></dt>
+<dd><p>Uses the linear angles (i.e lists of the form [“H”,”O”,”H”]) to determine linear bonds and safe them in a list of tuples</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="specifications.is_string_in_tuples">
+<span class="sig-prename descclassname"><span class="pre">specifications.</span></span><span class="sig-name descname"><span class="pre">is_string_in_tuples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_tuples</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#specifications.is_string_in_tuples" title="Link to this definition"></a></dt>
+<dd><p>checks if a given string is contained in a list of tuples</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="specifications.is_system_planar">
+<span class="sig-prename descclassname"><span class="pre">specifications.</span></span><span class="sig-name descname"><span class="pre">is_system_planar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#specifications.is_system_planar" title="Link to this definition"></a></dt>
+<dd><p>Calculates if a given system is planar, here three non linear atoms are selected, a normal vector perpenticular to the plane of the three atoms gets calculates.
+Then one calculates the dot product and compares it with a given tolerance</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt>coordinates:</dt><dd><p>a list of coordinates for each atom</p>
+</dd>
+<dt>tolerance = 1e-1</dt><dd><p>the given tolerance to determine planarity</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="module_molpro_parser.html" class="btn btn-neutral float-left" title="molpro_parser" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lukas Meinschad.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

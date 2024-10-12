@@ -9,7 +9,7 @@ from scipy import constants
 import re
 from mendeleev import element
 
-from .nomodeco_classes import Molecule
+from nomodeco.libraries.nomodeco_classes import Molecule
 
 class Atom(NamedTuple):
     symbol: str
@@ -44,7 +44,14 @@ def numerate_strings(string_list) -> list:
 
 def parse_xyz(inputfile)-> Molecule():
     """
+    Parses the xyz coordinates from the gaussian log file and converts into a object of molecule class
+
+    Attributes:
+        inputfile:
+            the gaussian.log file as an inputfile 
     
+    Return:
+        A object of the Molecule class
     """
     # Read in lines
     lines = inputfile.readlines()
@@ -118,7 +125,17 @@ def parse_xyz(inputfile)-> Molecule():
 
 
 
-def parse_cartesian_force_constants(inputfile, n_atoms):
+def parse_cartesian_force_constants(inputfile, n_atoms) -> np.array:
+    """
+    Parses the second derivative matrix out of the gaussian.log file. In Gaussian the second derivative matrix is given as lower triangular, Nomodeco.py uses
+    the full matrix for the calculation
+
+    Attributes:
+        inputfile:
+            the gaussian.log inputfile
+        n_atoms: int
+            a integer with the number of atoms in the structure
+    """
     lines = inputfile.readlines()
     sections = []
     capturing = False
