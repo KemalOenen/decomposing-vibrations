@@ -1356,7 +1356,7 @@ def main():
             elif isinstance(percentage, str) and percentage != ".":
                 percentage = float(percentage)
             if percentage > 10:
-                details.append(f"{coord}: {percentage:.2f}\%")
+                details.append(f"{coord}: {percentage:.2f}%")
         row["Details"] = "; ".join(details)
         Contribution_Sliced.append(row)
     annotated_df = pd.DataFrame(Contribution_Sliced)
