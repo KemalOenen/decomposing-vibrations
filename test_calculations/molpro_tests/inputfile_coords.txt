@@ -1,0 +1,5 @@
+bonds = [("H1","O"), ("O","H2")]
+angles = [("H1","O","H2")]
+linear valence angles = []
+out of plane angles = []
+dihedrals = []

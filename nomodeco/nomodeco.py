@@ -19,6 +19,7 @@ from mendeleev.fetch import fetch_table
 import inquirer
 import pyfiglet
 import pubchempy as pcp  # import pubchemmpy --> pubchempy as a databank
+import plotly.graph_objects as go
 
 
 # for heatmap
@@ -44,7 +45,8 @@ from nomodeco.libraries.nomodeco_classes import Molecule, InternalCoordinates
 from nomodeco.libraries import icset_opt_multproc
 from nomodeco.libraries import gaussian_parser
 from nomodeco.libraries import orca_parser
-
+from nomodeco.libraries import zmat
+from nomodeco.libraries import plotting
 
 def get_mass_information() -> pd.DataFrame:
     """
@@ -840,6 +842,22 @@ def main():
             )
             outputfile = logfile.create_filename_out(inputfile.name)
 
+    # TODO
+    if args.input_zmat:
+
+        files = [f for f in os.listdir(".") if os.path.isfile(f) and f.endswith(".xyz")]
+        questions = [
+            inquirer.List(".xyz", message="Select z_matrix file:", choices=files),
+        ]
+
+        xyz_file = inquirer.prompt(questions)[".xyz"]
+        xyz_abs_path = os.path.abspath(xyz_file)
+
+        zmat_readin = zmat.read_zmatrix(xyz_abs_path)
+        atoms = zmat.write_xyz(*zmat_readin)
+        n_atoms = len(atoms)
+        outputfile = logfile.create_filename_out(xyz_file)
+
     if os.path.exists(outputfile):
         i = 1
         while True:
@@ -864,10 +882,6 @@ def main():
 
     atoms = Molecule(atoms)
 
-    """
-    Command Line Input for Isotopes of Hydrogen
-    """
-
     molecule = mg.Molecule(
         [strip_numbers(atom.symbol) for atom in atoms],
         [atom.coordinates for atom in atoms],
@@ -876,238 +890,373 @@ def main():
     molecule_pg = PointGroupAnalyzer(molecule)
     point_group_sch = molecule_pg.sch_symbol
 
-    """
-    IC Generation
-    """
-    # Intermolecular Bonds:
-    # Use Degree of Covalance https://doi.org/10.1002/qua.21049 for hydrogen bond detection
+    print(atoms.interatomic_distance_matrix())
 
-    degofc_table = atoms.degree_of_covalance()
+    if args.nomodeco_coords == None:
 
-    cov_bonds = atoms.covalent_bonds(degofc_table)
+        """
+        IC Generation
+        """
+        # Intermolecular Bonds:
+        # Use Degree of Covalance https://doi.org/10.1002/qua.21049 for hydrogen bond detection
 
-    # Pass covalent bonds to specification
-    sp.covalent_bonds = cov_bonds
+        degofc_table = atoms.degree_of_covalance()
 
-    # Detect and generate covalent submolecules
+        cov_bonds = atoms.covalent_bonds(degofc_table)
 
-    _, _, cov_submolecules_symbols = atoms.detect_submolecules()
+        # Pass covalent bonds to specification
+        sp.covalent_bonds = cov_bonds
 
-    # Generate Hydrogen Bond and the Acceptor-Donor Coordinate
+        # Detect and generate covalent submolecules
 
-    h_bonds = atoms.intermolecular_h_bond(degofc_table, cov_submolecules_symbols)
-    acc_don_bonds = atoms.intermolecular_acceptor_donor(
-        degofc_table, cov_submolecules_symbols
-    )
+        _, _, cov_submolecules_symbols = atoms.detect_submolecules()
 
-    Total_IC_dict = InternalCoordinates()
+        # Generate Hydrogen Bond and the Acceptor-Donor Coordinate
 
-    # Add covalent ICs
-    Total_IC_dict.add_coordinate("cov_bond", cov_bonds)
-    Total_IC_dict.add_coordinate("h_bond", h_bonds)
-    Total_IC_dict.add_coordinate("acc_don", acc_don_bonds)
-    Total_IC_dict.add_coordinate("cov_angles", atoms.generate_angles(cov_bonds)[0])
-    Total_IC_dict.add_coordinate(
-        "cov_linear_angles", atoms.generate_angles(cov_bonds)[1]
-    )
-    Total_IC_dict.add_coordinate("cov_dihedrals", atoms.generate_dihedrals(cov_bonds))
+        h_bonds = atoms.intermolecular_h_bond(degofc_table, cov_submolecules_symbols)
+        acc_don_bonds = atoms.intermolecular_acceptor_donor(
+            degofc_table, cov_submolecules_symbols
+        )
 
-    # Define Total Bonds
-    bonds = list(set(cov_bonds).union(set(h_bonds)))
-    bond_acc_don = list(set(cov_bonds).union(set(acc_don_bonds)))
+        Total_IC_dict = InternalCoordinates()
 
-    Total_IC_dict.add_coord_diff(
-        "h_bond_angles", atoms.generate_angles(bonds)[0], Total_IC_dict["cov_angles"]
-    )
-    Total_IC_dict.add_coord_diff_linear(
-        "h_bond_linear_angles",
-        atoms.generate_angles(bonds)[1],
-        Total_IC_dict["cov_linear_angles"],
-    )
-    Total_IC_dict.add_coord_diff(
-        "h_bond_dihedrals",
-        atoms.generate_dihedrals(bonds),
-        Total_IC_dict["cov_dihedrals"],
-    )
-    Total_IC_dict.add_coord_diff(
-        "acc_don_angles",
-        atoms.generate_angles(bond_acc_don)[0],
-        Total_IC_dict["cov_angles"],
-    )
-    Total_IC_dict.add_coord_diff_linear(
-        "acc_don_linear_angles",
-        atoms.generate_angles(bond_acc_don)[1],
-        Total_IC_dict["cov_linear_angles"],
-    )
-    Total_IC_dict.add_coord_diff(
-        "acc_don_dihedrals",
-        atoms.generate_dihedrals(bond_acc_don),
-        Total_IC_dict["cov_dihedrals"],
-    )
+        # Add covalent ICs
+        Total_IC_dict.add_coordinate("cov_bond", cov_bonds)
+        Total_IC_dict.add_coordinate("h_bond", h_bonds)
+        Total_IC_dict.add_coordinate("acc_don", acc_don_bonds)
+        Total_IC_dict.add_coordinate("cov_angles", atoms.generate_angles(cov_bonds)[0])
+        Total_IC_dict.add_coordinate(
+            "cov_linear_angles", atoms.generate_angles(cov_bonds)[1]
+        )
+        Total_IC_dict.add_coordinate(
+            "cov_dihedrals", atoms.generate_dihedrals(cov_bonds)
+        )
 
-    # Assing Coordinates from IC Dict to Variables
-    angles = Total_IC_dict["cov_angles"] + Total_IC_dict["h_bond_angles"]
-    linear_angles = (
-        Total_IC_dict["cov_linear_angles"] + Total_IC_dict["h_bond_linear_angles"]
-    )
-    dihedrals = Total_IC_dict["cov_dihedrals"] + Total_IC_dict["h_bond_dihedrals"]
+        # Define Total Bonds
+        bonds = list(set(cov_bonds).union(set(h_bonds)))
+        bond_acc_don = list(set(cov_bonds).union(set(acc_don_bonds)))
 
-    # If no valid dihedrals found append acc_don_dihedrals
-    if len(dihedrals) == 0:
-        dihedrals = Total_IC_dict["cov_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
-
-    """
-    Generating the Specification for the primary calculation
-    """
-
-    # Setting specifications for calculation: check if molecule is linear, planar or a general molecule
-    specification = dict()
-    specification = specifications.calculation_specification(
-        specification, atoms, molecule_pg, bonds, angles, linear_angles
-    )
-
-    # Generation of all possible out-of-plane motions
-
-    # Keys in Total IC_dict get initialized but not filled if system is not planar
-    Total_IC_dict.add_coordinate("cov_oop", [])
-    Total_IC_dict.add_coordinate("h_bond_oop", [])
-    Total_IC_dict.add_coordinate("acc_don_oop", [])
-
-    if specification["planar"] == "yes":
-        Total_IC_dict.add_coordinate("cov_oop", atoms.generate_out_of_plane(cov_bonds))
         Total_IC_dict.add_coord_diff(
-            "h_bond_oop", atoms.generate_out_of_plane(bonds), Total_IC_dict["cov_oop"]
+            "h_bond_angles",
+            atoms.generate_angles(bonds)[0],
+            Total_IC_dict["cov_angles"],
+        )
+        Total_IC_dict.add_coord_diff_linear(
+            "h_bond_linear_angles",
+            atoms.generate_angles(bonds)[1],
+            Total_IC_dict["cov_linear_angles"],
         )
         Total_IC_dict.add_coord_diff(
-            "acc_don_oop",
-            atoms.generate_out_of_plane(bond_acc_don),
-            Total_IC_dict["cov_oop"],
+            "h_bond_dihedrals",
+            atoms.generate_dihedrals(bonds),
+            Total_IC_dict["cov_dihedrals"],
         )
-        out_of_plane = Total_IC_dict["cov_oop"] + Total_IC_dict["h_bond_oop"]
-    elif (
-        specification["planar"] == "no" and specification["planar submolecule(s)"] == []
-    ):
-        out_of_plane = []
-    elif specification["planar"] == "no" and not (
-        specification["planar submolecule(s)"] == []
-    ):
-        out_of_plane = atoms.generate_oop_planar_subunits(
-            bonds, specification["planar submolecule(s)"]
+        Total_IC_dict.add_coord_diff(
+            "acc_don_angles",
+            atoms.generate_angles(bond_acc_don)[0],
+            Total_IC_dict["cov_angles"],
         )
-    else:
-        return out.error(
-            "Classification of whether topology is planar or not could not be determined!"
+        Total_IC_dict.add_coord_diff_linear(
+            "acc_don_linear_angles",
+            atoms.generate_angles(bond_acc_don)[1],
+            Total_IC_dict["cov_linear_angles"],
         )
-
-    # determine internal degrees of freedom
-    idof = 0
-    if specification["linearity"] == "fully linear":
-        idof = atoms.idof_linear()
-    else:
-        idof = atoms.idof_general()
-
-    # update out file
-
-    logfile.write_logfile_oop_treatment(
-        out, specification["planar"], specification["planar submolecule(s)"]
-    )
-    logfile.write_logfile_symmetry_treatment(out, specification, point_group_sch)
-
-    """
-    Passing Section for Topology.py
-    """
-
-    tp.atoms_list = atoms
-    tp.Total_IC_dict = Total_IC_dict
-
-    """
-    Diag Mass Matrix and Reciprocal Square root masses
-    """
-
-    # Computation of the diagonal mass matrices with
-    # the reciprocal and square root reciprocal masses
-    diag_reciprocal_square = reciprocal_square_massvector(atoms)
-    reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
-    diag_reciprocal = reciprocal_massvector(atoms)
-    reciprocal_massmatrix = np.diag(diag_reciprocal)
-
-    # Determination of the Normal Modes and eigenvalues
-    # via the diagonalization of the mass-weighted Cartesian F Matrix
-    Mass_weighted_CartesianF_Matrix = (
-        np.transpose(reciprocal_square_massmatrix)
-        @ CartesianF_Matrix
-        @ reciprocal_square_massmatrix
-    )
-
-    Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
-    # print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
-
-    # Determination of the normal modes of zero and low Frequencies
-
-    rottra = L[:, 0 : (3 * n_atoms - idof)]
-
-    logfile.write_logfile_generated_IC(
-        out, bonds, angles, linear_angles, out_of_plane, dihedrals, idof
-    )
-
-    """
-    Logging Intermolecular IC Information
-    """
-    # Information only gets logged if hydrogen bonds where found in the structure
-    if len(Total_IC_dict["h_bond"]) != 0:
-        logfile.write_hydrogen_bond_information(
-            out,
-            Total_IC_dict["h_bond"],
-            Total_IC_dict["acc_don"],
-            Total_IC_dict["h_bond_angles"],
-            Total_IC_dict["acc_don_angles"],
-            Total_IC_dict["h_bond_linear_angles"],
-            Total_IC_dict["acc_don_linear_angles"],
-            Total_IC_dict["h_bond_dihedrals"],
-            Total_IC_dict["acc_don_dihedrals"],
-            Total_IC_dict["h_bond_oop"],
-            Total_IC_dict["acc_don_oop"],
+        Total_IC_dict.add_coord_diff(
+            "acc_don_dihedrals",
+            atoms.generate_dihedrals(bond_acc_don),
+            Total_IC_dict["cov_dihedrals"],
         )
 
-    # get symmetric coordinates
-    if args.penalty1 != 0:
-        symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
-        symmetric_angles = icsel.get_symm_angles(angles, specification)
-        symmetric_dihedrals = icsel.get_symm_angles(dihedrals, specification)
-        symmetric_coordinates = {
-            **symmetric_bonds,
-            **symmetric_angles,
-            **symmetric_dihedrals,
-        }
-    else:
+        # Assing Coordinates from IC Dict to Variables
+        angles = Total_IC_dict["cov_angles"] + Total_IC_dict["h_bond_angles"]
+        linear_angles = (
+            Total_IC_dict["cov_linear_angles"] + Total_IC_dict["h_bond_linear_angles"]
+        )
+        dihedrals = Total_IC_dict["cov_dihedrals"] + Total_IC_dict["h_bond_dihedrals"]
+
+        # If no valid dihedrals found append acc_don_dihedrals
+        if len(dihedrals) == 0:
+            dihedrals = (
+                Total_IC_dict["cov_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
+            )
+
+        """
+       Generating the Specification for the primary calculation
+       """
+
+        # Setting specifications for calculation: check if molecule is linear, planar or a general molecule
+        specification = dict()
+        specification = specifications.calculation_specification(
+            specification, atoms, molecule_pg, bonds, angles, linear_angles
+        )
+
+        # Generation of all possible out-of-plane motions
+
+        # Keys in Total IC_dict get initialized but not filled if system is not planar
+        Total_IC_dict.add_coordinate("cov_oop", [])
+        Total_IC_dict.add_coordinate("h_bond_oop", [])
+        Total_IC_dict.add_coordinate("acc_don_oop", [])
+
+        if specification["planar"] == "yes":
+            Total_IC_dict.add_coordinate(
+                "cov_oop", atoms.generate_out_of_plane(cov_bonds)
+            )
+            Total_IC_dict.add_coord_diff(
+                "h_bond_oop",
+                atoms.generate_out_of_plane(bonds),
+                Total_IC_dict["cov_oop"],
+            )
+            Total_IC_dict.add_coord_diff(
+                "acc_don_oop",
+                atoms.generate_out_of_plane(bond_acc_don),
+                Total_IC_dict["cov_oop"],
+            )
+            out_of_plane = Total_IC_dict["cov_oop"] + Total_IC_dict["h_bond_oop"]
+        elif (
+            specification["planar"] == "no"
+            and specification["planar submolecule(s)"] == []
+        ):
+            out_of_plane = []
+        elif specification["planar"] == "no" and not (
+            specification["planar submolecule(s)"] == []
+        ):
+            out_of_plane = atoms.generate_oop_planar_subunits(
+                bonds, specification["planar submolecule(s)"]
+            )
+        else:
+            return out.error(
+                "Classification of whether topology is planar or not could not be determined!"
+            )
+
+        # determine internal degrees of freedom
+        idof = 0
+        if specification["linearity"] == "fully linear":
+            idof = atoms.idof_linear()
+        else:
+            idof = atoms.idof_general()
+
+        # update out file
+
+        logfile.write_logfile_oop_treatment(
+            out, specification["planar"], specification["planar submolecule(s)"]
+        )
+        logfile.write_logfile_symmetry_treatment(out, specification, point_group_sch)
+
+        """
+       Passing Section for Topology.py
+       """
+
+        tp.atoms_list = atoms
+        tp.Total_IC_dict = Total_IC_dict
+
+        """
+       Diag Mass Matrix and Reciprocal Square root masses
+       """
+
+        # Computation of the diagonal mass matrices with
+        # the reciprocal and square root reciprocal masses
+        diag_reciprocal_square = reciprocal_square_massvector(atoms)
+        reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
+        diag_reciprocal = reciprocal_massvector(atoms)
+        reciprocal_massmatrix = np.diag(diag_reciprocal)
+
+        # Determination of the Normal Modes and eigenvalues
+        # via the diagonalization of the mass-weighted Cartesian F Matrix
+        Mass_weighted_CartesianF_Matrix = (
+            np.transpose(reciprocal_square_massmatrix)
+            @ CartesianF_Matrix
+            @ reciprocal_square_massmatrix
+        )
+
+        Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
+        # print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
+
+        # Determination of the normal modes of zero and low Frequencies
+
+        rottra = L[:, 0 : (3 * n_atoms - idof)]
+
+        logfile.write_logfile_generated_IC(
+            out, bonds, angles, linear_angles, out_of_plane, dihedrals, idof
+        )
+
+        # Print Mass Weighted F Matrix to out
+        logfile.write_mass_weighted_f_matrix(
+            out, Mass_weighted_CartesianF_Matrix, atoms
+        )
+
+        # Print L matrix and Cartesian Eigenvalues
+
+        # logfile.write_cartesian_eigenvalues(out, Cartesian_eigenvalues)
+
+        logfile.write_l_matrix(out, L, Cartesian_eigenvalues, atoms)
+
+        """
+       Logging Intermolecular IC Information
+       """
+        # Information only gets logged if hydrogen bonds where found in the structure
+        if len(Total_IC_dict["h_bond"]) != 0:
+            logfile.write_hydrogen_bond_information(
+                out,
+                Total_IC_dict["h_bond"],
+                Total_IC_dict["acc_don"],
+                Total_IC_dict["h_bond_angles"],
+                Total_IC_dict["acc_don_angles"],
+                Total_IC_dict["h_bond_linear_angles"],
+                Total_IC_dict["acc_don_linear_angles"],
+                Total_IC_dict["h_bond_dihedrals"],
+                Total_IC_dict["acc_don_dihedrals"],
+                Total_IC_dict["h_bond_oop"],
+                Total_IC_dict["acc_don_oop"],
+            )
+
+        # get symmetric coordinates
+        if args.penalty1 != 0:
+            symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
+            symmetric_angles = icsel.get_symm_angles(angles, specification)
+            symmetric_dihedrals = icsel.get_symm_angles(dihedrals, specification)
+            symmetric_coordinates = {
+                **symmetric_bonds,
+                **symmetric_angles,
+                **symmetric_dihedrals,
+            }
+        else:
+            symmetric_coordinates = dict()
+
+        if not args.graph_ic:
+            ic_dict = icsel.get_sets(
+                idof,
+                out,
+                atoms,
+                bonds,
+                angles,
+                linear_angles,
+                out_of_plane,
+                dihedrals,
+                specification,
+            )
+        if args.graph_ic:
+            ic_dict = {}
+            with open(args.graph_ic[0]) as set_file:
+                lines = set_file.readlines()
+                for i in range(len(lines)):
+                    ic_dict[i] = {
+                        "bonds": [],
+                        "angles": [],
+                        "linear valence angles": [],
+                        "out of plane angles": [],
+                        "dihedrals": [],
+                    }
+
+                # now we fill up this dictionary
+                for line in lines:
+                    if ":" in line:
+                        key, value = line.split(":", 1)
+                        value = eval(value.strip())
+                        ic_dict[int(key)]["bonds"] = value["bonds"]
+                        ic_dict[int(key)]["angles"] = value["angles"]
+                        ic_dict[int(key)]["linear valence angles"] = value[
+                            "linear valence angles"
+                        ]
+                        ic_dict[int(key)]["out of plane angles"] = value[
+                            "out of plane angles"
+                        ]
+                        ic_dict[int(key)]["dihedrals"] = value["dihedrals"]
+
+            print("Length of Imported IC set", len(ic_dict))
+
+        optimal_set = icset_opt.find_optimal_coordinate_set(
+            ic_dict,
+            args,
+            idof,
+            reciprocal_massmatrix,
+            reciprocal_square_massmatrix,
+            rottra,
+            CartesianF_Matrix,
+            atoms,
+            symmetric_coordinates,
+            L,
+            args.penalty1,
+            args.penalty2,
+        )
+
+    if not args.nomodeco_coords == None:
+
+        ic_dict = {}
+        with open(args.nomodeco_coords[0]) as set_file:
+
+            # TODO we need another for loop
+            ic_set = {}
+            lines = set_file.readlines()
+            for line in lines:
+                line = line.strip()
+
+                # now split with = as a seperator
+                if "=" in line:
+                    key, value = line.split("=", 1)
+
+                    # remove whitespaces in keys
+                    key = key.strip()
+
+                    # remove newlines or other stuff from value
+                    value = value.strip()
+
+                    # remove the trailing commas and the brackets
+                    value = value.rstrip("]\n").lstrip("[").strip()
+
+                    # after this point we have tuples
+                    if value:
+                        # convert string into into actual list
+                        value = eval("[" + value + "]")
+
+                    else:
+                        value = []
+
+                    ic_set[key] = value
+
+        ic_dict[0] = ic_set
+
+        idof = 3 * n_atoms - 6
+
+        # Computation of the diagonal mass matrices with
+        # the reciprocal and square root reciprocal masses
+        diag_reciprocal_square = reciprocal_square_massvector(atoms)
+        reciprocal_square_massmatrix = np.diag(diag_reciprocal_square)
+        diag_reciprocal = reciprocal_massvector(atoms)
+        reciprocal_massmatrix = np.diag(diag_reciprocal)
+
+        # Determination of the Normal Modes and eigenvalues
+        # via the diagonalization of the mass-weighted Cartesian F Matrix
+        Mass_weighted_CartesianF_Matrix = (
+            np.transpose(reciprocal_square_massmatrix)
+            @ CartesianF_Matrix
+            @ reciprocal_square_massmatrix
+        )
+        # Write the mass_weighted F matrix to out
+
+        Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
+        # print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
+
+        # Determination of the normal modes of zero and low Frequencies
+
+        rottra = L[:, 0 : (3 * n_atoms - idof)]
+
+        # TODO: Implement argspenalty for user specified IC sets
         symmetric_coordinates = dict()
 
-    ic_dict = icsel.get_sets(
-        idof,
-        out,
-        atoms,
-        bonds,
-        angles,
-        linear_angles,
-        out_of_plane,
-        dihedrals,
-        specification,
-    )
-
-    optimal_set = icset_opt.find_optimal_coordinate_set(
-        ic_dict,
-        args,
-        idof,
-        reciprocal_massmatrix,
-        reciprocal_square_massmatrix,
-        rottra,
-        CartesianF_Matrix,
-        atoms,
-        symmetric_coordinates,
-        L,
-        args.penalty1,
-        args.penalty2,
-    )
+        optimal_set = icset_opt.find_optimal_coordinate_set(
+            ic_dict,
+            args,
+            idof,
+            reciprocal_massmatrix,
+            reciprocal_square_massmatrix,
+            rottra,
+            CartesianF_Matrix,
+            atoms,
+            symmetric_coordinates,
+            L,
+            args.penalty1,
+            args.penalty2,
+        )
 
     """''
     Final calculation with optimal set
@@ -1128,7 +1277,6 @@ def main():
     red = n_internals - idof
 
     # Augmenting the B-Matrix with rottra, calculating
-    # and printing the final B-Matrix
 
     B = np.concatenate(
         (
@@ -1138,6 +1286,11 @@ def main():
             np.transpose(rottra),
         ),
         axis=0,
+    )
+    # log the argumented b matrix
+
+    logfile.write_b_matrix(
+        out, B, rottra, atoms, bonds, angles, linear_angles, out_of_plane, dihedrals
     )
 
     # Calculating the G-Matrix
@@ -1175,20 +1328,42 @@ def main():
     """
     Logging the final intermolecular_ICs
     """
-    if len(Total_IC_dict["h_bond"]) != 0:
-        logfile.write_logfile_final_intermolecular_ics(
-            out,
-            Total_IC_dict.common_coordinate("h_bond", bonds),
-            Total_IC_dict.common_coordinate("acc_don", bonds),
-            Total_IC_dict.common_coordinate("h_bond_angles", angles),
-            Total_IC_dict.common_coordinate("acc_don_angles", angles),
-            Total_IC_dict.common_coordinate("h_bond_linear_angles", linear_angles),
-            Total_IC_dict.common_coordinate("acc_don_linear_angles", linear_angles),
-            Total_IC_dict.common_coordinate("h_bond_dihedrals", dihedrals),
-            Total_IC_dict.common_coordinate("acc_don_dihedrals", dihedrals),
-            Total_IC_dict.common_coordinate("h_bond_oop", out_of_plane),
-            Total_IC_dict.common_coordinate("acc_don_oop", out_of_plane),
-        )
+
+    # TODO: Maybe find another way to build a switch her
+    if args.nomodeco_coords == None:
+
+        if len(Total_IC_dict["h_bond"]) != 0:
+            logfile.write_logfile_final_intermolecular_ics(
+                out,
+                Total_IC_dict.common_coordinate("h_bond", bonds),
+                Total_IC_dict.common_coordinate("acc_don", bonds),
+                Total_IC_dict.common_coordinate("h_bond_angles", angles),
+                Total_IC_dict.common_coordinate("acc_don_angles", angles),
+                Total_IC_dict.common_coordinate("h_bond_linear_angles", linear_angles),
+                Total_IC_dict.common_coordinate("acc_don_linear_angles", linear_angles),
+                Total_IC_dict.common_coordinate("h_bond_dihedrals", dihedrals),
+                Total_IC_dict.common_coordinate("acc_don_dihedrals", dihedrals),
+                Total_IC_dict.common_coordinate("h_bond_oop", out_of_plane),
+                Total_IC_dict.common_coordinate("acc_don_oop", out_of_plane),
+            )
+    
+
+    # printing the B matrix without rottra
+
+    b_without_rottra = bmatrix.b_matrix(
+        atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof
+    )
+
+    logfile.write_b_matrix_raw(
+        out,
+        b_without_rottra,
+        atoms,
+        bonds,
+        angles,
+        linear_angles,
+        out_of_plane,
+        dihedrals,
+    )
 
     """'' 
     --------------------------- Main-Calculation ------------------------------
@@ -1201,6 +1376,10 @@ def main():
     # Calculation of the mass-weighted normal modes in Internal Coordinates
 
     D = B @ l
+
+    logfile.write_d_matrix(
+        out, D, atoms, rottra, bonds, angles, linear_angles, out_of_plane, dihedrals
+    )
 
     # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices
 
@@ -1313,25 +1492,25 @@ def main():
 
     Results = pd.DataFrame()
     Results["Internal Coordinate"] = all_internals_string
-    Results["Intrinsic Frequencies"] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-    Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
+    Results["Intrinsic Frequencies"] = pd.DataFrame(nu_final).map("{0:.2f}".format)
+    Results = Results.join(pd.DataFrame(ved_matrix).map("{0:.2f}".format))
 
     DiagonalElementsPED = pd.DataFrame()
     DiagonalElementsPED["Internal Coordinate"] = all_internals_string
-    DiagonalElementsPED["Intrinsic Frequencies"] = pd.DataFrame(nu_final).applymap(
+    DiagonalElementsPED["Intrinsic Frequencies"] = pd.DataFrame(nu_final).map(
         "{0:.2f}".format
     )
     DiagonalElementsPED = DiagonalElementsPED.join(
-        pd.DataFrame(Diag_elements).applymap("{0:.2f}".format)
+        pd.DataFrame(Diag_elements).map("{0:.2f}".format)
     )
 
     ContributionTable = pd.DataFrame()
     ContributionTable["Internal Coordinate"] = all_internals_string
-    ContributionTable["Intrinsic Frequencies"] = pd.DataFrame(nu_final).applymap(
+    ContributionTable["Intrinsic Frequencies"] = pd.DataFrame(nu_final).map(
         "{0:.2f}".format
     )
     ContributionTable = ContributionTable.join(
-        pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format)
+        pd.DataFrame(contribution_matrix).map("{0:.2f}".format)
     )
 
     columns = {}
@@ -1368,14 +1547,42 @@ def main():
     logfile.write_logfile_results(
         out, Results, DiagonalElementsPED, ContributionTable, sum_check_VED
     )
+    
+    #####
+    # Plotly Plotting Options
+    #### 
+
+
+
+    if args.plotly == True:
+        # Ask user what to plot 
+        print("----------------- Plotly Interface ----------------- ")
+
+        y = True
+        while y == True:
+            choice = input("Choose plot type: (heatmap/sankey) ")
+            try:
+                if choice=="heatmap":
+                    plotting.plot_contribution_matrix(contribution_matrix, normal_coord_harmonic_frequencies,all_internals_string)
+                    y = False
+                elif choice=="sankey":
+                    plotting.plot_sankey_diagram(ContributionTable,bonds,angles,linear_angles,dihedrals,out_of_plane)
+                    y= False
+                else:
+                    y = True
+            except:
+                print("Please input either heatmap or sankey")
+
 
     # heat map results
     # TODO: clean up
     if args.heatmap:
         columns = {}
         keys = range(3 * n_atoms - ((3 * n_atoms - idof)))
+      
         for i in keys:
             columns[i] = normal_coord_harmonic_frequencies[i]
+
 
         for matrix_type in args.heatmap:
             if matrix_type == "ved":
@@ -1383,7 +1590,7 @@ def main():
                 figsize = (cols, rows)
                 plt.figure(figsize=figsize)
 
-                heatmap_df = pd.DataFrame(ved_matrix).applymap("{0:.2f}".format)
+                heatmap_df = pd.DataFrame(ved_matrix).map("{0:.2f}".format)
                 heatmap_df = heatmap_df.rename(columns=columns)
                 heatmap_df = heatmap_df.astype("float")
                 heatmap_df.index = all_internals_string
@@ -1404,7 +1611,7 @@ def main():
                 figsize = (cols, rows)
                 plt.figure(figsize=figsize)
 
-                heatmap_df = pd.DataFrame(Diag_elements).applymap("{0:.2f}".format)
+                heatmap_df = pd.DataFrame(Diag_elements).map("{0:.2f}".format)
                 heatmap_df = heatmap_df.rename(columns=columns)
                 heatmap_df = heatmap_df.astype("float")
                 heatmap_df.index = all_internals_string
@@ -1425,16 +1632,14 @@ def main():
                 # figsize = (cols, rows)
                 # plt.figure(figsize=figsize)
 
-                heatmap_df = pd.DataFrame(contribution_matrix).applymap(
-                    "{0:.2f}".format
-                )
+                heatmap_df = pd.DataFrame(contribution_matrix).map("{0:.2f}".format)
                 heatmap_df = heatmap_df.rename(columns=columns)
                 heatmap_df = heatmap_df.astype("float")
                 heatmap_df.index = all_internals_string
                 heatmap_df.to_csv("ped_contribution_raw", sep="\t")
 
                 # TODO Maybe Restructure the Heatmap for bigger Molecules
-                sns.set(font_scale=0.35)
+                sns.set(font_scale=0.4)
                 heatmap = sns.heatmap(
                     heatmap_df,
                     cmap="Blues",
@@ -1501,19 +1706,13 @@ def main():
         KED["Internal Coordinate"] = all_internals
         TED["Internal Coordinate"] = all_internals
         PED = PED.join(
-            pd.DataFrame(P[mode][0:n_internals, 0:n_internals]).applymap(
-                "{0:.2f}".format
-            )
+            pd.DataFrame(P[mode][0:n_internals, 0:n_internals]).map("{0:.2f}".format)
         )
         KED = KED.join(
-            pd.DataFrame(T[mode][0:n_internals, 0:n_internals]).applymap(
-                "{0:.2f}".format
-            )
+            pd.DataFrame(T[mode][0:n_internals, 0:n_internals]).map("{0:.2f}".format)
         )
         TED = TED.join(
-            pd.DataFrame(E[mode][0:n_internals, 0:n_internals]).applymap(
-                "{0:.2f}".format
-            )
+            pd.DataFrame(E[mode][0:n_internals, 0:n_internals]).map("{0:.2f}".format)
         )
         PED = PED.rename(columns=columns)
         KED = KED.rename(columns=columns)

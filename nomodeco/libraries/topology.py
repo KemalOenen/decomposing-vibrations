@@ -2961,7 +2961,7 @@ def intermolecular_general_cyclic_linunit_molecule(
         removed_acc_don_bonds = []
         # basically we use the hydrogen as a key to get our element out
         for removed_bond in removed_bonds:
-            if removed_bond[0].strip(string.digits) == "H":
+            if removed_bond[0].strip(string.digits) == "H" or removed_bond[0].strip(string.digits) == "D":
                 removed_acc_don_bonds.append(bond_dict[removed_bond[0]])
             else:
                 removed_acc_don_bonds.append(bond_dict[removed_bond[1]])
@@ -3639,7 +3639,7 @@ def intermolecular_planar_cyclic_linunit_molecule(
     removed_acc_don_bonds = []
     # basically we use the hydrogen as a key to get our element out
     for removed_bond in removed_bonds:
-        if removed_bond[0].strip(string.digits) == "H":
+        if removed_bond[0].strip(string.digits) == "H" or removed_bond[0].strip(string.digits) == "D":
             removed_acc_don_bonds.append(bond_dict[removed_bond[0]])
         else:
             removed_acc_don_bonds.append(bond_dict[removed_bond[1]])
