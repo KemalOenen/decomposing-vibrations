@@ -14,290 +14,275 @@ def Kemalian_metric(matrix, Diag_elements, counter, intfreq_penalty, intfc_penal
     """
     Given a matrix calculates the metric implemented in Nomodeco
     """
-    # axis = 0, when maximum of each column
-    max_values = np.max(matrix, axis=1)
-
-    # set 0 if negative values
-    min_values = np.min(matrix, axis=1)
-    if np.any(min_values < -1):
+    # Exit Check if any value is negative < -1 we return 0 immediately
+    if np.any(matrix < -1):
         return 0
+
+    # Axis=1 when maximum of each row, 
+    max_values = np.max(matrix, axis=1)
 
     # penalty for high fc values
     penalty1 = intfreq_penalty * counter
 
     # penalty for high fc values
-    penalty2 = 0
     max_values_int_fc = np.max(Diag_elements, axis=1)
-    for max_fc_value in max_values_int_fc:
-        if max_fc_value > 1:
-            penalty2 += ((max_fc_value - 1) / 0.1) * intfc_penalty
+    excess_fc = max_values_int_fc - 1
+    penality2 = np.sum(np.where(excess_fc > 0, excess_fc * 10 * intfc_penalty, 0))
 
-    return np.mean(max_values) - penalty1 - penalty2
+    return float(np.mean(max_values) - penalty1 - penality2)
 
 
-def Kemalian_metric_log(matrix, Diag_elements, counter, intfreq_penalty, intfc_penalty, log):
-    # axis = 0, when maximum of each column
-    max_values = np.max(matrix, axis=1)
-
-    # set 0 if negative values
-    min_values = np.min(matrix, axis=1)
-    if np.any(min_values < -1):
+def Kemalian_metric_log(matrix, Diag_elements, counter, intfreq_penalty, intfc_penalty, log) -> float:
+    """
+    Optimized metric implemented in Nomodeco with logging using vectorized operations.
+    """
+    # Early exit check: Global minimum check is faster than row-by-row
+    if np.any(matrix < -1):
         log.info("Negative values in energy distribution matrix found!")
-        return 0
+        return 0.0
 
-    # penalty for high fc values
+    # Find the maximum normal mode contribution (columns) for each IC (rows)
+    max_values = np.max(matrix, axis=1)
+
+    # Penalty 1: Static calculation
     penalty1 = intfreq_penalty * counter
 
-    # penalty for high fc values
-    penalty2 = 0
+    # Penalty 2: Vectorized replacement of the Python loop
     max_values_int_fc = np.max(Diag_elements, axis=1)
-    for max_fc_value in max_values_int_fc:
-        if max_fc_value > 1:
-            penalty2 += ((max_fc_value - 1) / 0.1) * intfc_penalty
+    excess_fc = max_values_int_fc - 1
+    
+    # Vectorized conditional math: ((val - 1) / 0.1) is equivalent to (excess * 10)
+    penalty2 = float(np.sum(np.where(excess_fc > 0, excess_fc * 10 * intfc_penalty, 0.0)))
 
-    log.info("The following diagonalization parameter, penalty for asymmetric instrinsic frequencies"
-             " and penalty for unphysical contributions has been determined: %s, %s, %s ",
-             np.around(np.mean(max_values),2), penalty1, penalty2)
-    return np.mean(max_values) - penalty1 - penalty2
+    # Calculate the base metric value
+    mean_max = float(np.mean(max_values))
+
+    # Log results with clean formatting
+    log.info(
+        "The following diagonalization parameter, penalty for asymmetric intrinsic frequencies "
+        "and penalty for unphysical contributions has been determined: %s, %s, %s",
+        np.around(mean_max, 2), penalty1, penalty2
+    )
+
+    return mean_max - penalty1 - penalty2
 
 
 def are_two_elements_same(tup1, tup2) -> bool:
     """
     For two given tuples checks if they are the same and return True/False
     """
-    return ((tup1[0] == tup2[0] and tup1[1] == tup2[1]) or
-            (tup1[1] == tup2[1] and tup1[2] == tup2[2]) or
-            (tup1[0] == tup2[0] and tup1[2] == tup2[2]))
-
+    return sum(x ==y for x, y in zip(tup1, tup2)) >=2
 
 def get_different_elements(tup1, tup2) -> list:
     """
     Given two tuples calculates the difference in elements and outputs as list
+    
+    Conversion to list then using the symmetric difference operator ^
     """
-    differences = []
-    for element1 in tup1:
-        if element1 not in tup2:
-            differences.append(element1)
-    for element2 in tup2:
-        if element2 not in tup1:
-            differences.append(element2)
-    return differences
-
+    return list(set(tup1) ^ set(tup2))
 
 def avoid_double_oop(test_oop, used_out_of_plane) -> bool:
-    if len(used_out_of_plane) == 0:
-        return True
-    for i in range(0, len(used_out_of_plane)):
-        if set(test_oop).issubset(used_out_of_plane[i]):
-            return False
-    return True
-
+    """  
+    Returns True if test_oop is not a subset of any element in used_out_of_plane
+    """
+    test_set = set(test_oop)
+    return not any(test_set.issubset(set(oop)) for oop in used_out_of_plane)
 
 def remove_enumeration(atom_list) -> list:
-    atom_list = [list(tup) for tup in atom_list]
-    for i in range(0, len(atom_list)):
-        for j in range(0, len(atom_list[i])):
-            atom_list[i][j] = ''.join(c for c in atom_list[i][j] if not c.isnumeric())
-        atom_list[i] = tuple(atom_list[i])
-    return atom_list
-
+    """
+    Removes numeric characters from all string elements inside the tuples
+    """
+    remove_digits = str.maketrans('', '', '0123456789')
+    return [
+        tuple(element.translate(remove_digits) for element in tup)
+        for tup in atom_list
+    ]
+    
 
 def remove_enumeration_tuple(atom_tuple) -> tuple:
-    atom_list = list(atom_tuple)
-    for i in range(0, len(atom_tuple)):
-        atom_list[i] = ''.join(c for c in atom_list[i] if not c.isnumeric())
-    return tuple(atom_list)
+    """ 
+    Removes numeric characters from all string elements inside a single tuple
+    """
+    remove_digits = str.maketrans('', '', '0123456789')
+    return tuple(element.translate(remove_digits) for element in atom_tuple)
+    
 
 
 def check_in_nested_list(check_list, nested_list):
-    check = False
-    for single_list in nested_list:
-        if set(check_list).issubset(set(single_list)):
-            check = True
-    return check
+    """  
+    Returns True if check_list is a subset of any element in nested_list
+    Short Circuit instantly if a match is found
+    """
+    check_set = set(check_list)
+    return any(check_set.issubset(set(single_list)) for single_list in nested_list)
+    
+
+
+def _make_equiv_sets(nested_equivalent_atoms):
+    return [frozenset(s) for s in nested_equivalent_atoms]
+
+
+def _atom_pair_match(a, b, equiv_sets):
+    if a == b:
+        return True
+    pair = frozenset((a, b))
+    return any(pair <= s for s in equiv_sets)
+
+
+def _positions_match(test_ic, key_ic, equiv_sets):
+    return all(_atom_pair_match(t, k, equiv_sets) for t, k in zip(test_ic, key_ic))
 
 
 def all_atoms_can_be_superimposed_bond(test_bond, key_bond, nested_equivalent_atoms):
-    return (test_bond[0] == key_bond[0] or check_in_nested_list([test_bond[0], key_bond[0]],
-                                                                nested_equivalent_atoms)) and (
-            test_bond[1] == key_bond[1] or check_in_nested_list([test_bond[1], key_bond[1]], nested_equivalent_atoms))
+    return _positions_match(test_bond, key_bond, _make_equiv_sets(nested_equivalent_atoms))
 
 
 def all_atoms_can_be_superimposed(test_angle, key_angle, nested_equivalent_atoms):
-    return (test_angle[0] == key_angle[0] or check_in_nested_list([test_angle[0], key_angle[0]],
-                                                                  nested_equivalent_atoms)) and (
-            test_angle[1] == key_angle[1] or check_in_nested_list([test_angle[1], key_angle[1]],
-                                                                  nested_equivalent_atoms)) and (
-            test_angle[2] == key_angle[2] or check_in_nested_list([test_angle[2], key_angle[2]],
-                                                                  nested_equivalent_atoms))
+    return _positions_match(test_angle, key_angle, _make_equiv_sets(nested_equivalent_atoms))
 
 
 def all_atoms_can_be_superimposed_dihedral(test_dihedral, key_dihedral, nested_equivalent_atoms):
-    return (test_dihedral[0] == key_dihedral[0] or check_in_nested_list([test_dihedral[0], key_dihedral[0]],
-                                                                        nested_equivalent_atoms)) and (
-            test_dihedral[1] == key_dihedral[1] or check_in_nested_list([test_dihedral[1], key_dihedral[1]],
-                                                                        nested_equivalent_atoms)) and (
-            test_dihedral[2] == key_dihedral[2] or check_in_nested_list([test_dihedral[2], key_dihedral[2]],
-                                                                        nested_equivalent_atoms)) and (
-            test_dihedral[3] == key_dihedral[3] or check_in_nested_list([test_dihedral[3], key_dihedral[3]],
-                                                                        nested_equivalent_atoms))
+    return _positions_match(test_dihedral, key_dihedral, _make_equiv_sets(nested_equivalent_atoms))
 
 
 def get_symm_bonds(bonds, specification):
-    symmetric_bonds = dict()
-    symmetric_bonds = {key: [] for (key, val) in Counter(bonds).items()}
-
-    for i, key in itertools.product(range(len(bonds)), symmetric_bonds):
-        symmetric_bonds[key].append(bonds[i])
-
-    for key, val in symmetric_bonds.items():
-        i = 0
-        while i < len(val):
-            bond = val[i]
-            if not (all_atoms_can_be_superimposed_bond(bond, key, specification[
-                "equivalent_atoms"]) or all_atoms_can_be_superimposed_bond((bond[1], bond[0]), key,
-                                                                           specification["equivalent_atoms"])):
-                del val[i]
-            elif (all_atoms_can_be_superimposed_bond(bond, key, specification[
-                "equivalent_atoms"]) or all_atoms_can_be_superimposed_bond((bond[1], bond[0]), key,
-                                                                           specification["equivalent_atoms"])):
-                i += 1
-
+    symmetric_bonds = {key: [] for key in Counter(bonds)}
+    equiv_sets = _make_equiv_sets(specification["equivalent_atoms"])
+    for bond in bonds:
+        for key in symmetric_bonds:
+            if _positions_match(bond, key, equiv_sets) or _positions_match((bond[1], bond[0]), key, equiv_sets):
+                symmetric_bonds[key].append(bond)
     return symmetric_bonds
 
 
 def get_bond_subsets(symmetric_bonds) -> list:
-    symmetric_bonds_list = []
+    seen, result = set(), []
+    for val in symmetric_bonds.values():
+        key = frozenset(val)
+        if key not in seen:
+            seen.add(key)
+            result.append(val)
+    return result
 
-    for ind_bond in symmetric_bonds.keys():
-        if symmetric_bonds[ind_bond] not in symmetric_bonds_list:
-            symmetric_bonds_list.append(symmetric_bonds[ind_bond])
 
-    return symmetric_bonds_list
-
-
-def get_symm_angles(angles, specification):
-    symmetric_angles = dict()
-    symmetric_angles = {key: [] for (key, val) in Counter(angles).items()}
-
-    # angles are the same if the atoms can all be superimposed
-    # on each other with symmetry operations
-
-    for i, key in itertools.product(range(len(angles)), symmetric_angles):
-        symmetric_angles[key].append(angles[i])
-
-    for key, val in symmetric_angles.items():
-        i = 0
-        while i < len(val):
-            ang = val[i]
-            if not (all_atoms_can_be_superimposed(ang, key,
-                                                  specification["equivalent_atoms"]) or all_atoms_can_be_superimposed(
-                    (ang[2], ang[1], ang[0]), key, specification["equivalent_atoms"])):
-                del val[i]
-            elif (all_atoms_can_be_superimposed(ang, key,
-                                                specification["equivalent_atoms"]) or all_atoms_can_be_superimposed(
-                    (ang[2], ang[1], ang[0]), key, specification["equivalent_atoms"])):
-                i += 1
+def get_symm_angles(angles, specification, equiv_sets=None):
+    symmetric_angles = {key: [] for key in Counter(angles)}
+    if equiv_sets is None:
+        equiv_sets = _make_equiv_sets(specification["equivalent_atoms"])
+    for ang in angles:
+        for key in symmetric_angles:
+            if _positions_match(ang, key, equiv_sets) or _positions_match((ang[2], ang[1], ang[0]), key, equiv_sets):
+                symmetric_angles[key].append(ang)
     return symmetric_angles
 
 
+def _unique_groups(symmetric_dict):
+    """Deduplicate symmetric dict values in O(n) using frozenset identity."""
+    seen, groups = set(), []
+    for val in symmetric_dict.values():
+        key = frozenset(val)
+        if key not in seen:
+            seen.add(key)
+            groups.append(val)
+    return groups
+
+
+# Maximum number of subsets returned from a single _flat_subsets_of_size call.
+# Without this, no-symmetry molecules hit C(N, k) which can be billions.
+_MAX_SUBSETS = 10_000
+
+
+def _flat_subsets_of_size(groups, target):
+    """Return flattened combinations of groups whose total length == target.
+
+    Key optimisation: tighten the outer loop bounds from the group sizes so
+    that i values that can never sum to target are skipped entirely.
+
+    For no-symmetry molecules every group has size 1, so min_i = max_i = target
+    and the function jumps directly to the one valid i, avoiding the
+    ~sum(C(N,i) for i<target) wasted iterations that caused the hang.
+    """
+    sizes = [len(g) for g in groups]
+    if not sizes:
+        return []
+    min_size = min(sizes)
+    max_size = max(sizes)
+    # Smallest number of groups that could sum to target: ceil(target / max_size)
+    min_i = -(-target // max_size)          # ceiling division without math.ceil
+    # Largest number of groups that could sum to target: floor(target / min_size)
+    max_i = min(target // min_size, len(groups))
+    result = []
+    for i in range(min_i, max_i + 1):
+        for idx in itertools.combinations(range(len(groups)), i):
+            if sum(sizes[j] for j in idx) == target:
+                result.append([item for j in idx for item in groups[j]])
+                if len(result) >= _MAX_SUBSETS:
+                    return result
+    return result
+
+
 def get_angle_subsets(symmetric_angles, num_bonds, num_angles, idof, n_phi) -> list:
-    symmetric_angles_list, angles = [], []
-
-    for ind_angle in symmetric_angles.keys():
-        if symmetric_angles[ind_angle] not in symmetric_angles_list:
-            symmetric_angles_list.append(symmetric_angles[ind_angle])
-
-    for i in range(1, len(symmetric_angles_list) + 1):
-        for angle_subset in itertools.combinations(symmetric_angles_list, i):
-            flat_angle_subset = [item for sublist in angle_subset for item in sublist]
-            if len(list(flat_angle_subset)) == n_phi:
-                angles.append(list(flat_angle_subset))
-
-    # allow the inclusion of red
-    # if you don't want that ==> uncomment
-    if not angles:
-        logging.info(
-            "In order to obtain symmetry in the angles and hence intrinsic frequencies, inclusion of 1 redundant angle coordinate will be attempted")
-        for i in range(1, len(symmetric_angles_list) + 1):
-            for angle_subset in itertools.combinations(symmetric_angles_list, i):
-                flat_angle_subset = [item for sublist in angle_subset for item in sublist]
-                if len(list(flat_angle_subset)) == n_phi + 1:
-                    angles.append(list(flat_angle_subset))
-
-    if not angles:
-        logging.info(
-            "In order to obtain symmetry in the angles and hence intrinsic frequencies, inclusion of 2 redundant angle coordinates will be attempted")
-        for i in range(1, len(symmetric_angles_list) + 1):
-            for angle_subset in itertools.combinations(symmetric_angles_list, i):
-                flat_angle_subset = [item for sublist in angle_subset for item in sublist]
-                if len(list(flat_angle_subset)) == n_phi + 2:
-                    angles.append(list(flat_angle_subset))
-    return angles
+    groups = _unique_groups(symmetric_angles)
+    redundancy_msgs = [
+        None,
+        "In order to obtain symmetry in the angles and hence intrinsic frequencies, inclusion of 1 redundant angle coordinate will be attempted",
+        "In order to obtain symmetry in the angles and hence intrinsic frequencies, inclusion of 2 redundant angle coordinates will be attempted",
+    ]
+    for extra in range(3):
+        if extra:
+            logging.info(redundancy_msgs[extra])
+        angles = _flat_subsets_of_size(groups, n_phi + extra)
+        if angles:
+            return angles
+    return []
 
 
-def get_symm_dihedrals(dihedrals, specification):
-    symmetric_dihedrals = dict()
-    symmetric_dihedrals = {key: [] for (key, val) in Counter(dihedrals).items()}
-
-    # symmetric dihedrals equally defined as in get_symm_angles --> make same function?
-    for i, key in itertools.product(range(len(dihedrals)), symmetric_dihedrals):
-        symmetric_dihedrals[key].append(dihedrals[i])
-
-    for key, val in symmetric_dihedrals.items():
-        i = 0
-        while i < len(val):
-            dihedral = val[i]
-            if not (all_atoms_can_be_superimposed_dihedral(dihedral, key, specification["equivalent_atoms"]) or
-                    all_atoms_can_be_superimposed_dihedral((dihedral[3], dihedral[2], dihedral[1], dihedral[0]), key,
-                                                           specification["equivalent_atoms"])):
-                del val[i]
-            elif (all_atoms_can_be_superimposed_dihedral(dihedral, key, specification["equivalent_atoms"]) or
-                  all_atoms_can_be_superimposed_dihedral((dihedral[3], dihedral[2], dihedral[1], dihedral[0]), key,
-                                                         specification["equivalent_atoms"])):
-                i += 1
+def get_symm_dihedrals(dihedrals, specification, equiv_sets=None):
+    symmetric_dihedrals = {key: [] for key in Counter(dihedrals)}
+    if equiv_sets is None:
+        equiv_sets = _make_equiv_sets(specification["equivalent_atoms"])
+    for dihedral in dihedrals:
+        rev = (dihedral[3], dihedral[2], dihedral[1], dihedral[0])
+        for key in symmetric_dihedrals:
+            if _positions_match(dihedral, key, equiv_sets) or _positions_match(rev, key, equiv_sets):
+                symmetric_dihedrals[key].append(dihedral)
     return symmetric_dihedrals
 
 
 def get_oop_subsets(out_of_plane, n_gamma):
-    oop_subsets = []
-    for subset in itertools.combinations(out_of_plane, n_gamma):
-        if not_same_central_atom(subset):
-            oop_subsets.append(list(subset))
-    return oop_subsets
+    if n_gamma == 0:
+        return [[]]
+    # Group by central atom so we never pick two OOPs with the same centre.
+    # Then choose n_gamma distinct central-atom groups and one OOP from each.
+    by_central = {}
+    for oop in out_of_plane:
+        by_central.setdefault(oop[0], []).append(oop)
+    groups = list(by_central.values())
+    if len(groups) < n_gamma:
+        return []
+    result = []
+    for idx_combo in itertools.combinations(range(len(groups)), n_gamma):
+        for oops in itertools.product(*[groups[i] for i in idx_combo]):
+            result.append(list(oops))
+    return result
 
 
 def get_dihedral_subsets(symmetric_dihedrals, num_bonds, num_angles, idof, n_tau) -> list:
-    symmetric_dihedrals_list, dihedrals = [], []
-    for ind_dihedral in symmetric_dihedrals.keys():
-        if symmetric_dihedrals[ind_dihedral] not in symmetric_dihedrals_list:
-            symmetric_dihedrals_list.append(symmetric_dihedrals[ind_dihedral])
-    for i in range(0, len(symmetric_dihedrals_list) + 1):
-        for dihedral_subset in itertools.combinations(symmetric_dihedrals_list, i):
-            flat_dihedral_subset = [item for sublist in dihedral_subset for item in sublist]
-            if len(list(flat_dihedral_subset)) == n_tau:
-                dihedrals.append(list(flat_dihedral_subset))
-
-    # allow the inclusion of red
-    # if you don't want that ==> uncomment
-    if not dihedrals:
-        logging.info(
-            "In order to obtain symmetry in the dihedrals and hence intrinsic frequencies, inclusion of 1 redundant dihedral coordinate will be attempted")
-        for i in range(0, len(symmetric_dihedrals_list) + 1):
-            for dihedral_subset in itertools.combinations(symmetric_dihedrals_list, i):
-                flat_dihedral_subset = [item for sublist in dihedral_subset for item in sublist]
-                if len(list(flat_dihedral_subset)) == n_tau + 1:
-                    dihedrals.append(list(flat_dihedral_subset))
-
-    return dihedrals
+    groups = _unique_groups(symmetric_dihedrals)
+    for extra, msg in enumerate([
+        None,
+        "In order to obtain symmetry in the dihedrals and hence intrinsic frequencies, inclusion of 1 redundant dihedral coordinate will be attempted",
+    ]):
+        if extra:
+            logging.info(msg)
+        dihedrals = _flat_subsets_of_size(groups, n_tau + extra)
+        if dihedrals:
+            return dihedrals
+    return []
 
 
 def test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix) -> bool:
-    CartesianF_Matrix_check = np.transpose(B) @ InternalF_Matrix @ B
-    if (np.allclose(CartesianF_Matrix_check, CartesianF_Matrix)) == True:
-        return True
-    else:
-        return False
+    return bool(np.allclose(np.transpose(B) @ InternalF_Matrix @ B, CartesianF_Matrix))
 
 
 def check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matrix):
@@ -308,11 +293,7 @@ def check_evalue_f_matrix(reciprocal_square_massmatrix, B, B_inv, InternalF_Matr
 
 
 def number_terminal_bonds(mult_list):
-    number_of_terminal_bonds = 0
-    for atom_and_mult in mult_list:
-        if atom_and_mult[1] == 1:
-            number_of_terminal_bonds += 1
-    return number_of_terminal_bonds
+    return sum(1 for _, mult in mult_list if mult == 1)
 
 
 def not_same_central_atom(list_oop_angles) -> bool:
@@ -517,3 +498,4 @@ def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihed
     print(len(ic_dict), "internal coordinate sets were generated.")
     print("The optimal coordinate set will be determined...")
     return ic_dict
+

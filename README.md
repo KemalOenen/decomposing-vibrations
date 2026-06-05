@@ -43,3 +43,4 @@ With the usage of the enviroment.yml file also pymolpro is installed which runs 
 ## Publication for further information:
 Kemal Oenen, Dennis F. Dinu, Klaus R. Liedl; Determining internal coordinate sets for optimal representation of molecular vibration. J. Chem. Phys. 7 January 2024; 160 (1): 014104. https://doi.org/10.1063/5.0180657
 
+Lukas Meinschad, Kemal Oenen, Dennis F Dinu, Klaus R Liedl; Toward less ambiguous vibrational spectroscopic notations for hydrogen-bonded water and methanol clusters. Journal of Molecular Spectroscopy, 02/2025 https://doi.org/10.1016/j.jms.2025.111997

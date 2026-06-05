@@ -4,7 +4,7 @@ from scipy import constants
 from collections import Counter
 
 
-from nomodeco.libraries.nomodeco_classes import Molecule
+from nomodeco.libraries.molecule_class import Molecule
 
 
 def numerate_strings(string_list):

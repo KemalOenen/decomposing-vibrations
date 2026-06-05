@@ -55,6 +55,16 @@ def get_args():
         "and / or Contribution Table (keyword: contr)",
     )
     parser.add_argument(
+        "--barplot",
+        nargs="+",
+        metavar="matrix",
+        help="return a barplot for the specified matrix, i.e., VED matrix (keyword: ved), "
+        "Diagonal elements of PED matrix (keyword: diag) "
+        "and / or Contribution Table (keyword: contr)",
+    )
+
+
+    parser.add_argument(
         "--csv",
         nargs="+",
         metavar="matrix",
@@ -130,23 +140,23 @@ def get_args():
         help="""Use the plotly python package to invoke further plotting options"""
     )
 
-#    parser.add_argument(
-#        "--sankey_plot",
-#        type=int,
-#        default=0,
-#        choices=range(0,4),
-#        help="""Initialize a sankey plot, displaying the contribution of one particular internal coordinate to a mode
-#                        0 --> off
-#                        1 --> all coordinates (default)
-#                        2 --> just intermolecular coordinates
-#                        3 --> just intramolecular coordinates""",
-#    )
-#    parser.add_argument(
-#        "--min_contr_sankey",
-#        type=float,
-#        default = 20,
-#        help="""Minimum contribution value for a entry to be displayed in the sankey plot"""
-#    )
+    parser.add_argument(
+        "--sankey_plot",
+        type=int,
+        default=0,
+        choices=range(0,4),
+        help="""Initialize a sankey plot, displaying the contribution of one particular internal coordinate to a mode
+                        0 --> off
+                        1 --> all coordinates (default)
+                        2 --> just intermolecular coordinates
+                        3 --> just intramolecular coordinates""",
+    )
+    parser.add_argument(
+        "--min_contr_sankey",
+        type=float,
+        default = 20,
+        help="""Minimum contribution value for a entry to be displayed in the sankey plot"""
+    )
 
 
 

@@ -1,0 +1,62 @@
+ .__   __.   ______   .___  ___.   ______    _______   _______   ______   ______      .______   ____    ____ 
+ |  \ |  |  /  __  \  |   \/   |  /  __  \  |       \ |   ____| /      | /  __  \     |   _  \  \   \  /   / 
+ |   \|  | |  |  |  | |  \  /  | |  |  |  | |  .--.  ||  |__   |  ,----'|  |  |  |    |  |_)  |  \   \/   /  
+ |  . `  | |  |  |  | |  |\/|  | |  |  |  | |  |  |  ||   __|  |  |     |  |  |  |    |   ___/    \_    _/   
+ |  |\   | |  `--'  | |  |  |  | |  `--'  | |  '--'  ||  |____ |  `----.|  `--'  |  __|  |          |  |     
+ |__| \__|  \______/  |__|  |__|  \______/  |_______/ |_______| \______| \______/  (__) _|          |__|     
+                                                                                                             
+
+
+**************************************************************************************************************
+                         Kemal Önen, Lukas Meinschad, Dennis F. Dinu, Klaus R. Liedl                          
+                                      Liedl Lab, University of Innsbruck                                      
+**************************************************************************************************************
+
+Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The detected point group is D*h
+The following equivalent atoms were found: [['O1', 'O2'], ['C']] 
+
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
+bonds: [('C', 'O2'), ('O1', 'C')]
+in-plane angles: []
+linear valence-angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O2')]
+out-of-plane angles: []
+dihedrals: []
+
+4 internal coordinates are at least needed for the decomposition scheme.
+
+--------------------------------------------Mass weighted F-Matrix--------------------------------------------
+
+In this section the mass weighted F matrix is displayed.
+   	O1x   	O1y   	O1z   	Cx    	Cy    	Cz    	O2x   	O2y   	O2z   
+O1x	0.002 	0.000 	0.000 	-0.005	0.000 	0.000 	0.002 	0.000 	0.000 
+O1y	0.000 	0.002 	0.000 	0.000 	-0.005	0.000 	0.000 	0.002 	0.000 
+O1z	0.000 	0.000 	0.064 	0.000 	0.000 	-0.068	0.000 	0.000 	-0.005
+Cx 	-0.005	0.000 	0.000 	0.012 	0.000 	0.000 	-0.005	0.000 	0.000 
+Cy 	0.000 	-0.005	0.000 	0.000 	0.012 	0.000 	0.000 	-0.005	0.000 
+Cz 	0.000 	0.000 	-0.068	0.000 	0.000 	0.158 	0.000 	0.000 	-0.068
+O2x	0.002 	0.000 	0.000 	-0.005	0.000 	0.000 	0.002 	0.000 	0.000 
+O2y	0.000 	0.002 	0.000 	0.000 	-0.005	0.000 	0.000 	0.002 	0.000 
+O2z	0.000 	0.000 	-0.005	0.000 	0.000 	-0.068	0.000 	0.000 	0.064 
+
+---------------------------------------------------L-Matrix---------------------------------------------------
+
+In this section the L matrix is displayed. The L matrix gives the vibrational normal modes in cartesian coordinates
+The eigenvalues of the mass weighted force constant matrix are: [-4.54452546e-09 -4.54452540e-09 -2.27226256e-09  7.57821172e-19
+  1.71832654e-17  1.64890835e-02  1.64890835e-02  6.85760110e-02
+  2.17182740e-01]
+
+   	q1    	q2   	q3    	q4    	q5    	q6    	q7    	q8    	q9    
+O1x	-0.011	0.603	0.000 	-0.047	-0.706	0.000 	0.369 	0.000 	0.000 
+O1y	0.603 	0.011	-0.000	-0.706	0.047 	-0.369	0.000 	0.000 	-0.000
+O1z	-0.000	0.000	-0.603	-0.000	-0.000	-0.000	-0.000	0.707 	-0.369
+Cx 	-0.009	0.522	0.000 	-0.000	0.000 	0.000 	-0.853	-0.000	-0.000
+Cy 	0.522 	0.009	-0.000	0.000 	0.000 	0.853 	-0.000	0.000 	-0.000
+Cz 	-0.000	0.000	-0.522	-0.000	-0.000	0.000 	0.000 	0.000 	0.853 
+O2x	-0.011	0.603	-0.000	0.047 	0.706 	-0.000	0.369 	-0.000	-0.000
+O2y	0.603 	0.011	-0.000	0.706 	-0.047	-0.369	0.000 	0.000 	-0.000
+O2z	-0.000	0.000	-0.603	-0.000	-0.000	-0.000	0.000 	-0.707	-0.369
+

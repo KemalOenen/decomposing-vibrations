@@ -1,5 +1,5 @@
 import numpy as np
-from nomodeco.libraries.nomodeco_classes import Molecule
+from nomodeco.libraries.molecule_class import Molecule
 
 
 def replace_vars(vlist, variables):

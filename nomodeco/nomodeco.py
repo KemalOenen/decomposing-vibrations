@@ -20,7 +20,8 @@ import inquirer
 import pyfiglet
 import pubchempy as pcp  # import pubchemmpy --> pubchempy as a databank
 import plotly.graph_objects as go
-
+import sys
+import random
 
 # for heatmap
 mpl.rcParams["backend"] = "Agg"
@@ -41,12 +42,53 @@ from nomodeco.libraries import icset_opt
 from nomodeco.libraries import arguments
 from nomodeco.libraries import specifications as sp
 from nomodeco.libraries import topology as tp
-from nomodeco.libraries.nomodeco_classes import Molecule, InternalCoordinates
-from nomodeco.libraries import icset_opt_multproc
+from nomodeco.libraries.molecule_class import Molecule
+from nomodeco.libraries.ic_class import InternalCoordinates
 from nomodeco.libraries import gaussian_parser
 from nomodeco.libraries import orca_parser
 from nomodeco.libraries import zmat
-from nomodeco.libraries import plotting
+from nomodeco.libraries import pymolpro as pymolpro_lib
+
+
+def _generate_heatmap(
+    matrix, columns_map, row_labels, filename, cbar_label=None, dpi=500
+    ):
+    """
+    Helper function to process data and make heatmap
+    """
+    df = pd.DataFrame(matrix).map("{0:.2f}".format).astype(float)
+    df = df.rename(columns=columns_map)
+    df.index = row_labels
+
+    rows, cols = df.shape
+
+    cell_size = 0.85 if max(rows, cols) <= 20 else 0.5
+    fig_width = max(10, cols * cell_size)
+    fig_height = max(8, rows * cell_size)
+    
+    max_dim = max(rows, cols)
+    font_scale = max(0.5, 1.6 - (max_dim * 0.015))
+    annot_size = max(9, 45/np.sqrt(max_dim))
+
+    sns.set_theme(font_scale=font_scale)
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    cbar_kws = {"label": cbar_label} if cbar_label else {}
+
+    heatmap = sns.heatmap(
+        df,
+        cmap = "Blues",
+        annot=True,
+        fmt=".2f" if cbar_label is None else ".1f",
+        ax=ax,
+        cbar_kws=cbar_kws,
+        annot_kws={"size": annot_size}
+    )
+
+    # Save and reset
+    fig.savefig(filename, bbox_inches="tight", dpi=dpi)
+    plt.close(fig)
+    sns.reset_defaults()
+
 
 def get_mass_information() -> pd.DataFrame:
     """
@@ -130,37 +172,6 @@ def strip_numbers(string) -> str:
     return "".join([char for char in string if not char.isdigit()])
 
 
-def read_and_enumerate_xyz(file_path):
-    """
-    Directly read and automatically enumerate a .xyz file.
-
-    This function gets triggered if isotopes are used in the g2, s22 databank
-    """
-    with open(file_path, "r") as file:
-        lines = file.readlines()
-
-    atoms = []
-    for i, line in enumerate(lines):
-        if i >= 2:
-            parts = line.split()
-            if len(parts) == 4:
-                atom, x, y, z = parts
-                atoms.append((atom, float(x), float(y), float(z)))
-
-    enumerated_atoms = []
-
-    for i, (atom, x, y, z) in enumerate(atoms, start=1):
-        enumerated_atom = f"{atom}{i}"
-        enumerated_atoms.append((enumerated_atom, x, y, z))
-
-    # now we write the new enumerated atoms in the xyz file
-    with open(file_path, "w") as file:
-        file.write(f"{len(enumerated_atoms)} \n")
-        file.write("File enumerated by Nomodeco.py \n")
-        for atom, x, y, z in enumerated_atoms:
-            file.write(f"{atom} {x: .4f} {y: .4f} {z: .4f}\n")
-
-
 # welcome Message
 def print_welcome_message():
     """
@@ -183,629 +194,7 @@ def main():
     print_welcome_message()
 
     if args.pymolpro:
-
-        from pymolpro import Project  # Import Pymolpro
-        from ase.collections import s22  # Import s22 Databank
-        from ase.collections import g2  # Import g2 Databand
-        import ase.io
-
-        # specify the databank mode:
-        questions = [
-            inquirer.List(
-                "mode",
-                message="Select calculation mode",
-                choices=[
-                    "Use g2 databank",
-                    "Use s22 databank",
-                    "Do pubchem search",
-                    ".xyz file calculation",
-                ],
-            ),
-        ]
-        answers = inquirer.prompt(questions)
-
-        if answers["mode"] == "Use s22 databank":
-            time.sleep(1)
-            while True:
-                use_isotopes = input(
-                    "Do you want to use isotopes in the calculation? [y/n] "
-                )
-                if use_isotopes == "n":
-                    print("Available Molecules:")
-                    avail_molecules = []
-                    for name in s22.names:
-                        avail_molecules.append(
-                            name
-                        )  # this prints all the molecules from the databank
-
-                    def get_user_selection():
-                        questions = [
-                            inquirer.Checkbox(
-                                "selected_files",
-                                message="Select structure for calculation (Spacebar to select)",
-                                choices=avail_molecules,
-                            ),
-                        ]
-                        answers = inquirer.prompt(questions)
-
-                        if not answers["selected_files"]:
-                            os.system("clear")
-                            print("Make at least one selection!")
-                            return (
-                                get_user_selection()
-                            )  # Call function to force selection
-                        return answers["selected_files"]
-
-                    structure_name = get_user_selection()[0]  # first element
-
-                    # TODO here we can for example implement another loop
-
-                    # use ase Databank to get structure
-                    initial = s22[structure_name]
-
-                    # p --> Project for pymolpro
-                    p = Project(structure_name)
-
-                    # with ase we can write a xyz file
-                    ase.io.write(p.filename() + "/initial.xyz", initial)
-                    # Ask user which basis set he wants to use
-
-                    print("Now running molpro calculation ...")
-
-                    # now write the inputfile
-                    p.write_input(
-                        """
-                   orient,mass
-                   geometry=initial.xyz
-                   mass, iso
-                   basis=6-311g(d,p)
-                   {hf 
-                   start, atden}
-                   optg;
-                   {frequencies, symm=auto, print=0, analytical}
-                   put, molden, %s.molden"""
-                        % structure_name
-                    )
-                    p.run(wait=True)
-                    assert p.status == "completed"
-                    print("... molpro calculation finished ...")
-                    # TODO maybe, but just maybe rethink this
-                    os.environ["OUT_FILE_LINK"] = p.output_file_path
-
-                    # now we parse in the inputfile using the molpro parser
-                    with open(p.output_file_path) as inputfile:
-                        atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
-                        n_atoms = len(atoms)
-                    with open(p.output_file_path) as inputfile:
-                        CartesianF_Matrix = (
-                            molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(
-                                inputfile
-                            )
-                        )
-                        outputfile = logfile.create_filename_out(inputfile.name)
-                    break
-                if use_isotopes == "y":
-                    print("Available Molecules:")
-                    avail_molecules = []
-                    for name in s22.names:
-                        avail_molecules.append(
-                            name
-                        )  # this prints all the molecules from the databank
-
-                    def get_user_selection():
-                        questions = [
-                            inquirer.Checkbox(
-                                "selected_files",
-                                message="Select structure for calculation (Spacebar to select)",
-                                choices=avail_molecules,
-                            ),
-                        ]
-                        answers = inquirer.prompt(questions)
-
-                        if not answers["selected_files"]:
-                            os.system("clear")
-                            print("Make at least one selection!")
-                            return (
-                                get_user_selection()
-                            )  # Call function to force selection
-                        return answers["selected_files"]
-
-                    structure_name = get_user_selection()[0]  # first element
-
-                    # use ase Databank to get structure
-                    initial = s22[structure_name]
-
-                    # rename molpro file for easier acces
-                    project_name = input("Specify Output Name: ")
-
-                    # p --> Project for pymolpro
-                    p = Project(project_name)
-
-                    # with ase we can write a xyz file
-                    ase.io.write(p.filename() + "/initial.xyz", initial)
-
-                    # Enumerate all the atoms in the xyz file in order to then swap the isotopes
-                    read_and_enumerate_xyz(
-                        os.path.abspath(p.filename() + "/initial.xyz")
-                    )
-
-                    with open(os.path.abspath(p.filename() + "/initial.xyz")) as f:
-                        lines = [line.rstrip() for line in f]
-                        elements = []
-                        for i, line in enumerate(lines):
-                            if i > 1:
-                                elements.append(line.strip()[:2])  # :2
-                    print(
-                        "The following atoms where found in the inputfile\n", elements
-                    )
-
-                    change_to_isotope = input("Specify Atoms (use , as a seperator) ")
-
-                    # now make a for loop to write the lines for molpro input
-                    change_to_isotope_lst = change_to_isotope.split(",")
-
-                    # mass string for molpro
-                    isotope_string = (
-                        "; ".join(
-                            [f"mass, {value}=2.014" for value in change_to_isotope_lst]
-                        )
-                        + ";"
-                    )
-
-                    print("Now running molpro calculation ...")
-
-                    p.write_input(
-                        """
-                    orient,mass
-                    geometry=initial.xyz
-                    %s ! Set custom mass for hydrogen
-                    basis=6-311g(d,p)
-                    {hf 
-                    start, atden}
-                    optg;
-                    {frequencies, symm=auto, print=0, analytical}
-                    put, molden, %s.molden"""
-                        % (isotope_string, project_name)
-                    )
-                    p.run(wait=True)
-                    assert p.status == "completed"
-                    print("... molpro calculation finished ...")
-                    os.environ["OUT_FILE_LINK"] = p.output_file_path
-
-                    # now we parse in the inputfile using the molpro parser
-                    with open(p.output_file_path) as inputfile:
-                        atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
-                        n_atoms = len(atoms)
-                        for atom in atoms:
-                            if atom.symbol in change_to_isotope_lst:
-                                atom.swap_deuterium()
-
-                    with open(p.output_file_path) as inputfile:
-                        CartesianF_Matrix = (
-                            molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(
-                                inputfile
-                            )
-                        )
-                        outputfile = logfile.create_filename_out(inputfile.name)
-                    break
-
-        elif answers["mode"] == "Use g2 databank":
-            time.sleep(1)
-            while True:
-                use_isotopes = input(
-                    "Do you want to use isotopes in the calculation? [y/n] "
-                )
-                if use_isotopes == "n":
-                    print("Available Molecules:")
-                    avail_molecules = []
-                    for name in g2.names:
-                        avail_molecules.append(
-                            name
-                        )  # this prints all the molecules from the databank
-
-                    def get_user_selection():
-                        questions = [
-                            inquirer.Checkbox(
-                                "selected_files",
-                                message="Select structure for calculation (Spacebar to select)",
-                                choices=avail_molecules,
-                            ),
-                        ]
-                        answers = inquirer.prompt(questions)
-
-                        if not answers["selected_files"]:
-                            os.system("clear")
-                            print("Make at least one selection!")
-                            return (
-                                get_user_selection()
-                            )  # Call function to force selection
-                        return answers["selected_files"]
-
-                    structure_name = get_user_selection()[0]  # first element
-
-                    # use ase Databank to get structure
-                    initial = g2[structure_name]
-
-                    # p --> Project for pymolpro
-                    p = Project(structure_name)
-
-                    # with ase we can write a xyz file
-                    ase.io.write(p.filename() + "/initial.xyz", initial)
-
-                    print("Now running molpro calculation ...")
-
-                    # now write the inputfile
-                    p.write_input(
-                        """
-                    orient,mass
-                    geometry=initial.xyz
-                    mass, iso
-                    basis=6-311g(d,p)
-                    {hf 
-                    start, atden}
-                    optg;
-                    {frequencies, symm=auto, print=0, analytical}
-                    put, molden, %s.molden"""
-                        % structure_name
-                    )
-                    p.run(wait=True)
-                    assert p.status == "completed"
-                    print("... molpro calculation finished ...")
-
-                    os.environ["OUT_FILE_LINK"] = p.output_file_path
-
-                    # now we parse in the inputfile using the molpro parser
-                    with open(p.output_file_path) as inputfile:
-                        atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
-                        n_atoms = len(atoms)
-                    with open(p.output_file_path) as inputfile:
-                        CartesianF_Matrix = (
-                            molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(
-                                inputfile
-                            )
-                        )
-                        outputfile = logfile.create_filename_out(inputfile.name)
-                    break
-                if use_isotopes == "y":
-                    print("Available Molecules:")
-                    avail_molecules = []
-                    for name in g2.names:
-                        avail_molecules.append(
-                            name
-                        )  # this prints all the molecules from the databank
-
-                    def get_user_selection():
-                        questions = [
-                            inquirer.Checkbox(
-                                "selected_files",
-                                message="Select structure for calculation (Spacebar to select)",
-                                choices=avail_molecules,
-                            ),
-                        ]
-                        answers = inquirer.prompt(questions)
-
-                        if not answers["selected_files"]:
-                            os.system("clear")
-                            print("Make at least one selection!")
-                            return (
-                                get_user_selection()
-                            )  # Call function to force selection
-                        return answers["selected_files"]
-
-                    structure_name = get_user_selection()[0]  # first element
-
-                    # use ase Databank to get structure
-                    initial = g2[structure_name]
-
-                    # rename molpro file for easier acces
-                    project_name = input("Specify Output Name: ")
-
-                    # p --> Project for pymolpro
-                    p = Project(project_name)
-
-                    # with ase we can write a xyz file
-                    ase.io.write(p.filename() + "/initial.xyz", initial)
-
-                    # Enumerate all the atoms in the xyz file in order to then swap the isotopes
-                    read_and_enumerate_xyz(
-                        os.path.abspath(p.filename() + "/initial.xyz")
-                    )
-
-                    with open(os.path.abspath(p.filename() + "/initial.xyz")) as f:
-                        lines = [line.rstrip() for line in f]
-                        elements = []
-                        for i, line in enumerate(lines):
-                            if i > 1:
-                                elements.append(line.strip()[:2])  # :2
-                    print(
-                        "The following atoms where found in the inputfile\n", elements
-                    )
-
-                    change_to_isotope = input("Specify Atoms (use , as a seperator) ")
-
-                    # now make a for loop to write the lines for molpro input
-                    change_to_isotope_lst = change_to_isotope.split(",")
-
-                    # mass string for molpro
-                    isotope_string = (
-                        "; ".join(
-                            [f"mass, {value}=2.014" for value in change_to_isotope_lst]
-                        )
-                        + ";"
-                    )
-
-                    print("Now running molpro calculation ...")
-
-                    p.write_input(
-                        """
-                    orient,mass
-                    geometry=initial.xyz
-                    %s ! Set custom mass for hydrogen
-                    basis=6-311g(d,p)
-                    {hf 
-                    start, atden}
-                    optg;
-                    {frequencies, symm=auto, print=0, analytical}
-                    put, molden, %s.molden"""
-                        % (isotope_string, project_name)
-                    )
-                    p.run(wait=True)
-                    assert p.status == "completed"
-                    print("... molpro calculation finished ...")
-                    os.environ["OUT_FILE_LINK"] = p.output_file_path
-
-                    # now we parse in the inputfile using the molpro parser
-                    with open(p.output_file_path) as inputfile:
-                        atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
-                        n_atoms = len(atoms)
-                        for atom in atoms:
-                            if atom.symbol in change_to_isotope_lst:
-                                atom.swap_deuterium()
-
-                    with open(p.output_file_path) as inputfile:
-                        CartesianF_Matrix = (
-                            molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(
-                                inputfile
-                            )
-                        )
-                        outputfile = logfile.create_filename_out(inputfile.name)
-                    break
-
-        elif answers["mode"] == ".xyz file calculation":
-            while True:
-                use_isotopes = input(
-                    "Do you want to use isotopes in the calculation? [y/n] "
-                )
-                if use_isotopes == "n":
-                    structure_name = input("Specify Output Name: ")
-                    print("Following Listing files in the current directory ...")
-                    time.sleep(1)
-                    files = [
-                        f
-                        for f in os.listdir(".")
-                        if os.path.isfile(f) and f.endswith(".xyz")
-                    ]
-
-                    # let the user choose the .xyz file
-                    questions = [
-                        inquirer.List(
-                            ".xyz",
-                            message="Following .xyz files are available in the working directory",
-                            choices=files,
-                        ),
-                    ]
-
-                    xyz_file = inquirer.prompt(questions)[".xyz"]
-                    xyz_abs_path = os.path.abspath(xyz_file)
-                    # now we can do the molpro calculation
-
-                    print("Now running molpro calculation ...")
-
-                    p = Project(structure_name)
-                    p.write_input(
-                        """
-                  orient,mass
-                  geometry=%s
-                  mass, iso
-                  basis=6-311g(d,p)
-                  {hf 
-                  start, atden}
-                  optg;
-                  {frequencies, symm=auto, print=0, analytical}
-                  put, molden, %s.molden"""
-                        % (xyz_abs_path, structure_name)
-                    )
-                    p.run(wait=True)
-                    # TODO maybe, but just maybe rethink this
-                    os.environ["OUT_FILE_LINK"] = p.output_file_path
-
-                    # now we parse in the inputfile using the molpro parser
-                    with open(p.output_file_path) as inputfile:
-                        atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
-                        n_atoms = len(atoms)
-                    with open(p.output_file_path) as inputfile:
-                        CartesianF_Matrix = (
-                            molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(
-                                inputfile
-                            )
-                        )
-                        outputfile = logfile.create_filename_out(inputfile.name)
-                    break
-
-                # choice to use isotopes
-                elif use_isotopes == "y":
-                    structure_name = input("Specify Output Name: ")
-                    print("Following Listing files in the current directory ...")
-                    time.sleep(1)
-                    files = [
-                        f
-                        for f in os.listdir(".")
-                        if os.path.isfile(f) and f.endswith(".xyz")
-                    ]
-                    questions = [
-                        inquirer.List(
-                            ".xyz",
-                            message="Following .xyz files are available in the working directory",
-                            choices=files,
-                        ),
-                    ]
-
-                    xyz_file = inquirer.prompt(questions)[".xyz"]
-
-                    with open(xyz_file) as f:
-                        lines = [line.rstrip() for line in f]
-                        elements = []
-                        for i, line in enumerate(lines):
-                            if i > 1:
-                                elements.append(line.strip()[:2])  # :2
-                    print(
-                        "The following atoms where found in the inputfile\n", elements
-                    )
-
-                    change_to_isotope = input("Specify Atoms (use , as a seperator) ")
-
-                    # now make a for loop to write the lines for molpro input
-                    change_to_isotope_lst = change_to_isotope.split(",")
-
-                    # mass string for molpro
-                    isotope_string = (
-                        "; ".join(
-                            [f"mass, {value}=2.014" for value in change_to_isotope_lst]
-                        )
-                        + ";"
-                    )
-
-                    xyz_abs_path = os.path.abspath(xyz_file)
-                    # now we can do the molpro calculation
-
-                    print("Now running molpro calculation ...")
-
-                    p = Project(structure_name)
-                    p.write_input(
-                        """
-                 orient,mass
-                 geometry=%s
-                 %s ! Set custom mass for hydrogen
-                 basis=6-311g(d,p)
-                 {hf 
-                 start, atden}
-                 optg;
-                 {frequencies, symm=auto, print=0, analytical}
-                 put, molden, %s.molden"""
-                        % (xyz_abs_path, isotope_string, structure_name)
-                    )
-                    p.run(wait=True)
-                    os.environ["OUT_FILE_LINK"] = p.output_file_path
-
-                    # now we parse in the inputfile using the molpro parser
-                    with open(p.output_file_path) as inputfile:
-                        atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
-                        # swap the atom to the Isotope
-                        for atom in atoms:
-                            if atom.symbol in change_to_isotope_lst:
-                                atom.swap_deuterium()
-                        n_atoms = len(atoms)
-                    with open(p.output_file_path) as inputfile:
-                        CartesianF_Matrix = (
-                            molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(
-                                inputfile
-                            )
-                        )
-                        outputfile = logfile.create_filename_out(inputfile.name)
-                    break
-        elif answers["mode"] == "Do pubchem search":
-            # now we do a compound search on the pubchem database#
-            os.system("clear")
-
-            user_search_input = input("Specify molecule to search for: ")
-
-            compounds = pcp.get_compounds(user_search_input, "name")
-
-            # now we display the found molecules
-            molecule_form_iso_smiles = []
-            for i, compound in enumerate(compounds):
-
-                molecule_dict = {}
-                iso_smiles = compound.isomeric_smiles
-                comp_cid = compound.cid
-                molecule_dict.setdefault("Idx", i)
-                molecule_dict.setdefault("Chemical_Formula", compound.molecular_formula)
-                molecule_dict.setdefault("Isomeric_Smiles", compound.isomeric_smiles)
-                molecule_dict.setdefault("Pubchem_CID", compound.cid)
-                molecule_form_iso_smiles.append(molecule_dict)
-
-            def get_user_selection():
-                questions = [
-                    inquirer.Checkbox(
-                        "selected_files",
-                        message="Following Compounds where found (Spacebar to select):",
-                        choices=molecule_form_iso_smiles,
-                    ),
-                ]
-                answers = inquirer.prompt(questions)
-
-                if not answers["selected_files"]:
-                    os.system("clear")
-                    print("Make at least one selection!")
-                    return get_user_selection()  # Call function to force selection
-                return answers["selected_files"]
-
-            compound_cid = get_user_selection()[0][
-                "Pubchem_CID"
-            ]  # retriece CID --> we need 3D records
-
-            molecule_selected = pcp.Compound.from_cid(compound_cid, record_type="3d")
-
-            # Retrieve Atom and Coordinates
-            dict_atom_coords = molecule_selected.to_dict(properties=["atoms"])
-            # write .xyz file
-            xyz_filename = user_search_input + ".xyz"
-
-            with open(xyz_filename, "w") as f:
-                f.write(f"{len(dict_atom_coords['atoms'])}\n")
-                f.write("XYZ File generated by Nomodeco.py\n")
-                i = 0
-                for atom in dict_atom_coords["atoms"]:
-                    element = atom["element"]
-                    num_label = atom["aid"]
-                    x = atom["x"]
-                    y = atom["y"]
-                    z = atom["z"]
-                    f.write(f"{element}{num_label} {x:.4f} {y:.4f} {z:.4f}\n")
-                    i += 1
-
-            xyz_abs_path = os.path.abspath(xyz_filename)
-            # now we can do the molpro calculation
-
-            print("Now running molpro calculation ...")
-
-            p = Project(user_search_input)
-            p.write_input(
-                """
-            orient,mass
-            geometry=%s
-            mass, iso
-            basis=6-311g(d,p)
-            {hf 
-            start, atden}
-            optg;
-            {frequencies, symm=auto, print=0, analytical}
-            put, molden, %s.molden"""
-                % (xyz_abs_path, user_search_input)
-            )
-            p.run(wait=True)
-            # TODO maybe, but just maybe rethink this
-            os.environ["OUT_FILE_LINK"] = p.output_file_path
-
-            # now we parse in the inputfile using the molpro parser
-            with open(p.output_file_path) as inputfile:
-                atoms = molpro_parser.parse_xyz_from_inputfile(inputfile)
-                n_atoms = len(atoms)
-            with open(p.output_file_path) as inputfile:
-                CartesianF_Matrix = (
-                    molpro_parser.parse_Cartesian_F_Matrix_from_inputfile(inputfile)
-                )
-                outputfile = logfile.create_filename_out(inputfile.name)
+        atoms, n_atoms, CartesianF_Matrix, outputfile = pymolpro_lib.run_pymolpro_workflow()
 
     # Gaussian Parser
     if not args.gv == None:
@@ -890,7 +279,6 @@ def main():
     molecule_pg = PointGroupAnalyzer(molecule)
     point_group_sch = molecule_pg.sch_symbol
 
-    print(atoms.interatomic_distance_matrix())
 
     if args.nomodeco_coords == None:
 
@@ -899,9 +287,8 @@ def main():
         """
         # Intermolecular Bonds:
         # Use Degree of Covalance https://doi.org/10.1002/qua.21049 for hydrogen bond detection
-
+        print("Generating intra- and intermolecular internal coordinates...")
         degofc_table = atoms.degree_of_covalance()
-
         cov_bonds = atoms.covalent_bonds(degofc_table)
 
         # Pass covalent bonds to specification
@@ -979,6 +366,9 @@ def main():
             dihedrals = (
                 Total_IC_dict["cov_dihedrals"] + Total_IC_dict["acc_don_dihedrals"]
             )
+        print("Initial Generation of Internal Coordinates finished.")
+        print(f"RAM usage of Total IC dictionary: {sys.getsizeof(Total_IC_dict) / 1000} MB")
+
 
         """
        Generating the Specification for the primary calculation
@@ -1041,6 +431,11 @@ def main():
             out, specification["planar"], specification["planar submolecule(s)"]
         )
         logfile.write_logfile_symmetry_treatment(out, specification, point_group_sch)
+
+        # print the specification to out
+        print("Specification of the system for the primary calculation:")
+        for key, value in specification.items():
+            print(f"{key}: {value}")
 
         """
        Passing Section for Topology.py
@@ -1123,6 +518,7 @@ def main():
             symmetric_coordinates = dict()
 
         if not args.graph_ic:
+            print("Generating IC sets based on Topology and Specification...")
             ic_dict = icsel.get_sets(
                 idof,
                 out,
@@ -1134,6 +530,7 @@ def main():
                 dihedrals,
                 specification,
             )
+            print("Initial Generation of IC sets finished.")
         if args.graph_ic:
             ic_dict = {}
             with open(args.graph_ic[0]) as set_file:
@@ -1164,7 +561,20 @@ def main():
 
             print("Length of Imported IC set", len(ic_dict))
 
-        optimal_set = icset_opt.find_optimal_coordinate_set(
+        _MAX_IC_SETS = 100_000
+        _total_sets = len(ic_dict)
+        if _total_sets > _MAX_IC_SETS:
+            print(
+                f"Large search space detected: {_total_sets:,} sets. "
+                f"Randomly sampling {_MAX_IC_SETS:,} for evaluation..."
+            )
+            _sampled_keys = random.sample(range(_total_sets), _MAX_IC_SETS)
+            ic_dict = {i: ic_dict[k] for i, k in enumerate(_sampled_keys)}
+
+        print(f"{len(ic_dict):,} IC sets will be evaluated. "
+              f"Memory footprint: {sys.getsizeof(ic_dict) / 1e6:.1f} MB")
+
+        result = icset_opt.find_optimal_coordinate_set(
             ic_dict,
             args,
             idof,
@@ -1178,6 +588,7 @@ def main():
             args.penalty1,
             args.penalty2,
         )
+        optimal_set = result["set"]
 
     if not args.nomodeco_coords == None:
 
@@ -1547,110 +958,287 @@ def main():
     logfile.write_logfile_results(
         out, Results, DiagonalElementsPED, ContributionTable, sum_check_VED
     )
-    
-    #####
-    # Plotly Plotting Options
-    #### 
+
+    if args.barplot:
+        from matplotlib.patches import Patch
+        from collections import defaultdict
+
+        # Pre-build frozensets for O(1) IC-type lookup
+        _bond_set  = {tuple(b)  for b  in bonds}
+        _angle_set = {tuple(a)  for a  in angles}
+        _oop_set   = {tuple(o)  for o  in out_of_plane}
+        _dih_set   = {tuple(d)  for d  in dihedrals}
+        _la_set    = {tuple(la) for la in linear_angles}
+
+        def _ic_type(coord_str):
+            tup = tuple(c.strip() for c in coord_str.strip("()").split(","))
+            rev = tup[::-1]
+            if tup in _bond_set  or rev in _bond_set:  return "Bond"
+            if tup in _angle_set or rev in _angle_set: return "Angle"
+            if tup in _oop_set:                         return "Out-of-plane"
+            if tup in _dih_set   or rev in _dih_set:   return "Dihedral"
+            if tup in _la_set    or rev in _la_set:    return "Linear angle"
+            return "Other"
+
+        _type_cmaps = {
+            "Bond":          plt.cm.Blues,
+            "Angle":         plt.cm.Oranges,
+            "Out-of-plane":  plt.cm.Greens,
+            "Dihedral":      plt.cm.RdPu,
+            "Linear angle":  plt.cm.Purples,
+            "Other":         plt.cm.Greys,
+        }
+        _type_order = list(_type_cmaps.keys())
+
+        threshold = 20.0
+        value_cols = [c for c in ContributionTable.columns
+                      if c not in ["Internal Coordinate", "Intrinsic Frequencies"]]
+
+        long_df = ContributionTable.melt(
+            id_vars=["Internal Coordinate", "Intrinsic Frequencies"],
+            value_vars=value_cols,
+            var_name="Frequency",
+            value_name="Contribution",
+        )
+        long_df["Contribution"] = pd.to_numeric(long_df["Contribution"], errors="coerce").fillna(0.0)
+        long_df = long_df[long_df["Contribution"] > threshold]
+        long_df["IC Type"] = long_df["Internal Coordinate"].apply(_ic_type)
+
+        # Individual-IC pivot — each IC gets its own segment
+        pivot_df = long_df.pivot_table(
+            index="Frequency",
+            columns="Internal Coordinate",
+            values="Contribution",
+            aggfunc="sum",
+            fill_value=0.0,
+        )
+        pivot_df = pivot_df[pivot_df.sum(axis=1) > 0]
+
+        # Sort x-axis from lowest to highest harmonic frequency
+        pivot_df.index = pd.to_numeric(pivot_df.index, errors="coerce")
+        pivot_df = pivot_df.sort_index()
+        pivot_df.index = pivot_df.index.map(lambda f: f"{f:.1f}")
+
+        # Sort columns: group by type, then alphabetically within type
+        ic_type_map = {ic: _ic_type(ic) for ic in pivot_df.columns}
+        pivot_df = pivot_df[sorted(pivot_df.columns,
+            key=lambda ic: (_type_order.index(ic_type_map.get(ic, "Other")), ic))]
+
+        # Group ICs by type (in column order so indices stay consistent)
+        type_ics: dict = defaultdict(list)
+        for ic in pivot_df.columns:
+            type_ics[ic_type_map[ic]].append(ic)
+
+        # Assign color + hatch per IC
+        ic_colors:       dict = {}
+        type_repr_color: dict = {}
+        for ic_type, ics in type_ics.items():
+            shades = _type_cmaps[ic_type](np.linspace(0.15, 0.95, max(len(ics), 1)))
+            type_repr_color[ic_type] = shades[len(shades) // 2]
+            for ic, color in zip(ics, shades):
+                ic_colors[ic] = color
+
+        bar_colors = [ic_colors[ic] for ic in pivot_df.columns]
+
+        fig, ax = plt.subplots(figsize=(max(14, len(pivot_df) * 0.55), 6))
+        pivot_df.plot(
+            kind="bar", stacked=True, ax=ax,
+            color=bar_colors, width=0.8, legend=False,
+        )
+
+        ax.set_xlabel("Harmonic Frequency (cm⁻¹)", fontsize=11)
+        ax.set_ylabel("Contribution (%)", fontsize=11)
+        ax.set_title("Contributions of Internal Coordinates to Vibrational Modes", fontsize=12)
+        ax.tick_params(axis="x", rotation=45, labelsize=8)
+
+        # Legend: type header + each IC with its exact color AND hatch
+        legend_handles = []
+        for ic_type in _type_order:
+            ics = type_ics.get(ic_type, [])
+            if not ics:
+                continue
+            legend_handles.append(
+                Patch(facecolor=type_repr_color[ic_type], edgecolor="black",
+                      linewidth=1.2, label=f"── {ic_type} ──")
+            )
+            for ic in ics:
+                legend_handles.append(
+                    Patch(facecolor=ic_colors[ic], edgecolor="none", label=f"   {ic}")
+                )
+
+        ax.legend(
+            handles=legend_handles,
+            loc="upper left", fontsize=7,
+            bbox_to_anchor=(1.01, 1),
+            borderaxespad=0, framealpha=0.9,
+            title="Internal Coordinates", title_fontsize=8,
+        )
+        plt.tight_layout()
+        plt.savefig("contribution_barplot.png", dpi=300, bbox_inches="tight")
+        plt.close()
 
 
+    if args.sankey_plot != 0:
+        # If given always create a sankey diagramm 
 
-    if args.plotly == True:
-        # Ask user what to plot 
-        print("----------------- Plotly Interface ----------------- ")
+        # ano
+        # Helper Function to determine the type of coordinate
+        def get_coordinate_type(coord):
+            # Check if its already a tuple
+            if not isinstance(coord, tuple):
+                coord_tuple = tuple(coord.strip("()").split(","))
+                coord_tuple = tuple(element.strip() for element in coord_tuple)
+            else:
+                coord_tuple = coord
+            
+            if coord_tuple in bonds:
+                return "bond"
+            elif coord_tuple in angles:
+                return "angle"
+            elif coord_tuple in linear_angles:
+                return "linear_angle"
+            elif coord_tuple in dihedrals:
+                return "dihedral"
+            elif coord_tuple in out_of_plane:
+                return "out-of-plane"
 
-        y = True
-        while y == True:
-            choice = input("Choose plot type: (heatmap/sankey) ")
-            try:
-                if choice=="heatmap":
-                    plotting.plot_contribution_matrix(contribution_matrix, normal_coord_harmonic_frequencies,all_internals_string)
-                    y = False
-                elif choice=="sankey":
-                    plotting.plot_sankey_diagram(ContributionTable,bonds,angles,linear_angles,dihedrals,out_of_plane)
-                    y= False
-                else:
-                    y = True
-            except:
-                print("Please input either heatmap or sankey")
+        # Define a color mapping for the different coordinate types
+        color_map = {
+            "bond": "rgba(255, 99, 132, 0.8)",  # Red
+            "angle": "rgba(54, 162, 235, 0.8)",  # Blue
+            "dihedral": "rgba(75, 192, 192, 0.8)",  # Green
+            "out-of-plane": "rgba(255, 206, 86, 0.8)",  # Yellow
+            "linear_angle": "rgba(153, 102, 255, 0.8)",  # Purple
+        }
 
+        # Prepare Sankey Diagramm
+        labels = []
+        source = []
+        target = []
+        value = []
+        link_labels = [] # Store Contribution Percentages
+        link_colors = [] # Store colors for links
+        coord_types = []
+
+        # Create Nodes first all internal coordinates
+        int_coords_label = ContributionTable["Internal Coordinate"].tolist()
+        modes = [str(col) for col in ContributionTable.columns if col not in ["Internal Coordinate", "Intrinsic Frequencies"]] 
+
+
+        
+
+
+        
+        labels = int_coords_label + modes
+
+
+        # Create Mappings from names to indices
+        coord_indices = {coord: idx for idx, coord in enumerate(int_coords_label)}
+        mode_indices = {mode: idx + len(int_coords_label) for idx, mode in enumerate(modes)}
+
+        # Build up the links
+        for _, row in ContributionTable.iterrows():
+            coord = row["Internal Coordinate"] 
+            # Here we decide which type of coordinates we take
+            if args.sankey_plot == 2:
+                coord_check = tuple(coord.strip("()").split(","))
+                coord_check = tuple(element.strip() for element in coord_check)
+                print(coord_check)
+                # Skipt the loop element if the coordinate is not contained in the h_bond, h_bond_angles ..
+                if not (
+                    coord_check in Total_IC_dict["h_bond"]
+                    or coord_check in Total_IC_dict["h_bond_angles"]
+                    or coord_check in Total_IC_dict["h_bond_linear_angles"]
+                    or coord_check in Total_IC_dict["h_bond_dihedrals"]
+                    or coord_check in Total_IC_dict["h_bond_oop"]
+                    or coord_check in Total_IC_dict["acc_don"]
+                    or coord_check in Total_IC_dict["acc_don_angles"]
+                    or coord_check in Total_IC_dict["acc_don_linear_angles"]
+                    or coord_check in Total_IC_dict["acc_don_dihedrals"]
+                    or coord_check in Total_IC_dict["acc_don_oop"]
+                ):
+                    continue
+                
+                
+
+            
+            coord_type = get_coordinate_type(coord)
+
+            coord_types.append(coord_type)
+            for mode in modes:
+                contribution = float(row[mode])
+                if contribution > args.min_contr_sankey: 
+                    source.append(coord_indices[coord])
+                    target.append(mode_indices[mode])
+                    value.append(contribution)
+                    link_labels.append(f"{coord} to {mode}: {contribution:.1f}%")
+                    link_colors.append(color_map[coord_type])  # Assign color based on type
+        
+        legend_trace = []
+        for coord_type, color in color_map.items():
+            legend_trace.append(
+                go.Scatter(
+                    x=[None], y=[None],
+                    mode = 'markers',
+                    marker=dict(color=color, size=10),
+                    name=coord_type,
+                    hoverinfo="none"
+                )
+            ) 
+
+        # Create Sankey Diagram
+        fig = go.Figure(
+            data=[go.Sankey(
+                node=dict(
+                    pad=15,
+                    thickness=20,
+                    line=dict(color="black", width=0.5),
+                    label=labels,
+                    color="blue"
+                ),
+                link=dict(
+                    source=source,
+                    target=target,
+                    value=value,
+                    label=link_labels,
+                    color=link_colors,
+                    hovertemplate="%{label}<extra></extra>",
+                )
+            ),
+            *legend_trace
+            ]
+        )
+
+        fig.update_layout(
+            title_text = "Sankey Diagram of Internal Coordinates and Frequencies",
+            font_size = 10,
+            height = 800,
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+        )
+        )
+        fig.show()
 
     # heat map results
     # TODO: clean up
     if args.heatmap:
-        columns = {}
-        keys = range(3 * n_atoms - ((3 * n_atoms - idof)))
-      
-        for i in keys:
-            columns[i] = normal_coord_harmonic_frequencies[i]
-
+        # 3*n_atoms - (3*n_atoms - idof) == idof
+        colums = {
+            i: normal_coord_harmonic_frequencies[i] for i in range(int(idof))
+        }
 
         for matrix_type in args.heatmap:
             if matrix_type == "ved":
-                rows, cols = ved_matrix.shape
-                figsize = (cols, rows)
-                plt.figure(figsize=figsize)
-
-                heatmap_df = pd.DataFrame(ved_matrix).map("{0:.2f}".format)
-                heatmap_df = heatmap_df.rename(columns=columns)
-                heatmap_df = heatmap_df.astype("float")
-                heatmap_df.index = all_internals_string
-
-                heatmap = sns.heatmap(
-                    heatmap_df,
-                    cmap="Blues",
-                    annot=True,
-                    square=True,
-                    annot_kws={"size": 35 / np.sqrt(len(ved_matrix))},
-                )
-                heatmap.figure.savefig(
-                    "heatmap_ved_matrix.png", bbox_inches="tight", dpi=500
-                )
-                plt.close(heatmap.figure)
+                _generate_heatmap(ved_matrix, columns_map=columns, row_labels=all_internals_string, filename="heatmap_ved_matrix.png")
             if matrix_type == "diag":
-                rows, cols = Diag_elements.shape
-                figsize = (cols, rows)
-                plt.figure(figsize=figsize)
-
-                heatmap_df = pd.DataFrame(Diag_elements).map("{0:.2f}".format)
-                heatmap_df = heatmap_df.rename(columns=columns)
-                heatmap_df = heatmap_df.astype("float")
-                heatmap_df.index = all_internals_string
-
-                heatmap = sns.heatmap(
-                    heatmap_df,
-                    cmap="Blues",
-                    annot=True,
-                    square=True,
-                    annot_kws={"size": 35 / np.sqrt(len(Diag_elements))},
-                )
-                heatmap.figure.savefig(
-                    "heatmap_ped_diagonal.png", bbox_inches="tight", dpi=500
-                )
-                plt.close(heatmap.figure)
+                _generate_heatmap(Diag_elements, columns_map=columns, row_labels=all_internals_string, filename="heatmap_diag_ped.png", cbar_label="Diagonal PED")
             if matrix_type == "contr":
-                # rows, cols = contribution_matrix.shape
-                # figsize = (cols, rows)
-                # plt.figure(figsize=figsize)
-
-                heatmap_df = pd.DataFrame(contribution_matrix).map("{0:.2f}".format)
-                heatmap_df = heatmap_df.rename(columns=columns)
-                heatmap_df = heatmap_df.astype("float")
-                heatmap_df.index = all_internals_string
-                heatmap_df.to_csv("ped_contribution_raw", sep="\t")
-
-                # TODO Maybe Restructure the Heatmap for bigger Molecules
-                sns.set(font_scale=0.4)
-                heatmap = sns.heatmap(
-                    heatmap_df,
-                    cmap="Blues",
-                    annot=True,
-                    fmt=".1f",
-                    cbar_kws={"label": "Contribution %"},
-                )  # , annot_kws={"size": 20 / np.sqrt(len(contribution_matrix))})
-                heatmap.figure.savefig(
-                    "heatmap_contribution_table.png", bbox_inches="tight", dpi=600
-                )
-                plt.close(heatmap.figure)
+                _generate_heatmap(contribution_matrix, columns_map=columns, row_labels=all_internals_string, filename="heatmap_contribution_matrix.png", cbar_label="Contribution (%)")
 
     if args.csv:
         for matrix_type in args.csv:

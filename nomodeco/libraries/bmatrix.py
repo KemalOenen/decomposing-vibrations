@@ -1,966 +1,347 @@
-from cmath import isclose
 import numpy as np
-import scipy
-
-# General Chemistry-related functions
+from numba import njit
 
 
-# Note: Vector points from Atom A to Atom B
-def bond_length(Coordinates_AtomA, Coordinates_AtomB) -> float:  # ANG
-    """
-    Calculates the bond_length using the euclidean norm between two coordinates
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom a
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom b
-    """
-    return np.linalg.norm((Coordinates_AtomB - Coordinates_AtomA))
+@njit(cache=True)
+def bond_length(a, b):
+    d = b - a
+    return np.sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])
 
 
-def normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB):
-     return (Coordinates_AtomB - Coordinates_AtomA) / (
-         bond_length(Coordinates_AtomA, Coordinates_AtomB)
-     )
+@njit(cache=True)
+def normalized_bond_vector(a, b):
+    d = b - a
+    return d / np.sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])
 
 
-# Angle for the Atoms in the conformation A-B-C.
-# Note: B is the central Atom, the bond vectors start from Atom B therefore
-def bond_angle(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:  # RAD
-     """
-     Calculate the bond angle between atom A, B and C using their coordinates
-
-     Attributes:
-         Coordinates_AtomA:
-             a tuple of the x,y,z coords of atom A
-         Coordinates_AtomB:
-             a tuple of the x,y,z coords of atom B
-         Coordinates_AtomC:
-             a tuple of the coordinates of atom C
-     """
-     cosine_angle = np.clip(
-         (
-             np.inner(
-                 (Coordinates_AtomA - Coordinates_AtomB),
-                    (Coordinates_AtomC - Coordinates_AtomB),
-                )
-            )
-            / (
-                bond_length(Coordinates_AtomA, Coordinates_AtomB)
-                * (bond_length(Coordinates_AtomC, Coordinates_AtomB))
-            ),
-            -1.0,
-            1.0,
-        )
-     return np.arccos(cosine_angle)
+@njit(cache=True)
+def bond_angle(a, b, c):
+    ba = a - b
+    bc = c - b
+    cos_a = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    if cos_a > 1.0:
+        cos_a = 1.0
+    elif cos_a < -1.0:
+        cos_a = -1.0
+    return np.arccos(cos_a)
 
 
-    # Dihedral for the Atoms in the conformation
-def torsion_angle(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculate the torsion angle between atoms A,B,C and D. The dihedral angle is the angle between the two intersecting planes where a set of three atoms define a half-plane
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomD:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomD:
-            a tuple of the x,y,z coords of atom D 
-    """
-    cosine_torsion_angle = np.clip(
-        (
-            np.cos(bond_angle(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC))
-            * np.cos(
-                bond_angle(Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD)
-            )
-            - np.dot(
-                normalized_bond_vector(Coordinates_AtomB, Coordinates_AtomA),
-                normalized_bond_vector(Coordinates_AtomD, Coordinates_AtomC),
-            )
-        )
-        / (
-            np.sin(bond_angle(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC))
-            * np.sin(
-                bond_angle(Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD)
-            )
-        ),
-        -1.0,
-        1.0,
-    )
-    return np.arccos(cosine_torsion_angle)
+@njit(cache=True)
+def torsion_angle(a, b, c, d):
+    a1 = bond_angle(a, b, c)
+    a2 = bond_angle(b, c, d)
+    eba = normalized_bond_vector(b, a)
+    edc = normalized_bond_vector(d, c)
+    cos_t = (np.cos(a1) * np.cos(a2) - np.dot(eba, edc)) / (np.sin(a1) * np.sin(a2))
+    if cos_t > 1.0:
+        cos_t = 1.0
+    elif cos_t < -1.0:
+        cos_t = -1.0
+    return np.arccos(cos_t)
 
 
-# Functions for the construction of the B-Matrix
-"""'' 
-Note: In this order, the vector points from Atom A to Atom B - that means: if you want to calculate the B-Matrix Entry for
-Atom A then you need the NEGATIVE value of this function-call, for Atom B you just take the normal value
-""" ""
+@njit(cache=True)
+def B_Matrix_Entry_BondLength(a, b):
+    return normalized_bond_vector(a, b)
 
 
-def B_Matrix_Entry_BondLength(Coordinates_AtomA, Coordinates_AtomB) -> float:
-    """
-    Calculates the B-Matrix entries for the bond stretching coordinate
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-    """
-    return normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
+@njit(cache=True)
+def B_Matrix_Entry_Angle_AtomB(A, B, C):
+    ang = bond_angle(C, A, B)
+    eAB = normalized_bond_vector(A, B)
+    eAC = normalized_bond_vector(A, C)
+    return (eAB * np.cos(ang) - eAC) / (bond_length(A, B) * np.sin(ang))
 
 
-"""'' 
-Note: For the Entries of the bending-part of the B-Matrix entry, we define the following geometry:
-C-A-B or with vectors: C <- A -> BCoordinates_AtomC
-
-Important the entries are different for the Central Atom and the Side Atoms
-
-""" ""
-
-
-def B_Matrix_Entry_Angle_AtomB(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:
-    """
-    Calculates the B-Matrix entries for the in-plane angle bending coordinate (ABC) for Atom B
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-    """
-    return (
-        normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-        * np.cos(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB))
-        - normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
-    ) / (
-        bond_length(Coordinates_AtomA, Coordinates_AtomB)
-        * np.sin(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB))
-    )
+@njit(cache=True)
+def B_Matrix_Entry_Angle_AtomC(A, B, C):
+    ang = bond_angle(C, A, B)
+    eAB = normalized_bond_vector(A, B)
+    eAC = normalized_bond_vector(A, C)
+    return (eAC * np.cos(ang) - eAB) / (bond_length(A, C) * np.sin(ang))
 
 
-def B_Matrix_Entry_Angle_AtomC(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:
-    """
-    Calculates the B-Matrix entries for the in-plane angle bending coordinate (ABC) for Atom C
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-
-    """
-    return (
-        normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
-        * np.cos(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB))
-        - normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    ) / (
-        bond_length(Coordinates_AtomA, Coordinates_AtomC)
-        * np.sin(bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomB))
-    )
+@njit(cache=True)
+def B_Matrix_Entry_Angle_AtomA(A, B, C):
+    return -(B_Matrix_Entry_Angle_AtomB(A, B, C) + B_Matrix_Entry_Angle_AtomC(A, B, C))
 
 
-def B_Matrix_Entry_Angle_AtomA(Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC) -> float:
-    """
-    Calculates the B-Matrix entries for the in-plane angle bending coordinate (ABC) for Atom A
+# 90 degree rotation around Y axis: [x,y,z] -> [z,y,-x]  (replaces scipy Rotation.from_rotvec)
+@njit(cache=True)
+def _rotate_y90(v):
+    result = np.empty(3)
+    result[0] = v[2]
+    result[1] = v[1]
+    result[2] = -v[0]
+    return result
 
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
 
-    """
+@njit(cache=True)
+def B_Matrix_Entry_LinearAngleFirstPlane_AtomB(A, B, C):
+    u = _rotate_y90(normalized_bond_vector(A, B))
+    return -(u / bond_length(A, B))
+
+
+@njit(cache=True)
+def B_Matrix_Entry_LinearAngleFirstPlane_AtomC(A, B, C):
+    u = _rotate_y90(normalized_bond_vector(A, B))
+    return -(u / bond_length(A, C))
+
+
+@njit(cache=True)
+def B_Matrix_Entry_LinearAngleFirstPlane_AtomA(A, B, C):
     return -(
-        B_Matrix_Entry_Angle_AtomB(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-        )
-        + B_Matrix_Entry_Angle_AtomC(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-        )
+        B_Matrix_Entry_LinearAngleFirstPlane_AtomB(A, B, C)
+        + B_Matrix_Entry_LinearAngleFirstPlane_AtomC(A, B, C)
     )
 
 
-"""'' 
-Note: For the Entries of the linear bending-part of the B-Matrix entries, we define the following geometry:
-C-A-B or with vectors: C <- A -> B
-
-There are two different linear angle bendings, i.e., one on the xz plane and one on the yz plane
-The unitary vector u is obtained via rotating the vector A -> B counterclockweise by 90 degrees 
-to the right and then dividing through
-""" ""
-# TODO: current linear valence angles only useful for degenerate linear valence angle modes - make more generic
+@njit(cache=True)
+def B_Matrix_Entry_LinearAngleSecondPlane_AtomB(A, B, C):
+    eAB = normalized_bond_vector(A, B)
+    up = np.cross(eAB, _rotate_y90(eAB))
+    return -(up / bond_length(A, B))
 
 
-def B_Matrix_Entry_LinearAngleFirstPlane_AtomB(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-) -> float:
-    """
-    Calculates the B-matrix entries for the linear angle bending coordinate for atom B
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-    """
-    rotation_radians = np.pi / 2
-    rotation_axis = np.array([0, 1, 0])
-    rotation_vector = rotation_radians * rotation_axis
-    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
-    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    u = rotation.apply(u)
-    return -(u / bond_length(Coordinates_AtomA, Coordinates_AtomB))
+@njit(cache=True)
+def B_Matrix_Entry_LinearAngleSecondPlane_AtomC(A, B, C):
+    eAB = normalized_bond_vector(A, B)
+    up = np.cross(eAB, _rotate_y90(eAB))
+    return -(up / bond_length(A, C))
 
 
-def B_Matrix_Entry_LinearAngleFirstPlane_AtomC(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-) -> float:
-    """
-    Calculates the B-matrix entries for the linear angle bending coordinate for atom C
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-    """
-    rotation_radians = np.pi / 2
-    rotation_axis = np.array([0, 1, 0])
-    rotation_vector = rotation_radians * rotation_axis
-    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
-    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    u = rotation.apply(u)
-    return -(u / bond_length(Coordinates_AtomA, Coordinates_AtomC))
-
-
-def B_Matrix_Entry_LinearAngleFirstPlane_AtomA(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-)-> float:
-    """
-    Calculates the B-matrix entries for the linear angle bending coordinate for atom A
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-    """
+@njit(cache=True)
+def B_Matrix_Entry_LinearAngleSecondPlane_AtomA(A, B, C):
     return -(
-        B_Matrix_Entry_LinearAngleFirstPlane_AtomB(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-        )
-        + B_Matrix_Entry_LinearAngleFirstPlane_AtomC(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-        )
+        B_Matrix_Entry_LinearAngleSecondPlane_AtomB(A, B, C)
+        + B_Matrix_Entry_LinearAngleSecondPlane_AtomC(A, B, C)
     )
 
 
-def B_Matrix_Entry_LinearAngleSecondPlane_AtomB(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-)-> float:
-    """
-    Calculates the B-matrix entries for the perpendicular plane in the linear case (atom B)
-    
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-    """
-    rotation_radians = np.pi / 2
-    rotation_axis = np.array([0, 1, 0])
-    rotation_vector = rotation_radians * rotation_axis
-    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
-    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    u = rotation.apply(u)
-    up = np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB), u)
-    return -(up / bond_length(Coordinates_AtomA, Coordinates_AtomB))
+@njit(cache=True)
+def B_Matrix_Entry_Torsion_AtomB(A, B, C, D):
+    eAC = normalized_bond_vector(A, C)
+    eBA = normalized_bond_vector(B, A)
+    sin_BAC = np.sin(bond_angle(B, A, C))
+    return np.cross(eAC, eBA) / (bond_length(A, B) * sin_BAC * sin_BAC)
 
 
-def B_Matrix_Entry_LinearAngleSecondPlane_AtomC(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-) -> float:
-    """
-    Calculates the B-matrix entries for the perpendicular plane in the linear case (atom C)
-    
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-    """
-    rotation_radians = np.pi / 2
-    rotation_axis = np.array([0, 1, 0])
-    rotation_vector = rotation_radians * rotation_axis
-    rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
-    u = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    u = rotation.apply(u)
-    up = np.cross(normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB), u)
-    return -(up / bond_length(Coordinates_AtomA, Coordinates_AtomC))
+@njit(cache=True)
+def B_Matrix_Entry_Torsion_AtomD(A, B, C, D):
+    eCA = normalized_bond_vector(C, A)
+    eDC = normalized_bond_vector(D, C)
+    sin_ACD = np.sin(bond_angle(A, C, D))
+    return np.cross(eCA, eDC) / (bond_length(C, D) * sin_ACD * sin_ACD)
 
 
-def B_Matrix_Entry_LinearAngleSecondPlane_AtomA(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-) -> float:
-    """
-    Calculates the B-matrix entries for the perpendicular plane in the linear case (atom C)
-    
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coordinates of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coordinates of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coordinates of atom C
-    """
-    return -(
-        B_Matrix_Entry_LinearAngleSecondPlane_AtomB(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-        )
-        + B_Matrix_Entry_LinearAngleSecondPlane_AtomC(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC
-        )
-    )
-
-
-"""'' 
-Note: For the Entries of the torsion-part of the B-Matrix entry, we define the following geometry:
-B-A-C-D or with vectors: B <- A <-> C -> D
-
-Important the entries are different for the 'Central Atoms' (A,C) and the 'Side Atoms' (B,D)
-
-""" ""
-
-# note that the Entries of the normalized bond vectors are simply the cross product here of the following kind:
-# Vector from A to C (!) x Vector from B -> A(!)
-
-
-def B_Matrix_Entry_Torsion_AtomB(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculates the B-matrix elements for the torsion coordinate (AtomB)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D        
-    """
-    return np.cross(
-        normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC),
-        normalized_bond_vector(Coordinates_AtomB, Coordinates_AtomA),
-    ) / (
-        bond_length(Coordinates_AtomA, Coordinates_AtomB)
-        * np.square(
-            np.sin(bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC))
-        )
-    )
-
-
-#  Vector from C to A (!) x Vector from D -> C(!)
-def B_Matrix_Entry_Torsion_AtomD(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculates the B-matrix elements for the torsion coordinate (AtomD)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D        
-    """
-    return np.cross(
-        normalized_bond_vector(Coordinates_AtomC, Coordinates_AtomA),
-        normalized_bond_vector(Coordinates_AtomD, Coordinates_AtomC),
-    ) / (
-        bond_length(Coordinates_AtomC, Coordinates_AtomD)
-        * np.square(
-            np.sin(bond_angle(Coordinates_AtomA, Coordinates_AtomC, Coordinates_AtomD))
-        )
-    )
-
-
-def B_Matrix_Entry_Torsion_AtomA(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculates the B-matrix elements for the torsion coordinate (AtomA)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D        
-    """
+@njit(cache=True)
+def B_Matrix_Entry_Torsion_AtomA(A, B, C, D):
+    # Deduplicated: bond_angle(B,A,C) x3 -> once, bond_angle(A,C,D) x2 -> once,
+    # cross(eBA,eAC) x2 -> once, cross(eDC,eCA) x2 -> once
+    eBA = normalized_bond_vector(B, A)
+    eAC = normalized_bond_vector(A, C)
+    eDC = normalized_bond_vector(D, C)
+    eCA = normalized_bond_vector(C, A)
+    r_AB = bond_length(A, B)
+    r_AC = bond_length(A, C)
+    a_BAC = bond_angle(B, A, C)
+    a_ACD = bond_angle(A, C, D)
+    sin2_BAC = np.sin(a_BAC) ** 2
+    cos_BAC = np.cos(a_BAC)
+    sin2_ACD = np.sin(a_ACD) ** 2
+    cos_ACD = np.cos(a_ACD)
+    cross_BAC = np.cross(eBA, eAC)
+    cross_DCA = np.cross(eDC, eCA)
     return (
-        (
-            np.cross(
-                normalized_bond_vector(Coordinates_AtomB, Coordinates_AtomA),
-                normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC),
-            )
-            / (
-                bond_length(Coordinates_AtomA, Coordinates_AtomB)
-                * np.square(
-                    np.sin(
-                        bond_angle(
-                            Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC
-                        )
-                    )
-                )
-            )
-        )
-        - (
-            (
-                np.cos(
-                    bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC)
-                )
-                / (
-                    bond_length(Coordinates_AtomA, Coordinates_AtomC)
-                    * np.square(
-                        np.sin(
-                            bond_angle(
-                                Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC
-                            )
-                        )
-                    )
-                )
-            )
-            * np.cross(
-                normalized_bond_vector(Coordinates_AtomB, Coordinates_AtomA),
-                normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC),
-            )
-        )
-        - (
-            (
-                np.cos(
-                    bond_angle(Coordinates_AtomA, Coordinates_AtomC, Coordinates_AtomD)
-                )
-                / (
-                    bond_length(Coordinates_AtomA, Coordinates_AtomC)
-                    * np.square(
-                        np.sin(
-                            bond_angle(
-                                Coordinates_AtomA, Coordinates_AtomC, Coordinates_AtomD
-                            )
-                        )
-                    )
-                )
-            )
-            * np.cross(
-                normalized_bond_vector(Coordinates_AtomD, Coordinates_AtomC),
-                normalized_bond_vector(Coordinates_AtomC, Coordinates_AtomA),
-            )
-        )
+        cross_BAC / (r_AB * sin2_BAC)
+        - (cos_BAC / (r_AC * sin2_BAC)) * cross_BAC
+        - (cos_ACD / (r_AC * sin2_ACD)) * cross_DCA
     )
 
 
-def B_Matrix_Entry_Torsion_AtomC(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculates the B-matrix elements for the torsion coordinate (AtomB)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D        
-    """
+@njit(cache=True)
+def B_Matrix_Entry_Torsion_AtomC(A, B, C, D):
+    # Deduplicated: bond_angle(A,C,D) x3 -> once, bond_angle(B,A,C) x2 -> once,
+    # cross(eDC,eCA) x2 -> once, cross(eBA,eAC) x2 -> once
+    eDC = normalized_bond_vector(D, C)
+    eCA = normalized_bond_vector(C, A)
+    eBA = normalized_bond_vector(B, A)
+    eAC = normalized_bond_vector(A, C)
+    r_CD = bond_length(C, D)
+    r_CA = bond_length(C, A)
+    a_ACD = bond_angle(A, C, D)
+    a_BAC = bond_angle(B, A, C)
+    sin2_ACD = np.sin(a_ACD) ** 2
+    cos_ACD = np.cos(a_ACD)
+    sin2_BAC = np.sin(a_BAC) ** 2
+    cos_BAC = np.cos(a_BAC)
+    cross_DCA = np.cross(eDC, eCA)
+    cross_BAC = np.cross(eBA, eAC)
     return (
-        (
-            np.cross(
-                normalized_bond_vector(Coordinates_AtomD, Coordinates_AtomC),
-                normalized_bond_vector(Coordinates_AtomC, Coordinates_AtomA),
-            )
-            / (
-                bond_length(Coordinates_AtomC, Coordinates_AtomD)
-                * np.square(
-                    np.sin(
-                        bond_angle(
-                            Coordinates_AtomA, Coordinates_AtomC, Coordinates_AtomD
-                        )
-                    )
-                )
-            )
-        )
-        - (
-            (
-                np.cos(
-                    bond_angle(Coordinates_AtomA, Coordinates_AtomC, Coordinates_AtomD)
-                )
-                / (
-                    bond_length(Coordinates_AtomC, Coordinates_AtomA)
-                    * np.square(
-                        np.sin(
-                            bond_angle(
-                                Coordinates_AtomA, Coordinates_AtomC, Coordinates_AtomD
-                            )
-                        )
-                    )
-                )
-            )
-            * np.cross(
-                normalized_bond_vector(Coordinates_AtomD, Coordinates_AtomC),
-                normalized_bond_vector(Coordinates_AtomC, Coordinates_AtomA),
-            )
-        )
-        - (
-            (
-                np.cos(
-                    bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC)
-                )
-                / (
-                    bond_length(Coordinates_AtomC, Coordinates_AtomA)
-                    * np.square(
-                        np.sin(
-                            bond_angle(
-                                Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC
-                            )
-                        )
-                    )
-                )
-            )
-            * np.cross(
-                normalized_bond_vector(Coordinates_AtomB, Coordinates_AtomA),
-                normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC),
-            )
-        )
+        cross_DCA / (r_CD * sin2_ACD)
+        - (cos_ACD / (r_CA * sin2_ACD)) * cross_DCA
+        - (cos_BAC / (r_CA * sin2_BAC)) * cross_BAC
     )
 
 
-"""'' 
-Note: For the Entries of the out-of-plane-part of the B-Matrix entry, we define the following geometry:
-The atoms B, C, D are all bound to atom A and not to each other. 
-
-The angle phi is defined as the angle of C-A-D. 
-
-The angle theta is defined as the angle of A-B with the plane defined by A-C 
-and A-D. 
-It can be calculated by calculating the angle between:
-    A-B and the normal vector (i.e. the cross product) of A-C and A-D
-
-When handing in the out-of-plane: then do it in the Form (A,B,C,D)
-The expressions are simplified for planar wages (i.e. theta = 0 degrees)
-""" ""
-
-
-def B_Matrix_Entry_OutOfPlane_AtomB(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculates the B-matrix elements for the out-of-plane coordinate (atom B)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D            
-    """
-    r_ab = bond_length(Coordinates_AtomA, Coordinates_AtomB)
-    e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
-    e_ad = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD)
-    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
-    sin_theta = np.inner(e_ab, (np.cross(e_ac, e_ad) / np.sin(phi_b)))
-    theta = np.arcsin(np.clip(sin_theta, 0, 1.0))
-
-    if np.isclose(theta, 0):
-        return np.cross(e_ac, e_ad) / (np.sin(phi_b) * r_ab)
-    else:
-        return (1 / r_ab) * (
-            (np.cross(e_ac, e_ad) / (np.cos(theta) * np.sin(phi_b)))
-            - np.tan(theta) * e_ab
-        )
+@njit(cache=True)
+def B_Matrix_Entry_OutOfPlane_AtomB(A, B, C, D):
+    r_ab = bond_length(A, B)
+    e_ab = normalized_bond_vector(A, B)
+    e_ac = normalized_bond_vector(A, C)
+    e_ad = normalized_bond_vector(A, D)
+    phi_b = bond_angle(C, A, D)
+    sin_phi_b = np.sin(phi_b)
+    cross_cd = np.cross(e_ac, e_ad)
+    sin_theta = np.dot(e_ab, cross_cd / sin_phi_b)
+    if sin_theta > 1.0:
+        sin_theta = 1.0
+    elif sin_theta < 0.0:
+        sin_theta = 0.0
+    theta = np.arcsin(sin_theta)
+    if theta < 1e-10:
+        return cross_cd / (sin_phi_b * r_ab)
+    return (1.0 / r_ab) * (cross_cd / (np.cos(theta) * sin_phi_b) - np.tan(theta) * e_ab)
 
 
-def B_Matrix_Entry_OutOfPlane_AtomC(    
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """ 
-    Calculates the B-matrix elements for the out-of-plane coordinate (atom C)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D            
-    """
-    r_ac = bond_length(Coordinates_AtomA, Coordinates_AtomC)
-    e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
-    e_ad = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD)
-    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
-    phi_c = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomD)
-    phi_d = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC)
-    sin_theta = np.inner(e_ab, (np.cross(e_ac, e_ad) / np.sin(phi_b)))
-    theta = np.arcsin(np.clip(sin_theta, 0, 1.0))
-
-    if np.isclose(theta, 0):
-        return (1 / r_ac) * (
-            (np.cross(e_ac, e_ad) / (np.sin(phi_b))) * (np.sin(phi_c) / np.sin(phi_b))
-        )
-    else:
-        return (1 / r_ac) * (
-            (np.cross(e_ac, e_ad) / (np.sin(phi_b)))
-            * (
-                (np.cos(phi_b) * np.cos(phi_c) - np.cos(phi_d))
-                / (np.cos(theta) * np.square(np.sin(phi_b)))
-            )
-        )
+@njit(cache=True)
+def B_Matrix_Entry_OutOfPlane_AtomC(A, B, C, D):
+    r_ac = bond_length(A, C)
+    e_ab = normalized_bond_vector(A, B)
+    e_ac = normalized_bond_vector(A, C)
+    e_ad = normalized_bond_vector(A, D)
+    phi_b = bond_angle(C, A, D)
+    phi_c = bond_angle(B, A, D)
+    phi_d = bond_angle(B, A, C)
+    sin_phi_b = np.sin(phi_b)
+    cross_cd = np.cross(e_ac, e_ad)
+    sin_theta = np.dot(e_ab, cross_cd / sin_phi_b)
+    if sin_theta > 1.0:
+        sin_theta = 1.0
+    elif sin_theta < 0.0:
+        sin_theta = 0.0
+    theta = np.arcsin(sin_theta)
+    if theta < 1e-10:
+        return (1.0 / r_ac) * (cross_cd / sin_phi_b) * (np.sin(phi_c) / sin_phi_b)
+    return (1.0 / r_ac) * (cross_cd / sin_phi_b) * (
+        (np.cos(phi_b) * np.cos(phi_c) - np.cos(phi_d)) / (np.cos(theta) * sin_phi_b ** 2)
+    )
 
 
-def B_Matrix_Entry_OutOfPlane_AtomD(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculates the B-matrix elements for the out-of-plane coordinate (atom D)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D            
-
-    """
-    r_ad = bond_length(Coordinates_AtomA, Coordinates_AtomD)
-    e_ab = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomB)
-    e_ac = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomC)
-    e_ad = normalized_bond_vector(Coordinates_AtomA, Coordinates_AtomD)
-    phi_b = bond_angle(Coordinates_AtomC, Coordinates_AtomA, Coordinates_AtomD)
-    phi_c = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomD)
-    phi_d = bond_angle(Coordinates_AtomB, Coordinates_AtomA, Coordinates_AtomC)
-    sin_theta = np.inner(e_ab, (np.cross(e_ac, e_ad) / np.sin(phi_b)))
-    theta = np.arcsin(np.clip(sin_theta, 0, 1.0))
-
-    if np.isclose(theta, 0):
-        return (1 / r_ad) * (
-            (np.cross(e_ac, e_ad) / (np.sin(phi_b))) * (np.sin(phi_d) / np.sin(phi_b))
-        )
-    else:
-        return (1 / r_ad) * (
-            (np.cross(e_ac, e_ad) / (np.sin(phi_b)))
-            * (
-                (np.cos(phi_b) * np.cos(phi_d) - np.cos(phi_c))
-                / (np.cos(theta) * np.square(np.sin(phi_b)))
-            )
-        )
+@njit(cache=True)
+def B_Matrix_Entry_OutOfPlane_AtomD(A, B, C, D):
+    r_ad = bond_length(A, D)
+    e_ab = normalized_bond_vector(A, B)
+    e_ac = normalized_bond_vector(A, C)
+    e_ad = normalized_bond_vector(A, D)
+    phi_b = bond_angle(C, A, D)
+    phi_c = bond_angle(B, A, D)
+    phi_d = bond_angle(B, A, C)
+    sin_phi_b = np.sin(phi_b)
+    cross_cd = np.cross(e_ac, e_ad)
+    sin_theta = np.dot(e_ab, cross_cd / sin_phi_b)
+    if sin_theta > 1.0:
+        sin_theta = 1.0
+    elif sin_theta < 0.0:
+        sin_theta = 0.0
+    theta = np.arcsin(sin_theta)
+    if theta < 1e-10:
+        return (1.0 / r_ad) * (cross_cd / sin_phi_b) * (np.sin(phi_d) / sin_phi_b)
+    return (1.0 / r_ad) * (cross_cd / sin_phi_b) * (
+        (np.cos(phi_b) * np.cos(phi_d) - np.cos(phi_c)) / (np.cos(theta) * sin_phi_b ** 2)
+    )
 
 
-def B_Matrix_Entry_OutOfPlane_AtomA(
-    Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-) -> float:
-    """
-    Calculates the B-matrix elements for the out-of-plane coordinate (atom A)
-
-    Attributes:
-        Coordinates_AtomA:
-            a tuple of the x,y,z coords of atom A
-        Coordinates_AtomB:
-            a tuple of the x,y,z coords of atom B
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom C
-        Coordinates_AtomC:
-            a tuple of the x,y,z coords of atom D            
-
-    """
+@njit(cache=True)
+def B_Matrix_Entry_OutOfPlane_AtomA(A, B, C, D):
     return -(
-        B_Matrix_Entry_OutOfPlane_AtomB(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-        )
-        + B_Matrix_Entry_OutOfPlane_AtomC(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-        )
-        + B_Matrix_Entry_OutOfPlane_AtomD(
-            Coordinates_AtomA, Coordinates_AtomB, Coordinates_AtomC, Coordinates_AtomD
-        )
+        B_Matrix_Entry_OutOfPlane_AtomB(A, B, C, D)
+        + B_Matrix_Entry_OutOfPlane_AtomC(A, B, C, D)
+        + B_Matrix_Entry_OutOfPlane_AtomD(A, B, C, D)
     )
 
 
-# TODO: current linear valence angles only useful for degenerate linear valence angle modes - make more generic
-def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof) -> np.array:
-    """
-    Generates the Wilson B matrix and evaluates the elements using the functions defined in the script
-
-    Attributes:
-        atoms:
-            a object of the molecule class
-        bonds:
-            a list of tuples where each tuple is a bond (A,B)
-        angles:
-            a list of tuples where each tuple is a angle (A,B,C)
-        linear_angles:
-            a list of tuples where each tuple is a linear angle (A,B,C)
-        out_of_plane:
-            a list of tuples where each tuples is a out-of-plane angle (A,B,C,D)
-        dihedrals:
-            a list of tuples where each tuple is a dihedral angle (A,B,C,D)
-        idof:
-            the vibrational degrees of freedom of the molecule (int) 
-    """
+def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof) -> np.ndarray:
     n_atoms = len(atoms)
     coordinates = np.array([a.coordinates for a in atoms])
     atom_index = {a.symbol: i for i, a in enumerate(atoms)}
     n_internal = (
-        len(bonds)
-        + len(angles)
-        + len(linear_angles)
-        + len(out_of_plane)
-        + len(dihedrals)
+        len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
     )
-    assert (
-        n_internal >= idof
-    ), f"Wrong number of internal coordinates, n_internal ({n_internal}) should be >= {idof}."
+    assert n_internal >= idof, (
+        f"Wrong number of internal coordinates, n_internal ({n_internal}) should be >= {idof}."
+    )
     matrix = np.zeros((n_internal, 3 * n_atoms))
     i_internal = 0
     n_used_linear_angles = 0
+
     for bond in bonds:
         index = [atom_index[a] * 3 for a in bond]
         coord = [coordinates[atom_index[a]] for a in bond]
-        matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_BondLength(
-            coord[1], coord[0]
-        )
-        matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_BondLength(
-            coord[0], coord[1]
-        )
+        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_BondLength(coord[1], coord[0])
+        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_BondLength(coord[0], coord[1])
         i_internal += 1
+
     for angle in angles:
         index = [atom_index[a] * 3 for a in angle]
         coord = [coordinates[atom_index[a]] for a in angle]
-        matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_Angle_AtomB(
-            coord[1], coord[0], coord[2]
-        )
-        matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_Angle_AtomA(
-            coord[1], coord[0], coord[2]
-        )
-        matrix[i_internal, index[2] : index[2] + 3] = B_Matrix_Entry_Angle_AtomC(
-            coord[1], coord[0], coord[2]
-        )
+        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_Angle_AtomB(coord[1], coord[0], coord[2])
+        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_Angle_AtomA(coord[1], coord[0], coord[2])
+        matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_Angle_AtomC(coord[1], coord[0], coord[2])
         i_internal += 1
+
     for linear_angle in linear_angles:
         index = [atom_index[a] * 3 for a in linear_angle]
         coord = [coordinates[atom_index[a]] for a in linear_angle]
         if (n_used_linear_angles % 2) == 0:
-            matrix[i_internal, index[0] : index[0] + 3] = (
-                B_Matrix_Entry_LinearAngleFirstPlane_AtomB(coord[1], coord[0], coord[2])
-            )
-            matrix[i_internal, index[1] : index[1] + 3] = (
-                B_Matrix_Entry_LinearAngleFirstPlane_AtomA(coord[1], coord[0], coord[2])
-            )
-            matrix[i_internal, index[2] : index[2] + 3] = (
-                B_Matrix_Entry_LinearAngleFirstPlane_AtomC(coord[1], coord[0], coord[2])
-            )
-            i_internal += 1
-            n_used_linear_angles += 1
+            matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomB(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomA(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomC(coord[1], coord[0], coord[2])
         else:
-            matrix[i_internal, index[0] : index[0] + 3] = (
-                B_Matrix_Entry_LinearAngleSecondPlane_AtomB(
-                    coord[1], coord[0], coord[2]
-                )
-            )
-            matrix[i_internal, index[1] : index[1] + 3] = (
-                B_Matrix_Entry_LinearAngleSecondPlane_AtomA(
-                    coord[1], coord[0], coord[2]
-                )
-            )
-            matrix[i_internal, index[2] : index[2] + 3] = (
-                B_Matrix_Entry_LinearAngleSecondPlane_AtomC(
-                    coord[1], coord[0], coord[2]
-                )
-            )
-            i_internal += 1
-            n_used_linear_angles += 1
+            matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomB(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomA(coord[1], coord[0], coord[2])
+            matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomC(coord[1], coord[0], coord[2])
+        i_internal += 1
+        n_used_linear_angles += 1
+
     for outofplane in out_of_plane:
         index = [atom_index[a] * 3 for a in outofplane]
         coord = [coordinates[atom_index[a]] for a in outofplane]
-        matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_OutOfPlane_AtomA(
-            coord[1], coord[0], coord[2], coord[3]
-        )
-        matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_OutOfPlane_AtomB(
-            coord[1], coord[0], coord[2], coord[3]
-        )
-        matrix[i_internal, index[2] : index[2] + 3] = B_Matrix_Entry_OutOfPlane_AtomC(
-            coord[1], coord[0], coord[2], coord[3]
-        )
-        matrix[i_internal, index[3] : index[3] + 3] = B_Matrix_Entry_OutOfPlane_AtomD(
-            coord[1], coord[0], coord[2], coord[3]
-        )
+        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_OutOfPlane_AtomA(coord[1], coord[0], coord[2], coord[3])
+        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_OutOfPlane_AtomB(coord[1], coord[0], coord[2], coord[3])
+        matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_OutOfPlane_AtomC(coord[1], coord[0], coord[2], coord[3])
+        matrix[i_internal, index[3]:index[3]+3] = B_Matrix_Entry_OutOfPlane_AtomD(coord[1], coord[0], coord[2], coord[3])
         i_internal += 1
+
     for dihedral in dihedrals:
         index = [atom_index[a] * 3 for a in dihedral]
         coord = [coordinates[atom_index[a]] for a in dihedral]
-        matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_Torsion_AtomB(
-            coord[1], coord[0], coord[2], coord[3]
-        )
-        matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_Torsion_AtomA(
-            coord[1], coord[0], coord[2], coord[3]
-        )
-        matrix[i_internal, index[2] : index[2] + 3] = B_Matrix_Entry_Torsion_AtomC(
-            coord[1], coord[0], coord[2], coord[3]
-        )
-        matrix[i_internal, index[3] : index[3] + 3] = B_Matrix_Entry_Torsion_AtomD(
-            coord[1], coord[0], coord[2], coord[3]
-        )
+        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_Torsion_AtomB(coord[1], coord[0], coord[2], coord[3])
+        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_Torsion_AtomA(coord[1], coord[0], coord[2], coord[3])
+        matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_Torsion_AtomC(coord[1], coord[0], coord[2], coord[3])
+        matrix[i_internal, index[3]:index[3]+3] = B_Matrix_Entry_Torsion_AtomD(coord[1], coord[0], coord[2], coord[3])
         i_internal += 1
 
     return matrix
 
 
-# hardcode for symmetry-adapted ICs
-# DON'T USE THIS!!!!
-def b_matrix2(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof):
-    n_atoms = len(atoms)
-    coordinates = np.array([a.coordinates for a in atoms])
-    atom_index = {a.symbol: i for i, a in enumerate(atoms)}
-    n_internal = (
-        len(bonds)
-        + len(angles)
-        + len(linear_angles)
-        + len(out_of_plane)
-        + len(dihedrals)
-    )
-    assert (
-        n_internal >= idof
-    ), f"Wrong number of internal coordinates, n_internal ({n_internal}) should be >= {idof}."
-    matrix = np.zeros((n_internal, 3 * n_atoms))
-    i_internal = 0
-    n_used_linear_angles = 0
-    for bond in bonds:
-        index = [atom_index[a] * 3 for a in bond]
-        coord = [coordinates[atom_index[a]] for a in bond]
-        if i_internal == 0:
-            matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_BondLength(
-                coord[1], coord[0]
-            )
-            matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_BondLength(
-                coord[0], coord[1]
-            )
-        if i_internal == 1:
-            matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_BondLength(
-                coord[1], coord[0]
-            ) + B_Matrix_Entry_BondLength(coord[1], coord[0])
-            matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_BondLength(
-                coord[0], coord[1]
-            ) + B_Matrix_Entry_BondLength(coord[1], coord[0])
-        if i_internal == 2:
-            matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_BondLength(
-                coord[1], coord[0]
-            ) - B_Matrix_Entry_BondLength(coord[1], coord[0])
-            matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_BondLength(
-                coord[0], coord[1]
-            ) - B_Matrix_Entry_BondLength(coord[1], coord[0])
-        i_internal += 1
-    for angle in angles:
-        index = [atom_index[a] * 3 for a in angle]
-        coord = [coordinates[atom_index[a]] for a in angle]
-        if i_internal == 3:
-            matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_Angle_AtomB(
-                coord[1], coord[0], coord[2]
-            ) + B_Matrix_Entry_Angle_AtomB(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_Angle_AtomA(
-                coord[1], coord[0], coord[2]
-            ) + B_Matrix_Entry_Angle_AtomA(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[2] : index[2] + 3] = B_Matrix_Entry_Angle_AtomC(
-                coord[1], coord[0], coord[2]
-            ) + B_Matrix_Entry_Angle_AtomC(coord[1], coord[0], coord[2])
-        if i_internal == 4:
-            matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_Angle_AtomB(
-                coord[1], coord[0], coord[2]
-            ) - B_Matrix_Entry_Angle_AtomB(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_Angle_AtomA(
-                coord[1], coord[0], coord[2]
-            ) - B_Matrix_Entry_Angle_AtomA(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[2] : index[2] + 3] = B_Matrix_Entry_Angle_AtomC(
-                coord[1], coord[0], coord[2]
-            ) - B_Matrix_Entry_Angle_AtomC(coord[1], coord[0], coord[2])
-        if i_internal == 5:
-            matrix[i_internal, index[0] : index[0] + 3] = B_Matrix_Entry_Angle_AtomB(
-                coord[1], coord[0], coord[2]
-            )
-            matrix[i_internal, index[1] : index[1] + 3] = B_Matrix_Entry_Angle_AtomA(
-                coord[1], coord[0], coord[2]
-            )
-            matrix[i_internal, index[2] : index[2] + 3] = B_Matrix_Entry_Angle_AtomC(
-                coord[1], coord[0], coord[2]
-            )
-        i_internal += 1
-    for outofplane in out_of_plane:
-        index = [atom_index[a] * 3 for a in outofplane]
-        coord = [coordinates[atom_index[a]] for a in outofplane]
-        if i_internal == 6:
-            matrix[i_internal, index[0] : index[0] + 3] = (
-                B_Matrix_Entry_OutOfPlane_AtomA(coord[1], coord[0], coord[2], coord[3])
-            )
-            matrix[i_internal, index[1] : index[1] + 3] = (
-                B_Matrix_Entry_OutOfPlane_AtomB(coord[1], coord[0], coord[2], coord[3])
-            )
-            matrix[i_internal, index[2] : index[2] + 3] = (
-                B_Matrix_Entry_OutOfPlane_AtomC(coord[1], coord[0], coord[2], coord[3])
-            )
-            matrix[i_internal, index[3] : index[3] + 3] = (
-                B_Matrix_Entry_OutOfPlane_AtomD(coord[1], coord[0], coord[2], coord[3])
-            )
-        # if i_internal == 7:
-        #    matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_OutOfPlane_AtomA(coord[1], coord[0], coord[2], coord[3]) + B_Matrix_Entry_OutOfPlane_AtomA(coord[1], coord[0], coord[2], coord[3])
-        #    matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_OutOfPlane_AtomB(coord[1], coord[0], coord[2], coord[3]) + B_Matrix_Entry_OutOfPlane_AtomB(coord[1], coord[0], coord[2], coord[3])
-        #    matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_OutOfPlane_AtomC(coord[1], coord[0], coord[2], coord[3]) + B_Matrix_Entry_OutOfPlane_AtomC(coord[1], coord[0], coord[2], coord[3])
-        #    matrix[i_internal, index[3]:index[3]+3] = B_Matrix_Entry_OutOfPlane_AtomD(coord[1], coord[0], coord[2], coord[3]) + B_Matrix_Entry_OutOfPlane_AtomD(coord[1], coord[0], coord[2], coord[3])
-        # if i_internal == 8:
-        #    matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_OutOfPlane_AtomA(coord[1], coord[0], coord[2], coord[3]) - B_Matrix_Entry_OutOfPlane_AtomA(coord[1], coord[0], coord[2], coord[3])
-        #    matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_OutOfPlane_AtomB(coord[1], coord[0], coord[2], coord[3]) - B_Matrix_Entry_OutOfPlane_AtomB(coord[1], coord[0], coord[2], coord[3])
-        #    matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_OutOfPlane_AtomC(coord[1], coord[0], coord[2], coord[3]) - B_Matrix_Entry_OutOfPlane_AtomC(coord[1], coord[0], coord[2], coord[3])
-        #    matrix[i_internal, index[3]:index[3]+3] = B_Matrix_Entry_OutOfPlane_AtomD(coord[1], coord[0], coord[2], coord[3]) - B_Matrix_Entry_OutOfPlane_AtomD(coord[1], coord[0], coord[2], coord[3])
-        i_internal += 1
-    return matrix
+if __name__ == "__main__":
+    def test_b_matrix_speed():
+        from time import time
+        from molecule_class import Molecule
+
+        mol = Molecule.from_xyz_file('/home/lme/decomposing-vibrations/test_calculations/xyz_tests/1citric_001.xyz')
+        degofc = mol.degree_of_covalance()
+        bonds = mol.covalent_bonds(degofc)
+        angles, linear_angles = mol.generate_angles(bonds)
+        dihedrals = mol.generate_dihedrals(bonds)
+        dof = mol.idof_general()
+
+        start_time = time()
+        b_mat = b_matrix(mol, bonds, angles, linear_angles, [], dihedrals, dof)
+        end_time = time()
+        # First time with numba is the compilation time, subsequent calls should be much faster
+        print(f"B-Matrix calculation time: {end_time - start_time:.4f} seconds")
+
+    test_b_matrix_speed()
+    test_b_matrix_speed()

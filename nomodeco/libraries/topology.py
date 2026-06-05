@@ -7,6 +7,7 @@ small vibrational coordinates
 import networkx as nx
 import itertools
 import logging
+import random
 import string
 import pandas as pd
 import pymatgen.core as mg
@@ -17,8 +18,99 @@ import matplotlib.pyplot as plt
 from nomodeco.libraries import logfile
 from nomodeco.libraries import specifications
 from nomodeco.libraries import icsel
-from nomodeco.libraries.nomodeco_classes import Molecule
+from nomodeco.libraries.molecule_class import Molecule
 from nomodeco.libraries import arguments
+
+class LazyIcDict:
+    """
+    Memory-efficient replacement for the plain dict produced by the acyclic
+    topology functions.
+
+    Instead of materialising the full Cartesian product of
+        angle_subsets × oop_subsets × dihedral_subsets
+    into memory, the class stores only the compact subset lists and
+    reconstructs each IC set from a 3-integer index on demand.
+
+    A single LazyIcDict can hold multiple "product blocks" (one per bond-cutting
+    variant in the cyclic functions).  add_product() appends a block; __getitem__,
+    values(), and items() transparently span all blocks.
+
+    Supported interface (drop-in for the dict expected by find_optimal_coordinate_set):
+        len(), keys(), values(), items(), __getitem__
+    """
+
+    __slots__ = ("_parts", "_offsets")
+
+    def __init__(self):
+        self._parts = []      # list of (bonds, linear_angles, a_s, o_s, d_s)
+        self._offsets = [0]   # cumulative sizes; len(_offsets) == len(_parts) + 1
+
+    def add_product(self, bonds, linear_angles, angle_subsets, oop_subsets, dihedral_subsets):
+        if self._offsets[-1] >= _MAX_IC_SETS_TOTAL:
+            return   # hard ceiling already reached; skip silently
+        n = len(angle_subsets) * len(oop_subsets) * len(dihedral_subsets)
+        if n == 0:
+            return
+        self._parts.append((bonds, linear_angles, angle_subsets, oop_subsets, dihedral_subsets))
+        self._offsets.append(self._offsets[-1] + n)
+
+    def __len__(self):
+        return self._offsets[-1]
+
+    def _locate(self, k):
+        """Return (part_idx, local_k) for global index k via binary search."""
+        lo, hi = 0, len(self._offsets) - 2
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if k < self._offsets[mid + 1]:
+                hi = mid
+            else:
+                lo = mid + 1
+        return lo, k - self._offsets[lo]
+
+    def __getitem__(self, k):
+        part_idx, local_k = self._locate(k)
+        bonds, la, a_s, o_s, d_s = self._parts[part_idx]
+        nd = len(d_s)
+        no = len(o_s)
+        i_d = local_k % nd
+        local_k //= nd
+        i_o = local_k % no
+        i_a = local_k // no
+        return {
+            "bonds": bonds,
+            "angles": a_s[i_a],
+            "linear valence angles": la,
+            "out of plane angles": o_s[i_o],
+            "dihedrals": d_s[i_d],
+        }
+
+    def keys(self):
+        return range(len(self))
+
+    def values(self):
+        for bonds, la, a_s, o_s, d_s in self._parts:
+            for ang, oop, dih in itertools.product(a_s, o_s, d_s):
+                yield {"bonds": bonds, "angles": ang,
+                       "linear valence angles": la,
+                       "out of plane angles": oop, "dihedrals": dih}
+
+    def items(self):
+        k = 0
+        for bonds, la, a_s, o_s, d_s in self._parts:
+            for ang, oop, dih in itertools.product(a_s, o_s, d_s):
+                yield k, {"bonds": bonds, "angles": ang,
+                          "linear valence angles": la,
+                          "out of plane angles": oop, "dihedrals": dih}
+                k += 1
+
+
+# Maximum number of IC combinations per acyclic product block.
+# Hard ceiling on the total number of IC sets across the entire generation tree.
+# Once the LazyIcDict reaches this many entries, further add_product calls are
+# skipped and the cyclic loops break early.
+_MAX_IC_SETS_TOTAL = 100_000_000
+
 
 """
 Shared Variables for the Intermolecular Functions
@@ -53,36 +145,34 @@ def molecule_is_not_split(bonds) -> bool:
 
 def strip_numbers(string) -> str:
     """
-    Removes the digits from a string e.q H2 -> H
+    Removes digits from a string with generator 
     """
-    return "".join([char for char in string if not char.isdigit()])
+    return "".join(char for char in string if not char.isdigit())
+    
 
 
 def eliminate_symmetric_tuples(list_tuples) -> list:
     """
-    Eliminates symmetric tuples in a list of tuples e.q (H2,O,H1) (H1,O,H2)
+    Eliminates symmetric and identical duplicate tuples while preserving order.
     """
     new_list = []
-    seen_tuples = set()
+    seen = set()
+    
     for tp1 in list_tuples:
-        reversed_tp1 = tuple(reversed(tp1))
-        if reversed_tp1 not in seen_tuples:
+        if tp1 not in seen:
             new_list.append(tp1)
-            seen_tuples.add(tp1)
+            seen.add(tp1)
+            seen.add(tp1[::-1])  # tp1[::-1] is a faster way to reverse a tuple
+            
     return new_list
 
 
-def valide_atoms_to_cut(bonds, multiplicity_list) -> list:
+def valide_atoms_to_cut(bonds, multiplicity_list) -> set:
     """
-    Checks for a given list of bonds if the multiplicity of the atoms is greater then two. If this is the case return the atoms
+    Returns atom names where the multiplicity is greater or equal to 2
     """
-    # first of all we will identify where cutting bonds is even making sense to a first degree
-    valide_atoms = []
-    for tup in multiplicity_list:
-        if tup[1] >= 2:
-            valide_atoms.append(tup[0])
-    return valide_atoms
-
+    return {atom for atom, mult in multiplicity_list if mult >= 2}
+     
 
 def bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):
     for bond in symmetric_bond_group:
@@ -92,28 +182,51 @@ def bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):
 
 
 def delete_bonds_symmetry(symmetric_bond_group, bonds, mu, valide_atoms):
+    """  
+    Safely removes symmetric bonds up to a target 'mu' count,
+    ensuring the molecule remains connected
+    """
+    # 1. Convert lookup pools to sets for instant O(1) performance
+    valid_set = set(valide_atoms)
+    bond_set = set(bonds)
+    
+    # Work on a copy of the symmetric group so we can safely mutate it
+    candidates = list(symmetric_bond_group)
     removed_bonds = []
+
     while mu > 0:
-        if not symmetric_bond_group:
-            return [], bonds + removed_bonds
-        # cut the bonds
-        for bond in symmetric_bond_group:
-            if bond[0] in valide_atoms and bond[1] in valide_atoms:
-                removed_bonds.append(bond)
-                bonds.remove(bond)
-                symmetric_bond_group.remove(bond)
+        if not candidates:
+            # If we run out of candidates before satisfying mu, revert and exit
+            return [], list(bond_set | set(removed_bonds))
+
+        # Find the first bond that meets the criteria
+        chosen_bond = None
+        for bond in candidates:
+            if bond[0] in valid_set and bond[1] in valid_set:
+                chosen_bond = bond
                 break
 
-        # we will check if the molecule is not split;
-        if molecule_is_not_split(bonds):
+        # If no bonds match the atom criteria, we cannot proceed
+        if chosen_bond is None:
+            return [], list(bond_set | set(removed_bonds))
+
+        # 2. Tentatively remove the bond
+        candidates.remove(chosen_bond)
+        bond_set.remove(chosen_bond)
+        removed_bonds.append(chosen_bond)
+
+        # 3. Check connectivity constraints using a list representation
+        # (Assuming molecule_is_not_split accepts a sequence/iterable)
+        if molecule_is_not_split(list(bond_set)):
             mu -= 1
         else:
-            # if we can not cut bonds out in the symmetric group
-            bonds.append(removed_bonds[-1])
+            # Revert step: The molecule split! Put it back.
             removed_bonds.pop()
+            bond_set.add(chosen_bond)
+            # Notice we do NOT put it back in 'candidates' to avoid checking it again
 
-    return removed_bonds, bonds + removed_bonds
-
+    # Return the list of removed bonds, and the final state of remaining bonds
+    return removed_bonds, list(bond_set)
 
 def delete_bonds(bonds, mu, valide_atoms):
     removed_bonds = []
@@ -136,8 +249,7 @@ def delete_bonds(bonds, mu, valide_atoms):
 
 
 # TODO: rename method
-# TODO: possible bug here for cyclic systems, when using [:]!
-def update_internal_coordinates_cyclic(removed_bonds, ic_list) -> list:
+def update_internal_coordinates_cyclic(removed_bonds, ic_list, removed_bond_sets=None) -> list:
     """
     Given a set of ICs and a removed bond, eliminates this particular IC out of the list
 
@@ -146,13 +258,18 @@ def update_internal_coordinates_cyclic(removed_bonds, ic_list) -> list:
             a list of tuples containing the bonds to remove
         ic_list: list
             a list of internal coordinates of a specific type
+        removed_bond_sets: list, optional
+            pre-built frozensets of removed_bonds; computed once and reused across
+            multiple calls with the same removed_bonds to avoid redundant work
     """
-    ic_list_dup = ic_list[:]
-    for bond in removed_bonds:
-        for ic in ic_list_dup[:]:
-            if bond[0] in ic and bond[1] in ic:
-                ic_list_dup.remove(ic)
-    return ic_list_dup
+    if removed_bond_sets is None:
+        removed_bond_sets = [frozenset(b) for b in removed_bonds]
+    result = []
+    for ic in ic_list:
+        ic_set = frozenset(ic)
+        if not any(rbs <= ic_set for rbs in removed_bond_sets):
+            result.append(ic)
+    return result
 
 
 def find_common_index_with_most_subsets(list1, list2):
@@ -174,12 +291,14 @@ def find_common_index_with_least_subsets(list1, list2):
 
 
 def remove_angles(atom_and_mult, angles):
-    num_angles_to_be_removed = atom_and_mult[1] - 2
+    num_to_remove = atom_and_mult[1] - 2
+    result = []
     for angle in angles:
-        if angle[1] == atom_and_mult[0] and num_angles_to_be_removed >= 1:
-            angles.remove(angle)
-            num_angles_to_be_removed -= 1
-    return angles
+        if angle[1] == atom_and_mult[0] and num_to_remove > 0:
+            num_to_remove -= 1
+        else:
+            result.append(angle)
+    return result
 
 
 def get_param_planar_submolecule(planar_subunits_list, multiplicity_list, angles):
@@ -299,10 +418,7 @@ def planar_acyclic_nolinunit_molecule(
     n_tau = num_bonds - a_1
 
     # remove angles that are at specific oop spots
-    oop_central_atoms = []
-    for oop in out_of_plane:
-        if oop[0] not in oop_central_atoms:
-            oop_central_atoms.append(oop[0])
+    oop_central_atoms = dict.fromkeys(oop[0] for oop in out_of_plane)
     for oop_central_atom in oop_central_atoms:
         angles = remove_angles(
             (
@@ -324,12 +440,11 @@ def planar_acyclic_nolinunit_molecule(
         )
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
+            if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                break
 
             # the if statement ensures, that oop angles to the same central atom can not be in the same set
-    oop_subsets = []
-    for subset in itertools.combinations(out_of_plane, n_gamma):
-        if icsel.not_same_central_atom(subset):
-            oop_subsets.append(list(subset))
+    oop_subsets = icsel.get_oop_subsets(out_of_plane, n_gamma)
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals, specification)
     dihedral_subsets = icsel.get_dihedral_subsets(
@@ -343,20 +458,11 @@ def planar_acyclic_nolinunit_molecule(
         )
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
+            if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                break
 
-    k = 0
-    for len_angles in range(0, len(angle_subsets)):
-        for len_oop in range(0, len(oop_subsets)):
-            for len_dihedrals in range(0, len(dihedral_subsets)):
-                ic_dict[k] = {
-                    "bonds": bonds,
-                    "angles": angle_subsets[len_angles],
-                    "linear valence angles": [],
-                    "out of plane angles": oop_subsets[len_oop],
-                    "dihedrals": dihedral_subsets[len_dihedrals],
-                }
-                k += 1
-
+    ic_dict = LazyIcDict()
+    ic_dict.add_product(bonds, [], angle_subsets, oop_subsets, dihedral_subsets)
     return ic_dict
 
 
@@ -412,6 +518,7 @@ def planar_cyclic_nolinunit_molecule(
     symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
     symmetric_bonds_list = icsel.get_bond_subsets(symmetric_bonds)
     valide_atoms = valide_atoms_to_cut(bonds, specification["multiplicity"])
+    equiv_sets = icsel._make_equiv_sets(specification["equivalent_atoms"])
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
@@ -425,12 +532,13 @@ def planar_cyclic_nolinunit_molecule(
             continue
 
         # update bonds, angles, oop, and dihedrals to not include the coordinates that were removed
-        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds)
-        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles)
-        out_of_plane_updated = update_internal_coordinates_cyclic(
-            removed_bonds, out_of_plane
-        )
-        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
+        rbs = [frozenset(b) for b in removed_bonds]
+        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds, rbs)
+        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles, rbs)
+        out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane, rbs)
+        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals, rbs)
+        n_bonds_updated = len(bonds_updated)
+        n_angles_updated = len(angles_updated)
 
         logfile.write_logfile_updatedICs_cyclic(
             out,
@@ -445,13 +553,13 @@ def planar_cyclic_nolinunit_molecule(
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
         # so that we do not sample a subspace, which is not feasible
 
-        symmetric_angles = icsel.get_symm_angles(angles_updated, specification)
+        symmetric_angles = icsel.get_symm_angles(angles_updated, specification, equiv_sets)
         angle_subsets = icsel.get_angle_subsets(
             symmetric_angles,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            2 * len(bonds_updated) - num_atoms,
+            2 * n_bonds_updated - num_atoms,
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -459,13 +567,13 @@ def planar_cyclic_nolinunit_molecule(
             )
             continue
 
-        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification)
+        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification, equiv_sets)
         dihedral_subsets = icsel.get_dihedral_subsets(
             symmetric_dihedrals,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            len(bonds_updated) - a_1,
+            n_bonds_updated - a_1,
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -485,13 +593,21 @@ def planar_cyclic_nolinunit_molecule(
                 linear_angles,
                 out_of_plane_updated,
                 dihedrals_updated,
-                len(bonds_updated),
+                n_bonds_updated,
                 num_atoms,
                 a_1,
                 specification,
             )
         )
         removed_bonds = []
+        _running_total = sum(len(d) for d in ic_dict_list)
+        if _running_total >= _MAX_IC_SETS_TOTAL:
+            logging.warning(
+                "IC generation stopped after %s sets (limit: %s). "
+                "Remaining bond-cutting scenarios will be skipped.",
+                f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+            )
+            break
 
     # if we can't cut according to symmetry, do random cutting
     # cut symmetry out if you want, by commenting everyting out
@@ -522,12 +638,10 @@ def planar_cyclic_nolinunit_molecule(
         return ic_dict
 
     else:
-        ic_dict = dict()
-        new_key = 0
-        for dictionary in ic_dict_list:
-            for key, value in dictionary.copy().items():
-                ic_dict[new_key] = value
-                new_key += 1
+        ic_dict = LazyIcDict()
+        for lazy_d in ic_dict_list:
+            for part in lazy_d._parts:
+                ic_dict.add_product(*part)
         return ic_dict
 
 
@@ -586,10 +700,7 @@ def planar_acyclic_linunit_molecule(
     n_phi_prime = 2 * (l - 1)
 
     # remove angles that are at specific oop spots
-    oop_central_atoms = []
-    for oop in out_of_plane:
-        if oop[0] not in oop_central_atoms:
-            oop_central_atoms.append(oop[0])
+    oop_central_atoms = dict.fromkeys(oop[0] for oop in out_of_plane)
     for oop_central_atom in oop_central_atoms:
         angles = remove_angles(
             (
@@ -638,11 +749,10 @@ def planar_acyclic_linunit_molecule(
         )
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
+            if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                break
 
-    oop_subsets = []
-    for subset in itertools.combinations(out_of_plane, n_gamma):
-        if icsel.not_same_central_atom(subset):
-            oop_subsets.append(list(subset))
+    oop_subsets = icsel.get_oop_subsets(out_of_plane, n_gamma)
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals, specification)
     dihedral_subsets = icsel.get_dihedral_subsets(
@@ -656,20 +766,11 @@ def planar_acyclic_linunit_molecule(
         )
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
+            if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                break
 
-    k = 0
-    for len_angles in range(0, len(angle_subsets)):
-        for len_oop in range(0, len(oop_subsets)):
-            for len_dihedrals in range(0, len(dihedral_subsets)):
-                ic_dict[k] = {
-                    "bonds": bonds,
-                    "angles": angle_subsets[len_angles],
-                    "linear valence angles": linear_angles,
-                    "out of plane angles": oop_subsets[len_oop],
-                    "dihedrals": dihedral_subsets[len_dihedrals],
-                }
-                k += 1
-
+    ic_dict = LazyIcDict()
+    ic_dict.add_product(bonds, linear_angles, angle_subsets, oop_subsets, dihedral_subsets)
     return ic_dict
 
 
@@ -727,6 +828,7 @@ def planar_cyclic_linunit_molecule(
     symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
     symmetric_bonds_list = icsel.get_bond_subsets(symmetric_bonds)
     valide_atoms = valide_atoms_to_cut(bonds, specification["multiplicity"])
+    equiv_sets = icsel._make_equiv_sets(specification["equivalent_atoms"])
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
@@ -740,12 +842,13 @@ def planar_cyclic_linunit_molecule(
             continue
 
         # update bonds, angles, oop, and dihedrals to not include the coordinates that were removed
-        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds)
-        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles)
-        out_of_plane_updated = update_internal_coordinates_cyclic(
-            removed_bonds, out_of_plane
-        )
-        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
+        rbs = [frozenset(b) for b in removed_bonds]
+        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds, rbs)
+        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles, rbs)
+        out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane, rbs)
+        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals, rbs)
+        n_bonds_updated = len(bonds_updated)
+        n_angles_updated = len(angles_updated)
 
         logfile.write_logfile_updatedICs_cyclic(
             out,
@@ -760,13 +863,13 @@ def planar_cyclic_linunit_molecule(
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
         # so that we do not sample a subspace, which is not feasible
 
-        symmetric_angles = icsel.get_symm_angles(angles_updated, specification)
+        symmetric_angles = icsel.get_symm_angles(angles_updated, specification, equiv_sets)
         angle_subsets = icsel.get_angle_subsets(
             symmetric_angles,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            2 * len(bonds_updated) - num_atoms,
+            2 * n_bonds_updated - num_atoms,
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -774,13 +877,13 @@ def planar_cyclic_linunit_molecule(
             )
             continue
 
-        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification)
+        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification, equiv_sets)
         dihedral_subsets = icsel.get_dihedral_subsets(
             symmetric_dihedrals,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            len(bonds_updated) - a_1,
+            n_bonds_updated - a_1,
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -799,7 +902,7 @@ def planar_cyclic_linunit_molecule(
                 linear_angles,
                 out_of_plane_updated,
                 dihedrals_updated,
-                len(bonds_updated),
+                n_bonds_updated,
                 num_atoms,
                 a_1,
                 l,
@@ -807,6 +910,14 @@ def planar_cyclic_linunit_molecule(
             )
         )
         removed_bonds = []
+        _running_total = sum(len(d) for d in ic_dict_list)
+        if _running_total >= _MAX_IC_SETS_TOTAL:
+            logging.warning(
+                "IC generation stopped after %s sets (limit: %s). "
+                "Remaining bond-cutting scenarios will be skipped.",
+                f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+            )
+            break
 
     # if we can't cut according to symmetry, do random cutting
     # cut symmetry out if you want, by commenting everyting out
@@ -838,12 +949,10 @@ def planar_cyclic_linunit_molecule(
         return ic_dict
 
     else:
-        ic_dict = dict()
-        new_key = 0
-        for dictionary in ic_dict_list:
-            for key, value in dictionary.copy().items():
-                ic_dict[new_key] = value
-                new_key += 1
+        ic_dict = LazyIcDict()
+        for lazy_d in ic_dict_list:
+            for part in lazy_d._parts:
+                ic_dict.add_product(*part)
         return ic_dict
 
 
@@ -921,12 +1030,10 @@ def general_acyclic_nolinunit_molecule(
         )
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
+            if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                break
 
-    oop_subsets = []
-
-    for subset in itertools.combinations(out_of_plane, n_gamma):
-        if icsel.not_same_central_atom(subset):
-            oop_subsets.append(list(subset))
+    oop_subsets = icsel.get_oop_subsets(out_of_plane, n_gamma)
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals, specification)
     dihedral_subsets = icsel.get_dihedral_subsets(
@@ -940,20 +1047,11 @@ def general_acyclic_nolinunit_molecule(
         )
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
+            if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                break
 
-    k = 0
-    for len_angles in range(0, len(angle_subsets)):
-        for len_oop in range(0, len(oop_subsets)):
-            for len_dihedrals in range(0, len(dihedral_subsets)):
-                ic_dict[k] = {
-                    "bonds": bonds,
-                    "angles": angle_subsets[len_angles],
-                    "linear valence angles": [],
-                    "out of plane angles": oop_subsets[len_oop],
-                    "dihedrals": dihedral_subsets[len_dihedrals],
-                }
-                k += 1
-
+    ic_dict = LazyIcDict()
+    ic_dict.add_product(bonds, [], angle_subsets, oop_subsets, dihedral_subsets)
     return ic_dict
 
 
@@ -1011,6 +1109,7 @@ def general_cyclic_nolinunit_molecule(
     symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
     symmetric_bonds_list = icsel.get_bond_subsets(symmetric_bonds)
     valide_atoms = valide_atoms_to_cut(bonds, specification["multiplicity"])
+    equiv_sets = icsel._make_equiv_sets(specification["equivalent_atoms"])
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
@@ -1024,12 +1123,13 @@ def general_cyclic_nolinunit_molecule(
             continue
 
         # update bonds, angles, oop, and dihedrals to not include the coordinates that were removed
-        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds)
-        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles)
-        out_of_plane_updated = update_internal_coordinates_cyclic(
-            removed_bonds, out_of_plane
-        )
-        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
+        rbs = [frozenset(b) for b in removed_bonds]
+        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds, rbs)
+        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles, rbs)
+        out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane, rbs)
+        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals, rbs)
+        n_bonds_updated = len(bonds_updated)
+        n_angles_updated = len(angles_updated)
 
         logfile.write_logfile_updatedICs_cyclic(
             out,
@@ -1044,13 +1144,13 @@ def general_cyclic_nolinunit_molecule(
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
         # so that we do not sample a subspace, which is not feasible
 
-        symmetric_angles = icsel.get_symm_angles(angles_updated, specification)
+        symmetric_angles = icsel.get_symm_angles(angles_updated, specification, equiv_sets)
         angle_subsets = icsel.get_angle_subsets(
             symmetric_angles,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            2 * len(bonds_updated) - num_atoms,
+            2 * n_bonds_updated - num_atoms,
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -1058,13 +1158,13 @@ def general_cyclic_nolinunit_molecule(
             )
             continue
 
-        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification)
+        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification, equiv_sets)
         dihedral_subsets = icsel.get_dihedral_subsets(
             symmetric_dihedrals,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            len(bonds_updated) - a_1,
+            n_bonds_updated - a_1,
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -1084,13 +1184,21 @@ def general_cyclic_nolinunit_molecule(
                 linear_angles,
                 out_of_plane_updated,
                 dihedrals_updated,
-                len(bonds_updated),
+                n_bonds_updated,
                 num_atoms,
                 a_1,
                 specification,
             )
         )
         removed_bonds = []
+        _running_total = sum(len(d) for d in ic_dict_list)
+        if _running_total >= _MAX_IC_SETS_TOTAL:
+            logging.warning(
+                "IC generation stopped after %s sets (limit: %s). "
+                "Remaining bond-cutting scenarios will be skipped.",
+                f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+            )
+            break
 
     # if we can't cut according to symmetry, do random cutting
     # cut symmetry out if you want, by commenting everything out
@@ -1121,12 +1229,10 @@ def general_cyclic_nolinunit_molecule(
         return ic_dict
 
     else:
-        ic_dict = dict()
-        new_key = 0
-        for dictionary in ic_dict_list:
-            for key, value in dictionary.copy().items():
-                ic_dict[new_key] = value
-                new_key += 1
+        ic_dict = LazyIcDict()
+        for lazy_d in ic_dict_list:
+            for part in lazy_d._parts:
+                ic_dict.add_product(*part)
         return ic_dict
 
 
@@ -1223,6 +1329,8 @@ def general_acyclic_linunit_molecule(
         )
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
+            if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                break
 
             # before computing the number of ICs we will remove all oop that are associated with this linear angle
     # also remove dihedrals,if they are terminal
@@ -1243,10 +1351,7 @@ def general_acyclic_linunit_molecule(
     # symmetric_lin_angles = icsel.get_symm_angles(linear_angles,specification)
     # lin_angle_subsets = icsel.get_angle_subsets(symmetric_lin_angles, len(bonds), len(angles),idof,n_phi_prime)
 
-    oop_subsets = []
-    for subset in itertools.combinations(out_of_plane, n_gamma):
-        if icsel.not_same_central_atom(subset):
-            oop_subsets.append(list(subset))
+    oop_subsets = icsel.get_oop_subsets(out_of_plane, n_gamma)
 
     symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals, specification)
     dihedral_subsets = icsel.get_dihedral_subsets(
@@ -1260,20 +1365,11 @@ def general_acyclic_linunit_molecule(
         )
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
+            if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                break
 
-    k = 0
-    for len_angles in range(0, len(angle_subsets)):
-        for len_oop in range(0, len(oop_subsets)):
-            for len_dihedrals in range(0, len(dihedral_subsets)):
-                ic_dict[k] = {
-                    "bonds": bonds,
-                    "angles": angle_subsets[len_angles],
-                    "linear valence angles": linear_angles,
-                    "out of plane angles": oop_subsets[len_oop],
-                    "dihedrals": dihedral_subsets[len_dihedrals],
-                }
-                k += 1
-
+    ic_dict = LazyIcDict()
+    ic_dict.add_product(bonds, linear_angles, angle_subsets, oop_subsets, dihedral_subsets)
     return ic_dict
 
 
@@ -1333,6 +1429,7 @@ def general_cyclic_linunit_molecule(
     symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
     symmetric_bonds_list = icsel.get_bond_subsets(symmetric_bonds)
     valide_atoms = valide_atoms_to_cut(bonds, specification["multiplicity"])
+    equiv_sets = icsel._make_equiv_sets(specification["equivalent_atoms"])
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
@@ -1346,12 +1443,13 @@ def general_cyclic_linunit_molecule(
             continue
 
         # update bonds, angles, oop, and dihedrals to not include the coordinates that were removed
-        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds)
-        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles)
-        out_of_plane_updated = update_internal_coordinates_cyclic(
-            removed_bonds, out_of_plane
-        )
-        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals)
+        rbs = [frozenset(b) for b in removed_bonds]
+        bonds_updated = update_internal_coordinates_cyclic(removed_bonds, bonds, rbs)
+        angles_updated = update_internal_coordinates_cyclic(removed_bonds, angles, rbs)
+        out_of_plane_updated = update_internal_coordinates_cyclic(removed_bonds, out_of_plane, rbs)
+        dihedrals_updated = update_internal_coordinates_cyclic(removed_bonds, dihedrals, rbs)
+        n_bonds_updated = len(bonds_updated)
+        n_angles_updated = len(angles_updated)
 
         logfile.write_logfile_updatedICs_cyclic(
             out,
@@ -1366,13 +1464,13 @@ def general_cyclic_linunit_molecule(
         # we need to do some pre-calc of the symmetric angles and dihedrals etc. sadly
         # so that we do not sample a subspace, which is not feasible
 
-        symmetric_angles = icsel.get_symm_angles(angles_updated, specification)
+        symmetric_angles = icsel.get_symm_angles(angles_updated, specification, equiv_sets)
         angle_subsets = icsel.get_angle_subsets(
             symmetric_angles,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            2 * len(bonds_updated) - num_atoms,
+            2 * n_bonds_updated - num_atoms,
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -1380,13 +1478,13 @@ def general_cyclic_linunit_molecule(
             )
             continue
 
-        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification)
+        symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals_updated, specification, equiv_sets)
         dihedral_subsets = icsel.get_dihedral_subsets(
             symmetric_dihedrals,
-            len(bonds_updated),
-            len(angles_updated),
+            n_bonds_updated,
+            n_angles_updated,
             idof,
-            len(bonds_updated) - a_1,
+            n_bonds_updated - a_1,
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -1406,13 +1504,21 @@ def general_cyclic_linunit_molecule(
                 linear_angles,
                 out_of_plane_updated,
                 dihedrals_updated,
-                len(bonds_updated),
+                n_bonds_updated,
                 num_atoms,
                 a_1,
                 specification,
             )
         )
         removed_bonds = []
+        _running_total = sum(len(d) for d in ic_dict_list)
+        if _running_total >= _MAX_IC_SETS_TOTAL:
+            logging.warning(
+                "IC generation stopped after %s sets (limit: %s). "
+                "Remaining bond-cutting scenarios will be skipped.",
+                f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+            )
+            break
 
     # if we can't cut according to symmetry, do random cutting
     # cut symmetry out if you want, by commenting everyting out
@@ -1443,12 +1549,10 @@ def general_cyclic_linunit_molecule(
         return ic_dict
 
     else:
-        ic_dict = dict()
-        new_key = 0
-        for dictionary in ic_dict_list:
-            for key, value in dictionary.copy().items():
-                ic_dict[new_key] = value
-                new_key += 1
+        ic_dict = LazyIcDict()
+        for lazy_d in ic_dict_list:
+            for part in lazy_d._parts:
+                ic_dict.add_product(*part)
         return ic_dict
 
 
@@ -1502,9 +1606,7 @@ def combine_dictionaries(dict_list) -> list:
         a list that contains the combined IC sets for both covalent submolecules
     """
     # First we determine the length of the list
-    length_of_dict = []
-    for d in dict_list:
-        length_of_dict.append(len(d.items()))
+    length_of_dict = [len(d) for d in dict_list]
     result = {}
     # FIRST-CASE:
     # Two Submolecules and one Dictionary of Length 1
@@ -1573,23 +1675,22 @@ def combine_dictionaries(dict_list) -> list:
     ):
         first_dictionary = dict_list[0]
         second_dictionary = dict_list[1]
-        combinations = len(first_dictionary.items()) * len(second_dictionary.items())
+        n_first = len(first_dictionary)
+        n_second = len(second_dictionary)
+        combinations = n_first * n_second
         idx = 0
-        new_dict = {}  # new dict with the structure gets created
+        new_dict = {}
         subindex = 1
         while idx < combinations:
-            copy_of_the_dictionary = second_dictionary[subindex - 1].copy()
-            if idx < subindex * len(second_dictionary.items()):
-                new_dict.setdefault(idx, copy_of_the_dictionary)
+            if idx < subindex * n_second:
+                new_dict[idx] = second_dictionary[subindex - 1].copy()
                 idx += 1
             else:
                 subindex += 1
-        # This while loop gives us the structure now we need to combine the elements
-        # now we have combine it with the first dictionary element wise
         idx = 0
         subindex = 1
-        while idx < len(new_dict.items()):
-            if idx < subindex * len(second_dictionary.items()):
+        while idx < len(new_dict):
+            if idx < subindex * n_second:
                 new_dict[idx]["bonds"] = (
                     new_dict[idx]["bonds"] + first_dictionary[subindex - 1]["bonds"]
                 )
@@ -1611,7 +1712,7 @@ def combine_dictionaries(dict_list) -> list:
                 idx += 1
             else:
                 subindex += 1
-        result = new_dict  # chefschmee
+        result = new_dict
     # Fourth Case:
     # We get three submolecules all with length one
     if (
@@ -1660,19 +1761,19 @@ def combine_dictionaries(dict_list) -> list:
         max_idx = pd.Series(length_of_dict).idxmax()
         small_dict = dict_list[min_idx]
         big_dict = dict_list[max_idx]
-        subindex = 0  # Both a index and a subindex are used for the combination
+        n_big = len(big_dict)
+        n_small = len(small_dict)
+        subindex = 0
         idx = 0
         result = {}
-        length_new_dictionary = min(length_of_dict) * max(length_of_dict)
+        length_new_dictionary = n_small * n_big
         while idx < length_new_dictionary:
-            copy_of_big_dict = big_dict[subindex].copy()
-            result.setdefault(idx, copy_of_big_dict)
+            result[idx] = big_dict[subindex].copy()
             idx += 1
-            if subindex < len(big_dict) - 1:
+            if subindex < n_big - 1:
                 subindex += 1
-            elif subindex >= len(big_dict) - 1:
+            elif subindex >= n_big - 1:
                 subindex = 0
-        # We now have our dictionary structure next we create n
         idx = 0
         subindex = 0
         while idx < len(result):
@@ -1692,9 +1793,9 @@ def combine_dictionaries(dict_list) -> list:
                 result[idx]["dihedrals"] + small_dict[subindex]["dihedrals"]
             )
             idx += 1
-            if subindex < len(small_dict) - 1:
+            if subindex < n_small - 1:
                 subindex += 1
-            elif subindex >= len(small_dict) - 1:
+            elif subindex >= n_small - 1:
                 subindex = 0
     return [result]
 
@@ -1765,164 +1866,116 @@ def distribute_elements(dict_list, elements, dict_key, number_of_elements) -> li
 
     # The dict list will always be a list of dict with exactly one dict in it
     dictionary_inner = dict_list[0]
-    # we then define a copy which we we need when building up a new dictionary entry
-    copy_of_the_dictionary = dictionary_inner[0].copy()
+    n_inner = len(dictionary_inner)
 
-    # Next a index for iteration
     idx = 0
-
-    # and the new_dict where the structure is formed, and the end result as a variable
     new_dict = {}
     result = {}
-
-    # This print helps us to define the case and have a check for testing purposed
-    #  print("Dictionary - Key currently used:", dict_key)
-    #  print("Length of elements list:", len(elements))
-    #  print("Number of elements to take out", number_of_elements)
-    #  print("Length of the actual dictionary", len(dictionary_inner.items()))
 
     # Non-defining case when the number of elements is zero
     if number_of_elements == 0:
         return dict_list
 
-    # here we evaluate the length of the elements and let the index run until, the length of currenct dictionary * length of elements is reaches
-    if number_of_elements <= 1 and len(elements) <= (len(dictionary_inner.items())):
-        # we also define a subindex so that the dictionary gets duplicated the right amount of times
+    # here we evaluate the length of the elements and let the index run until, the length of current dictionary * length of elements is reached
+    if number_of_elements <= 1 and len(elements) <= n_inner:
         subindex = 0
-        length_new_dictionary = len(dictionary_inner.items()) * len(elements)
+        length_new_dictionary = n_inner * len(elements)
         while idx < length_new_dictionary:
-            copy_of_the_dictionary = dictionary_inner[subindex].copy()
-            for key, value in copy_of_the_dictionary.items():
-                if key == dict_key:
-                    new_dict.setdefault(idx, copy_of_the_dictionary)
-                    idx += 1
-                    if subindex < len(dictionary_inner.items()) - 1:
-                        subindex += 1
-                    elif subindex > len(dictionary_inner.items()) - 1:
-                        subindex = 0
+            new_dict[idx] = dictionary_inner[subindex].copy()
+            idx += 1
+            if subindex < n_inner - 1:
+                subindex += 1
+            elif subindex > n_inner - 1:
+                subindex = 0
         duplicated_elements = list(
             itertools.islice(itertools.cycle(elements), length_new_dictionary)
         )
-
         for outer_key, inner_dict in new_dict.items():
             result[outer_key] = inner_dict.copy()
-            copy_elements = inner_dict[dict_key].copy()
+            orig_val = inner_dict[dict_key]
             result[outer_key][dict_key] = [duplicated_elements.pop(0)]
-            if len(copy_elements) > 0:
-                result[outer_key][dict_key].extend(copy_elements)
+            if orig_val:
+                result[outer_key][dict_key].extend(orig_val)
 
     # FIRST-CASE: number_of_elements = 1 and len(elements) > dictionary entries
     # Only difference here is that new entries get created
     # With this variant alone for example the water dimer can be calculated
-    if number_of_elements <= 1 and len(elements) > len(dictionary_inner.items()):
-
+    if number_of_elements <= 1 and len(elements) > n_inner:
         subindex = 0
-        length_new_dictionary = len(dictionary_inner.items()) * len(elements)
+        length_new_dictionary = n_inner * len(elements)
         while idx < length_new_dictionary:
-            copy_of_the_dictionary = dictionary_inner[subindex].copy()
-            for key, value in copy_of_the_dictionary.items():
-                if key == dict_key:
-                    new_dict.setdefault(idx, copy_of_the_dictionary)
-                    idx += 1
-                    if subindex < len(dictionary_inner.items()) - 1:
-                        subindex += 1
-                    elif subindex > len(dictionary_inner.items()) - 1:
-                        subindex = 0
+            new_dict[idx] = dictionary_inner[subindex].copy()
+            idx += 1
+            if subindex < n_inner - 1:
+                subindex += 1
+            elif subindex > n_inner - 1:
+                subindex = 0
         duplicated_elements = list(
             itertools.islice(itertools.cycle(elements), length_new_dictionary)
         )
-
         for outer_key, inner_dict in new_dict.items():
             result[outer_key] = inner_dict.copy()
-            copy_elements = inner_dict[dict_key].copy()
+            orig_val = inner_dict[dict_key]
             result[outer_key][dict_key] = [duplicated_elements.pop(0)]
-            if len(copy_elements) > 0:
-                result[outer_key][dict_key].extend(copy_elements)
+            if orig_val:
+                result[outer_key][dict_key].extend(orig_val)
 
     # in this case we slice out the elements and create packages which then get added
     if number_of_elements > 1:
         # Second-CASE .1 the number of elements is equal to the len of the list
-        # In this case we dont_need to take into account any combinatoris, because there is just one combination to choose out of
-        if number_of_elements == len(elements) and len(elements) <= (
-            len(dictionary_inner.items())
-        ):
-            while idx < len(dictionary_inner.items()):
-                copy_of_the_dictionary = dictionary_inner[idx].copy()
-                for key, value in copy_of_the_dictionary.items():
-                    if key == dict_key:
-                        new_dict.setdefault(idx, copy_of_the_dictionary)
-                        idx += 1
-
+        # In this case we dont_need to take into account any combinatorics, because there is just one combination to choose out of
+        if number_of_elements == len(elements) and len(elements) <= n_inner:
+            while idx < n_inner:
+                new_dict[idx] = dictionary_inner[idx].copy()
+                idx += 1
             for outer_key, inner_dict in new_dict.items():
                 result[outer_key] = inner_dict.copy()
-                for element in elements:  # maybe do this with zip, but is fine for now
-                    if element not in result[outer_key][dict_key]:
-                        result[outer_key][dict_key].extend(elements)
+                existing = set(result[outer_key][dict_key])
+                result[outer_key][dict_key].extend(e for e in elements if e not in existing)
         # Second-Case .2 if the length of the elements is bigger then the dictionary we create new elements
         # TODO i think this case is pointess and can be combined with the upper one
-        if number_of_elements == len(elements) and len(elements) >= (
-            len(dictionary_inner.items())
-        ):
-            while idx < len(dictionary_inner.items()):
-                copy_of_the_dictionary = dictionary_inner[idx].copy()
-                for key, value in copy_of_the_dictionary.items():
-                    if key == dict_key:
-                        new_dict.setdefault(idx, copy_of_the_dictionary)
-                        idx += 1
-
+        if number_of_elements == len(elements) and len(elements) >= n_inner:
+            while idx < n_inner:
+                new_dict[idx] = dictionary_inner[idx].copy()
+                idx += 1
             for outer_key, inner_dict in new_dict.items():
                 result[outer_key] = inner_dict.copy()
-                for element in elements:  # maybe do this with zip, but is fine for now
-                    if element not in result[outer_key][dict_key]:
-                        result[outer_key][dict_key].extend(elements)
+                existing = set(result[outer_key][dict_key])
+                result[outer_key][dict_key].extend(e for e in elements if e not in existing)
 
         if number_of_elements != len(elements):
-            # This is our fist combinatoric case, we have now n choose k and need to evaluate the possibilities
-            # for example 8 choose 2 gives us 28 possible combinations which we have to consider
-            # We then have to evaluate the number of possible combinations via multiplication with the length of the list
+            # n choose k combinatorial case
             element_combinations = [
                 list(perm)
                 for perm in itertools.combinations(elements, number_of_elements)
             ]
             possible_combinations = len(element_combinations)
-            length_of_the_dictionary = len(dictionary_inner.items())
+            length_of_the_dictionary = n_inner
             combinations = possible_combinations * length_of_the_dictionary
-            # And in order to do this pop method we have to duplicate the list n times --> n is the length of the dictionar<
             duplicated_element_combinations = [
                 tup
                 for _ in range(length_of_the_dictionary)
                 for tup in element_combinations
             ]
-            subindex = 1  # we let the subindex rise according to the number of dictionarys thus  far
+            subindex = 1
             while idx < combinations:
-                # Now we have to take pairs according to the length of the dictionary = 84 / 3 = 28 per dictionary
-                copy_of_the_dictionary = dictionary_inner[subindex - 1].copy()
-                for key, value in copy_of_the_dictionary.items():
-                    if key == dict_key:
-                        new_dict.setdefault(idx, copy_of_the_dictionary)
-                        if idx < possible_combinations * subindex:
-                            idx += 1
-                        else:
-                            subindex += 1
-            # The dictionary therefore needs the length of the combinations
+                if idx < possible_combinations * subindex:
+                    new_dict[idx] = dictionary_inner[subindex - 1].copy()
+                    idx += 1
+                else:
+                    subindex += 1
             for outer_key, inner_dict in new_dict.items():
                 result[outer_key] = inner_dict.copy()
-                # Fix elements to append
-                copy_elements = inner_dict[dict_key].copy()
+                orig_val = inner_dict[dict_key]
                 if length_of_the_dictionary == 1:
                     result[outer_key][dict_key] = element_combinations.pop(0)
                 elif length_of_the_dictionary > 1:
                     result[outer_key][dict_key] = duplicated_element_combinations.pop(0)
-                # this is a safety function because for some strange reason the elements get copied 3 times ??
-                if len(copy_elements) > 0:
-                    unique_items = [
-                        item
-                        for item in copy_elements
-                        if item not in result[outer_key][dict_key]
-                    ]
-                    result[outer_key][dict_key] = list(
-                        itertools.chain(result[outer_key][dict_key], unique_items)
-                    )  # at this point just ask Kemal
+                if orig_val:
+                    existing = set(result[outer_key][dict_key])
+                    result[outer_key][dict_key].extend(
+                        item for item in orig_val if item not in existing
+                    )
     return [result]
 
 
@@ -2182,9 +2235,15 @@ def intermolecular_general_acyclic_linunit_molecule(
     ic_dict = dict()
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict
 
 
@@ -2417,12 +2476,17 @@ def intermolecular_general_acyclic_nolinunit_molecule(
         ic_dict_list, intermolecular_dihedrals, "dihedrals", ic_dihedrals_needed
     )
     ic_dict = dict()
-
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict
 
 
@@ -2732,12 +2796,17 @@ def intermolecular_general_cyclic_nolinsub(
         )
 
     ic_dict = dict()
-
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict
 
 
@@ -3118,12 +3187,17 @@ def intermolecular_general_cyclic_linunit_molecule(
     )
 
     ic_dict = dict()
-
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict
 
 
@@ -3399,9 +3473,15 @@ def intermolecular_planar_acyclic_linunit_molecule(
     ic_dict = dict()
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict
 
 
@@ -3763,12 +3843,17 @@ def intermolecular_planar_cyclic_linunit_molecule(
     )  # intermolecular_dihedrals_needed)
 
     ic_dict = dict()
-
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict
 
 
@@ -4092,7 +4177,7 @@ def intermolecular_planar_cyclic_nolinunit_molecule(
 
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
     return ic_dict
@@ -4324,9 +4409,15 @@ def intermolecular_planar_acyclic_nolinunit_molecule(
     ic_dict = dict()
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict
 
 
@@ -4456,10 +4547,15 @@ def intermolecular_fully_linear_molecule(
     )
 
     ic_dict = dict()
-
     new_key = 0
     for dictionary in ic_dict_list:
-        for key, value in dictionary.copy().items():
+        for key, value in dictionary.items():
             ic_dict[new_key] = value
             new_key += 1
+            if new_key >= _MAX_IC_SETS_TOTAL:
+                logging.warning(
+                    "IC generation stopped at %s sets (limit: %s).",
+                    f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
+                )
+                return ic_dict
     return ic_dict

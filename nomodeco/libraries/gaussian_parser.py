@@ -9,7 +9,7 @@ from scipy import constants
 import re
 from mendeleev import element
 
-from nomodeco.libraries.nomodeco_classes import Molecule
+from nomodeco.libraries.molecule_class import Molecule
 
 class Atom(NamedTuple):
     symbol: str

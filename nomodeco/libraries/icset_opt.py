@@ -4,236 +4,218 @@ from nomodeco.libraries import icsel
 from nomodeco.libraries import bmatrix
 from nomodeco.libraries import logfile
 import os
-import matplotlib.pyplot as plt
+
 
 def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra,
                                 CartesianF_Matrix, atoms, symmetric_coordinates, L, intfreq_penalty, intfc_penalty) -> dict:
     """
-    Returns a dictionary with the optimal coordinate set. For each entry in the ic_dict, the metric of Nomodeco gets calculated, then the set with the highest metric gets selected
+    Returns a dictionary with the optimal coordinate set. For each entry in the ic_dict, the metric of Nomodeco gets calculated, then the set with the highest metric gets selected.
 
-    Attributes:
-        ic_dict:
-            a dictionary containing all the possible IC sets
-        idof:
-            a integer with the vibrational degrees of freedom
-        reciprocal_massmatrix:
-            a np.array with the reciprocal masses of the atoms
-        reciprocal_square_massmatrix:
-            a np.array with the reciprocal square masses of the atoms
-        CartesianF_Matrix: 
-            the second derivative matrix of the frequency calculation
-        atoms:
-            a object of the Molecule class 
+    Key optimisation: B-matrix rows, G-matrix blocks, H-matrix blocks, and D-matrix blocks are
+    precomputed once for the full IC universe and then assembled per set via cheap row-indexing,
+    replacing the per-set  B @ M_inv @ B^T  and  B_inv^T @ F @ B_inv  matrix multiplications.
     """
-    metric_analysis = np.zeros(len(ic_dict))
-    lambda_analysis = np.zeros(len(ic_dict))
-    svd_analysis = np.zeros(len(ic_dict))
-    if args.log:
+    metric_analysis = {}
 
+    if args.log:
         if not args.gv == None:
             with open(args.gv[0]) as inputfile:
-                 outputfile = logfile.create_filename_log(inputfile.name)
+                outputfile = logfile.create_filename_log(inputfile.name)
         if not args.molpro == None:
             with open(args.molpro[0]) as inputfile:
-                 outputfile = logfile.create_filename_log(inputfile.name)
+                outputfile = logfile.create_filename_log(inputfile.name)
         if not args.orca == None:
             with open(args.orca[0]) as inputfile:
-                 outputfile = logfile.create_filename_log(inputfile.name)
+                outputfile = logfile.create_filename_log(inputfile.name)
         if args.pymolpro:
             with open(os.getenv('OUT_FILE_LINK')) as inputfile:
-                 outputfile = logfile.create_filename_log(inputfile.name)
-
-
+                outputfile = logfile.create_filename_log(inputfile.name)
         if os.path.exists(outputfile):
             os.remove(outputfile)
         log = logfile.setup_logger('logfile', outputfile)
         logfile.write_logfile_header(log)
 
+    # ------------------------------------------------------------------
+    # Build IC universe: collect all unique ICs across every set so we
+    # can compute one B_master covering them all.
+    # Linear angles must preserve occurrence order (same tuple appears
+    # twice: once for first-plane, once for second-plane bending).
+    # ------------------------------------------------------------------
+    bond_univ, angle_univ, la_univ, oop_univ, dih_univ = [], [], [], [], []
+    seen_bonds, seen_angles, seen_oops, seen_dihs = set(), set(), set(), set()
+    seen_la_keys: set = set()
+
+    for s in ic_dict.values():
+        for ic in s["bonds"]:
+            ic = tuple(ic)
+            if ic not in seen_bonds:
+                seen_bonds.add(ic); bond_univ.append(ic)
+        for ic in s["angles"]:
+            ic = tuple(ic)
+            if ic not in seen_angles:
+                seen_angles.add(ic); angle_univ.append(ic)
+        la_local: dict = {}
+        for ic in s["linear valence angles"]:
+            ic = tuple(ic)
+            cnt = la_local.get(ic, 0)
+            key = (ic, cnt)
+            if key not in seen_la_keys:
+                seen_la_keys.add(key); la_univ.append(ic)
+            la_local[ic] = cnt + 1
+        for ic in s["out of plane angles"]:
+            ic = tuple(ic)
+            if ic not in seen_oops:
+                seen_oops.add(ic); oop_univ.append(ic)
+        for ic in s["dihedrals"]:
+            ic = tuple(ic)
+            if ic not in seen_dihs:
+                seen_dihs.add(ic); dih_univ.append(ic)
+
+    # One B-matrix call for all ICs (replaces N per-set calls)
+    B_master = bmatrix.b_matrix(atoms, bond_univ, angle_univ, la_univ, oop_univ, dih_univ, idof)
+
+    # IC → row-index lookup (linear angles tracked by occurrence count)
+    ic_to_row: dict = {}
+    _r = 0
+    for ic in bond_univ:  ic_to_row[('b',   ic)] = _r; _r += 1
+    for ic in angle_univ: ic_to_row[('a',   ic)] = _r; _r += 1
+    la_occ_to_row: dict = {}
+    la_occ_cnt: dict = {}
+    for ic in la_univ:
+        cnt = la_occ_cnt.get(ic, 0)
+        la_occ_to_row[(ic, cnt)] = _r
+        la_occ_cnt[ic] = cnt + 1
+        _r += 1
+    for ic in oop_univ: ic_to_row[('oop', ic)] = _r; _r += 1
+    for ic in dih_univ: ic_to_row[('d',   ic)] = _r; _r += 1
+
+    # ------------------------------------------------------------------
+    # Precompute shared blocks (computed once, indexed per set)
+    #
+    #   G = B_aug @ M_inv @ B_aug^T
+    #   H = B_aug_Minv @ F_cart @ B_aug_Minv^T   (used as InternalF = G_inv @ H @ G_inv)
+    #   D = B_aug @ l
+    #
+    # Subscripts: _u = universe ICs, _r = rottra rows
+    # ------------------------------------------------------------------
+    diag_m    = np.diag(reciprocal_massmatrix)   # (3N,)
+    B_rottra  = rottra.T                          # (n_rottra, 3N)
+    B_u_Minv  = B_master * diag_m                # (n_univ, 3N)
+    B_r_Minv  = B_rottra * diag_m                # (n_rottra, 3N)
+
+    G_uu = B_u_Minv @ B_master.T                 # (n_univ, n_univ)
+    G_ur = B_u_Minv @ rottra                     # (n_univ, n_rottra)
+    G_rr = B_r_Minv @ B_rottra.T                 # (n_rottra, n_rottra)
+
+    _tmp_u = B_u_Minv @ CartesianF_Matrix        # (n_univ, 3N)
+    H_uu   = _tmp_u @ B_u_Minv.T                 # (n_univ, n_univ)
+    H_ur   = _tmp_u @ B_r_Minv.T                 # (n_univ, n_rottra)
+    H_rr   = B_r_Minv @ CartesianF_Matrix @ B_r_Minv.T  # (n_rottra, n_rottra)
+
+    l    = reciprocal_square_massmatrix @ L
+    D_u  = B_master @ l                          # (n_univ, 3N)
+    D_r  = B_rottra @ l                          # (n_rottra, 3N)
+
+    n_rottra = rottra.shape[1]
+
+    # ------------------------------------------------------------------
+    # Main loop — per-set work is now cheap: index + eigh + G_inv
+    # ------------------------------------------------------------------
     for num_of_set in ic_dict.keys():
-        bonds = ic_dict[num_of_set]["bonds"]
-        angles = ic_dict[num_of_set]["angles"]
-        linear_angles = ic_dict[num_of_set]["linear valence angles"]
-        out_of_plane = ic_dict[num_of_set]["out of plane angles"]
-        dihedrals = ic_dict[num_of_set]["dihedrals"]
+        bonds         = [tuple(b)   for b   in ic_dict[num_of_set]["bonds"]]
+        angles        = [tuple(a)   for a   in ic_dict[num_of_set]["angles"]]
+        linear_angles = [tuple(la)  for la  in ic_dict[num_of_set]["linear valence angles"]]
+        out_of_plane  = [tuple(oop) for oop in ic_dict[num_of_set]["out of plane angles"]]
+        dihedrals     = [tuple(d)   for d   in ic_dict[num_of_set]["dihedrals"]]
 
         n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
         red = n_internals - idof
 
-        # Augmenting the B-Matrix with rottra, calculating 
-        # and printing the final B-Matrix
+        # Map ICs to rows in B_master
+        row_idx = []
+        for b   in bonds:         row_idx.append(ic_to_row[('b',   b)])
+        for a   in angles:        row_idx.append(ic_to_row[('a',   a)])
+        _la_cnt: dict = {}
+        for la  in linear_angles:
+            cnt = _la_cnt.get(la, 0)
+            row_idx.append(la_occ_to_row[(la, cnt)])
+            _la_cnt[la] = cnt + 1
+        for oop in out_of_plane:  row_idx.append(ic_to_row[('oop', oop)])
+        for d   in dihedrals:     row_idx.append(ic_to_row[('d',   d)])
+        row_idx = np.array(row_idx, dtype=np.intp)
 
-        B = np.concatenate((bmatrix.b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof),
-                            np.transpose(rottra)), axis=0)
-         
-#        # Small Metric Test :)
-#        B_mat = (bmatrix.b_matrix(atoms,bonds,angles,linear_angles,out_of_plane,dihedrals,idof))
-#        
-#        # A^t * A --> symmetric matrix
-#        # 
-#        u,s,vt = np.linalg.svd(B_mat)
-#        s[s<1e-14] = 0 
-#        non_zero_s = s[s != 0]
-#        sigma_max = np.max(non_zero_s)
-#        sigma_min = np.min(non_zero_s)
-#        sigma_condition = abs(sigma_max)/abs(sigma_min)
-#        svd_analysis[num_of_set] = sigma_condition
-#        
-#        G_mat = np.matmul(np.transpose(B_mat),B_mat)
-#        
-#        g_eig_val , g_eig_vec = np.linalg.eig(G_mat)
-#
-#        # Set all ultra small eigvalues to zero
-#        g_eig_val[g_eig_val < 1e-14] = 0
-#        non_zero_eigs = g_eig_val[g_eig_val != 0]
-#
-#        lambda_max = np.max(non_zero_eigs)
-#        lambda_min = np.min(non_zero_eigs)
-#        lambda_condition = abs(lambda_max)/abs(lambda_min) 
-#        lambda_analysis[num_of_set] = lambda_condition
-        
+        # Assemble G_aug from precomputed blocks (no B @ M_inv @ B^T per set)
+        G_11  = G_uu[np.ix_(row_idx, row_idx)]
+        G_12  = G_ur[row_idx, :]
+        G_aug = np.block([[G_11, G_12], [G_12.T, G_rr]])
 
+        e, K = np.linalg.eigh(G_aug)
+        idx_sort = e.argsort()[::-1]
+        e = e[idx_sort]; K = K[:, idx_sort]
 
-        # Calculating the G-Matrix
-
-        G = B @ reciprocal_massmatrix @ np.transpose(B)
-        e, K = np.linalg.eigh(G)
-
-        # Sorting eigenvalues and eigenvectors (just for the case)
-        # Sorting highest eigenvalue/eigenvector to lowest!
-
-        idx = e.argsort()[::-1]
-        e = e[idx]
-        K = K[:, idx]
-
-        # if redundancies are present, then approximate the inverse of the G-Matrix
         if red > 0:
             K = np.delete(K, -red, axis=1)
             e = np.delete(e, -red, axis=0)
 
         e = np.diag(e)
         try:
-            G_inv = K @ np.linalg.inv(e) @ np.transpose(K)
+            G_inv = K @ np.linalg.inv(e) @ K.T
         except np.linalg.LinAlgError:
-            G_inv = K @ np.linalg.pinv(e) @ np.transpose(K)
+            G_inv = K @ np.linalg.pinv(e) @ K.T
 
-        # Calculating the inverse augmented B-Matrix
+        # InternalF = G_inv @ H_aug @ G_inv  (no B_inv^T @ F @ B_inv per set)
+        H_11       = H_uu[np.ix_(row_idx, row_idx)]
+        H_12       = H_ur[row_idx, :]
+        H_aug      = np.block([[H_11, H_12], [H_12.T, H_rr]])
+        InternalF_Matrix = G_inv @ H_aug @ G_inv
 
-        B_inv = reciprocal_massmatrix @ np.transpose(B) @ G_inv
-        InternalF_Matrix = np.transpose(B_inv) @ CartesianF_Matrix @ B_inv
+        # B_aug and B_inv only needed for the completeness check (cheap row slice)
+        B_aug      = np.concatenate([B_master[row_idx], B_rottra], axis=0)
+        B_Minv_aug = np.concatenate([B_u_Minv[row_idx], B_r_Minv], axis=0)
+        B_inv      = B_Minv_aug.T @ G_inv
 
         if args.log:
             logfile.write_logfile_information_results(log, n_internals, red, bonds, angles,
                                                       linear_angles, out_of_plane, dihedrals)
 
-        # remove not complete sets here
-        # if you want the information where not completeness does occur
-        # you can first call logfile.write_logfile_information_results
-        if not icsel.test_completeness(CartesianF_Matrix, B, B_inv, InternalF_Matrix):
+        if not icsel.test_completeness(CartesianF_Matrix, B_aug, B_inv, InternalF_Matrix):
             if args.log:
                 logfile.write_logfile_not_complete_sets(log)
             continue
 
-        # Calculation of the mass-weighted normal modes in Cartesian Coordinates
+        D = np.concatenate([D_u[row_idx], D_r], axis=0)
 
-        l = reciprocal_square_massmatrix @ L
+        eigenvalues = np.diag(D.T @ InternalF_Matrix @ D)
 
-        # Calculation of the mass-weighted normal modes in Internal Coordinates
-
-        D = B @ l
-
-        eigenvalues = np.transpose(D) @ InternalF_Matrix @ D
-        eigenvalues = np.diag(eigenvalues)
-
-        num_rottra = 3 * len(atoms) - idof
-
-        nu = np.zeros(n_internals)
-        for n in range(0, n_internals):
-            for m in range(0, n_internals):
-                for i in range(0, n_internals - red):
-                    k = i + num_rottra
-                    nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
-
-        # if you want the information where imaginary freq. occur
-        # uncomment below
-        if np.any(nu < 0) == True:
+        num_rottra = n_rottra
+        n_vib      = n_internals - red
+        D_ni = D[:n_internals, num_rottra:num_rottra + n_vib]
+        nu   = np.einsum('mi,mn,ni->n', D_ni, InternalF_Matrix[:n_internals, :n_internals], D_ni)
+        if np.any(nu < 0):
             if args.log:
                 logfile.write_logfile_nan_freq(log)
             continue
 
-        # Calculation of the Vibrational Density Matrices / PED, KED and TED matrices
-        P = np.zeros((n_internals - red, n_internals + num_rottra, n_internals + num_rottra))
-        T = np.zeros((n_internals - red, n_internals + num_rottra, n_internals + num_rottra))
-        E = np.zeros((n_internals - red, n_internals + num_rottra, n_internals + num_rottra))
+        ev_vib = eigenvalues[num_rottra:num_rottra + n_vib]
+        D_vib  = D[:, num_rottra:num_rottra + n_vib].T
+        outer  = D_vib[:, :, None] * D_vib[:, None, :]
+        P = outer * InternalF_Matrix[None, :, :] / ev_vib[:, None, None]
+        T = outer * G_inv[None, :, :]
+        E = 0.5 * (P + T)
 
-        for i in range(0, n_internals - red):
-            for m in range(0, n_internals + num_rottra):
-                for n in range(0, n_internals + num_rottra):
-                    k = i + num_rottra
-                    P[i][m][n] = D[m][k] * InternalF_Matrix[m][n] * D[n][k] / eigenvalues[k]  # PED
-                    T[i][m][n] = D[m][k] * G_inv[m][n] * D[n][k]  # KED
-                    E[i][m][n] = 0.5 * (T[i][m][n] + P[i][m][n])  # TED
+        ved_matrix     = P.sum(axis=2)
+        sum_check_VED  = np.around(ved_matrix.sum() / n_vib, 2)
+        ved_matrix     = ved_matrix.T[:n_internals, :n_internals]
 
-        # check normalization
-        sum_check_PED = np.zeros(n_internals)
-        sum_check_KED = np.zeros(n_internals)
-        sum_check_TED = np.zeros(n_internals)
-        for i in range(0, n_internals - red):
-            for m in range(0, n_internals + num_rottra):
-                for n in range(0, n_internals + num_rottra):
-                    sum_check_PED[i] += P[i][m][n]
-                    sum_check_KED[i] += T[i][m][n]
-                    sum_check_TED[i] += E[i][m][n]
-
-        sum_check_VED = 0
-        ved_matrix = np.zeros((n_internals - red, n_internals + num_rottra))
-        for i in range(0, n_internals - red):
-            for m in range(0, n_internals + num_rottra):
-                for n in range(0, n_internals + num_rottra):
-                    ved_matrix[i][m] += P[i][m][n]
-                sum_check_VED += ved_matrix[i][m]
-
-        sum_check_VED = np.around(sum_check_VED / (n_internals - red), 2)
-        ved_matrix = np.transpose(ved_matrix)
-        ved_matrix = ved_matrix[0:n_internals, 0:n_internals]
-
-        # compute diagonal elements of PED matrix
-        Diag_elements = np.zeros((n_internals - red, n_internals))
-        for i in range(0, n_internals - red):
-            for n in range(0, n_internals):
-                Diag_elements[i][n] = np.diag(P[i])[n]
-
-        Diag_elements = np.transpose(Diag_elements)
-
-        # compute contribution matrix
-        sum_diag = np.zeros(n_internals)
-
-        for n in range(0, n_internals):
-            for i in range(0, n_internals - red):
-                sum_diag[i] += Diag_elements[n][i]
-
-        contribution_matrix = np.zeros((n_internals, n_internals - red))
-        for i in range(0, n_internals - red):
-            contribution_matrix[:, i] = ((Diag_elements[:, i] / sum_diag[i]) * 100).astype(float)
-
-        nu = np.zeros(n_internals)
-        for n in range(0, n_internals):
-            for m in range(0, n_internals):
-                for i in range(0, n_internals - red):
-                    k = i + num_rottra
-                    nu[n] += D[m][k] * InternalF_Matrix[m][n] * D[n][k]
+        Diag_elements       = np.diagonal(P, axis1=1, axis2=2)[:, :n_internals].T
+        sum_diag            = Diag_elements.sum(axis=0)
+        contribution_matrix = Diag_elements / sum_diag * 100
 
         nu_final = np.sqrt(nu) * 5140.4981
 
         if intfreq_penalty != 0:
-
             all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
-
-            # check how often the intrinsic frequencies are the same for symmetric counterparts
-            # get counter for asymmetry
-
-            nu_dict = dict()
-            for n in range(0, n_internals):
-                nu_dict[all_internals[n]] = nu[n]
+            nu_dict = {all_internals[n]: nu[n] for n in range(n_internals)}
 
             counter_same_intrinsic_frequencies = 0
             counter_expected_symmetric_coordinates = 0
@@ -245,10 +227,8 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
                 if len(symmetric_coordinates[key]) > 1:
                     counter_expected_symmetric_coordinates += 1
 
-            # no double counting
-            counter_same_intrinsic_frequencies = (counter_same_intrinsic_frequencies // 2)
-            counter_expected_symmetric_coordinates = (counter_expected_symmetric_coordinates // 2)
-
+            counter_same_intrinsic_frequencies    = counter_same_intrinsic_frequencies // 2
+            counter_expected_symmetric_coordinates = counter_expected_symmetric_coordinates // 2
             counter = np.abs(counter_expected_symmetric_coordinates - counter_same_intrinsic_frequencies)
         else:
             counter = 0
@@ -266,10 +246,7 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
             normal_coord_harmonic_frequencies_string = normal_coord_harmonic_frequencies.astype('str')
 
             all_internals = bonds + angles + linear_angles + out_of_plane + dihedrals
-
-            all_internals_string = []
-            for internal in all_internals:
-                all_internals_string.append('(' + ', '.join(internal) + ')')
+            all_internals_string = ['(' + ', '.join(internal) + ')' for internal in all_internals]
 
             Results = pd.DataFrame()
             Results['Internal Coordinate'] = all_internals_string
@@ -287,8 +264,7 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
             ContributionTable = ContributionTable.join(pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format))
 
             columns = {}
-            keys = range(3 * n_atoms - ((3 * n_atoms - idof)))
-            for i in keys:
+            for i in range(3 * n_atoms - (3 * n_atoms - idof)):
                 columns[i] = normal_coord_harmonic_frequencies_string[i]
 
             Results = Results.rename(columns=columns)
@@ -296,52 +272,21 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
             ContributionTable = ContributionTable.rename(columns=columns)
             logfile.write_logfile_results(log, Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
 
-        if args.log:
             metric_analysis[num_of_set] = icsel.Kemalian_metric_log(matrix, Diag_elements, counter,
-                                                                    intfreq_penalty, intfc_penalty, log)
+                                                                     intfreq_penalty, intfc_penalty, log)
         else:
             metric_analysis[num_of_set] = icsel.Kemalian_metric(matrix, Diag_elements, counter,
-                                                                intfreq_penalty, intfc_penalty, args)
+                                                                 intfreq_penalty, intfc_penalty, args)
 
-    print("Optimal coordinate set has the following assigned metric value:",
-          metric_analysis[np.argmax(metric_analysis)])
-    
-#    xaxis = np.arange(len(metric_analysis))
-#
-#    fig, ax = plt.subplots()
-#    
-#
-#    ax.bar(xaxis - 0.2, metric_analysis, 0.4, label = "Kemalian Metric")
-#    ax.bar(xaxis + 0.2, svd_analysis, 0.4, label = "Condition Number")
-#    ax.set_xticks(xaxis)
-#    ax.set_xlabel("IC set")
-#    ax.set_ylabel("Value")
-#    ax.get_legend()
-#    
-#    min_idx = np.argmin(metric_analysis)
-#    max_idx = np.argmax(metric_analysis)
-#    ax.annotate(f"Min: {metric_analysis[min_idx]:.2f}", 
-#            (xaxis[min_idx] - 0.2, metric_analysis[min_idx]),
-#            xytext=(-20, 5), textcoords="offset points", color='red', fontsize=10)
-#
-#    ax.annotate(f"Max: {metric_analysis[max_idx]:.2f}", 
-#            (xaxis[max_idx] - 0.2, metric_analysis[max_idx]),
-#            xytext=(-20, 5), textcoords="offset points", color='green', fontsize=10)
-#
-#    min_svd_idx = np.argmin(svd_analysis)
-#    max_svd_idx = np.argmax(svd_analysis)
-#    ax.annotate(f"Min: {svd_analysis[min_svd_idx]:.2f}", 
-#            (xaxis[min_svd_idx] + 0.2, svd_analysis[min_svd_idx]),
-#            xytext=(-20, 5), textcoords="offset points", color='red', fontsize=10)
-#
-#    ax.annotate(f"Max: {svd_analysis[max_svd_idx]:.2f}", 
-#            (xaxis[max_svd_idx] + 0.2, svd_analysis[max_svd_idx]),
-#            xytext=(-20, 5), textcoords="offset points", color='green', fontsize=10)    
-#
-#    fig.savefig("Condition_number_kem_mat.png",format="png",dpi=300)
+    if not metric_analysis:
+        return {"best_key": None, "metric": 0, "set": None}
 
+    best_key = max(metric_analysis, key=metric_analysis.get)
+    best_metric_value = metric_analysis[best_key]
+    print("Optimal coordinate set has the following assigned metric value:", metric_analysis[best_key])
 
-
-    return ic_dict[np.argmax(metric_analysis)]
-    #return ic_dict[np.argmin(lambda_analysis)]
-    #return ic_dict[np.argmin(svd_analysis)]
+    return {
+        "best_key": best_key,
+        "metric": best_metric_value,
+        "set": ic_dict[best_key]
+    }
