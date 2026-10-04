@@ -37,6 +37,13 @@ nomodeco = "nomodeco.nomodeco:main"
 
 
 
+[tool.pytest.ini_options]
+testpaths = ["nomodeco/tests"]
+pythonpath = ["."]
+markers = ["slow: full nomodeco runs on real molecules"]
+filterwarnings = ["ignore::DeprecationWarning:pymatgen.*"]
+
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

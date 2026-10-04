@@ -231,22 +231,6 @@ def main():
             )
             outputfile = logfile.create_filename_out(inputfile.name)
 
-    # TODO
-    if args.input_zmat:
-
-        files = [f for f in os.listdir(".") if os.path.isfile(f) and f.endswith(".xyz")]
-        questions = [
-            inquirer.List(".xyz", message="Select z_matrix file:", choices=files),
-        ]
-
-        xyz_file = inquirer.prompt(questions)[".xyz"]
-        xyz_abs_path = os.path.abspath(xyz_file)
-
-        zmat_readin = zmat.read_zmatrix(xyz_abs_path)
-        atoms = zmat.write_xyz(*zmat_readin)
-        n_atoms = len(atoms)
-        outputfile = logfile.create_filename_out(xyz_file)
-
     if os.path.exists(outputfile):
         i = 1
         while True:
@@ -508,7 +492,7 @@ def main():
         if args.penalty1 != 0:
             symmetric_bonds = icsel.get_symm_bonds(bonds, specification)
             symmetric_angles = icsel.get_symm_angles(angles, specification)
-            symmetric_dihedrals = icsel.get_symm_angles(dihedrals, specification)
+            symmetric_dihedrals = icsel.get_symm_dihedrals(dihedrals, specification)
             symmetric_coordinates = {
                 **symmetric_bonds,
                 **symmetric_angles,
@@ -589,6 +573,9 @@ def main():
             args.penalty2,
         )
         optimal_set = result["set"]
+        if optimal_set is None:
+            out.error("No valid internal coordinate set was found (0 complete sets evaluated).")
+            sys.exit("Nomodeco: no valid internal coordinate set was found. See the .out file.")
 
     if not args.nomodeco_coords == None:
 
@@ -654,7 +641,7 @@ def main():
         # TODO: Implement argspenalty for user specified IC sets
         symmetric_coordinates = dict()
 
-        optimal_set = icset_opt.find_optimal_coordinate_set(
+        result = icset_opt.find_optimal_coordinate_set(
             ic_dict,
             args,
             idof,
@@ -668,6 +655,10 @@ def main():
             args.penalty1,
             args.penalty2,
         )
+        optimal_set = result["set"]
+        if optimal_set is None:
+            out.error("The user-defined internal coordinate set is not complete or gives imaginary intrinsic frequencies.")
+            sys.exit("Nomodeco: the user-defined internal coordinate set is not valid. See the .out file.")
 
     """''
     Final calculation with optimal set
@@ -1228,17 +1219,17 @@ def main():
     # TODO: clean up
     if args.heatmap:
         # 3*n_atoms - (3*n_atoms - idof) == idof
-        colums = {
+        heatmap_columns = {
             i: normal_coord_harmonic_frequencies[i] for i in range(int(idof))
         }
 
         for matrix_type in args.heatmap:
             if matrix_type == "ved":
-                _generate_heatmap(ved_matrix, columns_map=columns, row_labels=all_internals_string, filename="heatmap_ved_matrix.png")
+                _generate_heatmap(ved_matrix, columns_map=heatmap_columns, row_labels=all_internals_string, filename="heatmap_ved_matrix.png")
             if matrix_type == "diag":
-                _generate_heatmap(Diag_elements, columns_map=columns, row_labels=all_internals_string, filename="heatmap_diag_ped.png", cbar_label="Diagonal PED")
+                _generate_heatmap(Diag_elements, columns_map=heatmap_columns, row_labels=all_internals_string, filename="heatmap_diag_ped.png", cbar_label="Diagonal PED")
             if matrix_type == "contr":
-                _generate_heatmap(contribution_matrix, columns_map=columns, row_labels=all_internals_string, filename="heatmap_contribution_matrix.png", cbar_label="Contribution (%)")
+                _generate_heatmap(contribution_matrix, columns_map=heatmap_columns, row_labels=all_internals_string, filename="heatmap_contribution_matrix.png", cbar_label="Contribution (%)")
 
     if args.csv:
         for matrix_type in args.csv:

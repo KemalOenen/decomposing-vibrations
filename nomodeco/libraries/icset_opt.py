@@ -17,6 +17,9 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
     """
     metric_analysis = {}
 
+    if len(ic_dict) == 0:
+        return {"best_key": None, "metric": 0, "set": None}
+
     if args.log:
         if not args.gv == None:
             with open(args.gv[0]) as inputfile:
@@ -224,7 +227,7 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
                     if key1 != key2 and np.isclose(value1, value2):
                         counter_same_intrinsic_frequencies += 1
             for key in nu_dict:
-                if len(symmetric_coordinates[key]) > 1:
+                if len(symmetric_coordinates.get(key, ())) > 1:
                     counter_expected_symmetric_coordinates += 1
 
             counter_same_intrinsic_frequencies    = counter_same_intrinsic_frequencies // 2
@@ -250,18 +253,18 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
 
             Results = pd.DataFrame()
             Results['Internal Coordinate'] = all_internals_string
-            Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-            Results = Results.join(pd.DataFrame(ved_matrix).applymap("{0:.2f}".format))
+            Results['Intrinsic Frequencies'] = pd.DataFrame(nu_final).map("{0:.2f}".format)
+            Results = Results.join(pd.DataFrame(ved_matrix).map("{0:.2f}".format))
 
             DiagonalElementsPED = pd.DataFrame()
             DiagonalElementsPED['Internal Coordinate'] = all_internals_string
-            DiagonalElementsPED['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-            DiagonalElementsPED = DiagonalElementsPED.join(pd.DataFrame(Diag_elements).applymap("{0:.2f}".format))
+            DiagonalElementsPED['Intrinsic Frequencies'] = pd.DataFrame(nu_final).map("{0:.2f}".format)
+            DiagonalElementsPED = DiagonalElementsPED.join(pd.DataFrame(Diag_elements).map("{0:.2f}".format))
 
             ContributionTable = pd.DataFrame()
             ContributionTable['Internal Coordinate'] = all_internals_string
-            ContributionTable['Intrinsic Frequencies'] = pd.DataFrame(nu_final).applymap("{0:.2f}".format)
-            ContributionTable = ContributionTable.join(pd.DataFrame(contribution_matrix).applymap("{0:.2f}".format))
+            ContributionTable['Intrinsic Frequencies'] = pd.DataFrame(nu_final).map("{0:.2f}".format)
+            ContributionTable = ContributionTable.join(pd.DataFrame(contribution_matrix).map("{0:.2f}".format))
 
             columns = {}
             for i in range(3 * n_atoms - (3 * n_atoms - idof)):

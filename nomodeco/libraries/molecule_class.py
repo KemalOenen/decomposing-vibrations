@@ -24,6 +24,10 @@ def get_bond_information():
 
 BOND_INFO = get_bond_information()
 
+# Bond angles at or above this are treated as linear (two linear-bend coordinates); a dihedral
+# through such an angle is undefined, so generate_dihedrals uses the same cutoff
+LINEAR_ANGLE_DEG = 169.0
+
 
 class Molecule(list):
     """
@@ -345,9 +349,9 @@ class Molecule(list):
                     cos_a = np.clip(np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc)), -1, 1)
                     angle_deg = np.arccos(cos_a) * 180 / np.pi
                     triple = (a1, atom, a3)
-                    if 10 < angle_deg < 169:
+                    if 10 < angle_deg < LINEAR_ANGLE_DEG:
                         angles.append(triple)
-                    elif angle_deg >= 169:
+                    elif angle_deg >= LINEAR_ANGLE_DEG:
                         linear_angles.append(triple)
                         linear_angles.append(triple)
         return angles, linear_angles
@@ -355,13 +359,15 @@ class Molecule(list):
     # Make static method for numba compilation of dihedral filtering, we will call this from the main method to generate dihedrals
     @staticmethod
     @njit
-    def _filter_dihedrals_numba(coords_array, dihedral_indices, rad15):
-        """ 
-        Numba-compiled angle filtering for dihedrals
+    def _filter_dihedrals_numba(coords_array, dihedral_indices, rad_min, rad_linear):
+        """
+        Numba-compiled angle filtering for dihedrals: keeps a dihedral only if both of its
+        bond angles lie in (rad_min, rad_linear); through a linear angle a torsion is undefined
 
         coords_array: (n, 3) array of atomic coordinates
         dihedral_indices: list of tuples (a, b, c, d) with atom indices for dihedrals
-        rad15: 15 degrees in radians
+        rad_min: lower angle bound in radians (15 degrees)
+        rad_linear: linear-angle cutoff in radians (LINEAR_ANGLE_DEG)
         """
         result_mask = np.zeros(len(dihedral_indices), dtype=np.bool_)
 
@@ -385,7 +391,7 @@ class Molecule(list):
             angle1 = np.arccos(cos1)
             angle2 = np.arccos(cos2)
 
-            if angle1 > rad15 and angle2 > rad15:
+            if rad_min < angle1 < rad_linear and rad_min < angle2 < rad_linear:
                 result_mask[i] = True
         return result_mask
 
@@ -417,8 +423,9 @@ class Molecule(list):
             dihedral_tuples.append(d)
 
         dihedral_indices = np.array(dihedral_indices, dtype=np.int32).reshape(-1, 4)
-        rad15 = 15 * np.pi / 180
-        mask = self._filter_dihedrals_numba(coords_array, dihedral_indices, rad15)
+        mask = self._filter_dihedrals_numba(
+            coords_array, dihedral_indices, np.radians(15.0), np.radians(LINEAR_ANGLE_DEG)
+        )
 
         return [d for d, keep in zip(dihedral_tuples, mask) if keep]
 

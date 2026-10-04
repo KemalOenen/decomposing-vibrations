@@ -116,11 +116,6 @@ def get_args():
                         3 (default) --> all hydrogen bond coordinates + acceptor donor bonds, angles, dihedrals and oop""",
     )
     parser.add_argument(
-        "--input_zmat",
-        action="store_true",
-        help="One can define a internal coordinate set using a Z-Matrix input, this will then get used in the analysis",
-    )
-    parser.add_argument(
         "--nomodeco_coords",
         nargs=1,
         metavar=("file1"),

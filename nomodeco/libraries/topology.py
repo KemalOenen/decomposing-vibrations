@@ -50,6 +50,10 @@ class LazyIcDict:
             return   # hard ceiling already reached; skip silently
         n = len(angle_subsets) * len(oop_subsets) * len(dihedral_subsets)
         if n == 0:
+            logging.warning(
+                "Empty IC product block skipped (angle/oop/dihedral subsets: %d/%d/%d)",
+                len(angle_subsets), len(oop_subsets), len(dihedral_subsets),
+            )
             return
         self._parts.append((bonds, linear_angles, angle_subsets, oop_subsets, dihedral_subsets))
         self._offsets.append(self._offsets[-1] + n)
@@ -182,70 +186,57 @@ def bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):
 
 
 def delete_bonds_symmetry(symmetric_bond_group, bonds, mu, valide_atoms):
-    """  
-    Safely removes symmetric bonds up to a target 'mu' count,
-    ensuring the molecule remains connected
     """
-    # 1. Convert lookup pools to sets for instant O(1) performance
+    Selects up to 'mu' bonds of one symmetry group to cut, keeping the molecule connected.
+
+    Returns (removed_bonds, bonds): bonds is the full, uncut input list in its original
+    order (as on main), so each symmetry group starts from the intact cyclic molecule.
+    Callers remove the cut bonds via update_internal_coordinates_cyclic.
+    """
     valid_set = set(valide_atoms)
     bond_set = set(bonds)
-    
-    # Work on a copy of the symmetric group so we can safely mutate it
-    candidates = list(symmetric_bond_group)
     removed_bonds = []
 
-    while mu > 0:
-        if not candidates:
-            # If we run out of candidates before satisfying mu, revert and exit
-            return [], list(bond_set | set(removed_bonds))
-
-        # Find the first bond that meets the criteria
-        chosen_bond = None
-        for bond in candidates:
-            if bond[0] in valid_set and bond[1] in valid_set:
-                chosen_bond = bond
-                break
-
-        # If no bonds match the atom criteria, we cannot proceed
-        if chosen_bond is None:
-            return [], list(bond_set | set(removed_bonds))
-
-        # 2. Tentatively remove the bond
-        candidates.remove(chosen_bond)
-        bond_set.remove(chosen_bond)
-        removed_bonds.append(chosen_bond)
-
-        # 3. Check connectivity constraints using a list representation
-        # (Assuming molecule_is_not_split accepts a sequence/iterable)
-        if molecule_is_not_split(list(bond_set)):
+    for bond in symmetric_bond_group:
+        if mu == 0:
+            break
+        if bond not in bond_set or not (bond[0] in valid_set and bond[1] in valid_set):
+            continue
+        bond_set.remove(bond)
+        if molecule_is_not_split(bond_set):
+            removed_bonds.append(bond)
             mu -= 1
         else:
-            # Revert step: The molecule split! Put it back.
-            removed_bonds.pop()
-            bond_set.add(chosen_bond)
-            # Notice we do NOT put it back in 'candidates' to avoid checking it again
+            bond_set.add(bond)
 
-    # Return the list of removed bonds, and the final state of remaining bonds
-    return removed_bonds, list(bond_set)
+    if mu > 0:
+        # this group can not open all rings on its own
+        return [], list(bonds)
+    return removed_bonds, list(bonds)
+
 
 def delete_bonds(bonds, mu, valide_atoms):
+    """
+    Fallback without symmetry: cuts the first 'mu' valid bonds (in order) that keep
+    the molecule connected. Returns (removed_bonds, remaining_bonds); input is not mutated.
+    """
     removed_bonds = []
-    while mu > 0:
-        # cut the bonds
-        for bond in bonds:
-            if bond[0] in valide_atoms and bond[1] in valide_atoms:
-                removed_bonds.append(bond)
-                bonds.remove(bond)
-                break
-
-        # we will check if the molecule is not split;
-        if molecule_is_not_split(bonds):
+    for bond in bonds:
+        if mu == 0:
+            break
+        if not (bond[0] in valide_atoms and bond[1] in valide_atoms):
+            continue
+        trial = [b for b in bonds if b != bond and b not in removed_bonds]
+        if molecule_is_not_split(trial):
+            removed_bonds.append(bond)
             mu -= 1
-        else:
-            bonds.append(removed_bonds[-1])
-            removed_bonds.pop()
-
-    return removed_bonds, bonds
+    remaining = [b for b in bonds if b not in removed_bonds]
+    if mu > 0:
+        logging.warning(
+            "Only %d of the required ring bonds could be cut without splitting the molecule",
+            len(removed_bonds),
+        )
+    return removed_bonds, remaining
 
 
 # TODO: rename method
@@ -522,6 +513,7 @@ def planar_cyclic_nolinunit_molecule(
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
+        removed_bonds = []
         if len(symmetric_bond_group) >= specification[
             "mu"
         ] and bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):
@@ -832,6 +824,7 @@ def planar_cyclic_linunit_molecule(
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
+        removed_bonds = []
         if len(symmetric_bond_group) >= specification[
             "mu"
         ] and bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):
@@ -1113,6 +1106,7 @@ def general_cyclic_nolinunit_molecule(
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
+        removed_bonds = []
         if len(symmetric_bond_group) >= specification[
             "mu"
         ] and bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):
@@ -1433,6 +1427,7 @@ def general_cyclic_linunit_molecule(
     ic_dict_list = []
     removed_bonds = []
     for symmetric_bond_group in symmetric_bonds_list:
+        removed_bonds = []
         if len(symmetric_bond_group) >= specification[
             "mu"
         ] and bonds_are_in_valide_atoms(symmetric_bond_group, valide_atoms):

@@ -155,7 +155,7 @@ def B_Matrix_Entry_Torsion_AtomA(A, B, C, D):
     return (
         cross_BAC / (r_AB * sin2_BAC)
         - (cos_BAC / (r_AC * sin2_BAC)) * cross_BAC
-        - (cos_ACD / (r_AC * sin2_ACD)) * cross_DCA
+        + (cos_ACD / (r_AC * sin2_ACD)) * cross_DCA  # Wilson s_2: + cos(phi3)/r23 * Y
     )
 
 
@@ -180,7 +180,7 @@ def B_Matrix_Entry_Torsion_AtomC(A, B, C, D):
     return (
         cross_DCA / (r_CD * sin2_ACD)
         - (cos_ACD / (r_CA * sin2_ACD)) * cross_DCA
-        - (cos_BAC / (r_CA * sin2_BAC)) * cross_BAC
+        + (cos_BAC / (r_CA * sin2_BAC)) * cross_BAC  # Wilson s_3: + cos(phi2)/r23 * X
     )
 
 
@@ -196,10 +196,10 @@ def B_Matrix_Entry_OutOfPlane_AtomB(A, B, C, D):
     sin_theta = np.dot(e_ab, cross_cd / sin_phi_b)
     if sin_theta > 1.0:
         sin_theta = 1.0
-    elif sin_theta < 0.0:
-        sin_theta = 0.0
+    elif sin_theta < -1.0:  # theta is signed; clamping to 0 broke all theta < 0 permutations
+        sin_theta = -1.0
     theta = np.arcsin(sin_theta)
-    if theta < 1e-10:
+    if abs(theta) < 1e-10:
         return cross_cd / (sin_phi_b * r_ab)
     return (1.0 / r_ab) * (cross_cd / (np.cos(theta) * sin_phi_b) - np.tan(theta) * e_ab)
 
@@ -218,10 +218,10 @@ def B_Matrix_Entry_OutOfPlane_AtomC(A, B, C, D):
     sin_theta = np.dot(e_ab, cross_cd / sin_phi_b)
     if sin_theta > 1.0:
         sin_theta = 1.0
-    elif sin_theta < 0.0:
-        sin_theta = 0.0
+    elif sin_theta < -1.0:  # theta is signed; clamping to 0 broke all theta < 0 permutations
+        sin_theta = -1.0
     theta = np.arcsin(sin_theta)
-    if theta < 1e-10:
+    if abs(theta) < 1e-10:
         return (1.0 / r_ac) * (cross_cd / sin_phi_b) * (np.sin(phi_c) / sin_phi_b)
     return (1.0 / r_ac) * (cross_cd / sin_phi_b) * (
         (np.cos(phi_b) * np.cos(phi_c) - np.cos(phi_d)) / (np.cos(theta) * sin_phi_b ** 2)
@@ -242,10 +242,10 @@ def B_Matrix_Entry_OutOfPlane_AtomD(A, B, C, D):
     sin_theta = np.dot(e_ab, cross_cd / sin_phi_b)
     if sin_theta > 1.0:
         sin_theta = 1.0
-    elif sin_theta < 0.0:
-        sin_theta = 0.0
+    elif sin_theta < -1.0:  # theta is signed; clamping to 0 broke all theta < 0 permutations
+        sin_theta = -1.0
     theta = np.arcsin(sin_theta)
-    if theta < 1e-10:
+    if abs(theta) < 1e-10:
         return (1.0 / r_ad) * (cross_cd / sin_phi_b) * (np.sin(phi_d) / sin_phi_b)
     return (1.0 / r_ad) * (cross_cd / sin_phi_b) * (
         (np.cos(phi_b) * np.cos(phi_d) - np.cos(phi_c)) / (np.cos(theta) * sin_phi_b ** 2)
@@ -307,10 +307,12 @@ def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
     for outofplane in out_of_plane:
         index = [atom_index[a] * 3 for a in outofplane]
         coord = [coordinates[atom_index[a]] for a in outofplane]
-        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_OutOfPlane_AtomA(coord[1], coord[0], coord[2], coord[3])
-        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_OutOfPlane_AtomB(coord[1], coord[0], coord[2], coord[3])
-        matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_OutOfPlane_AtomC(coord[1], coord[0], coord[2], coord[3])
-        matrix[i_internal, index[3]:index[3]+3] = B_Matrix_Entry_OutOfPlane_AtomD(coord[1], coord[0], coord[2], coord[3])
+        # oop tuples are (center, wing, c, d) (Molecule.generate_out_of_plane); the
+        # B_Matrix_Entry_OutOfPlane_* functions take A = center, B = wing atom
+        matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_OutOfPlane_AtomA(coord[0], coord[1], coord[2], coord[3])
+        matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_OutOfPlane_AtomB(coord[0], coord[1], coord[2], coord[3])
+        matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_OutOfPlane_AtomC(coord[0], coord[1], coord[2], coord[3])
+        matrix[i_internal, index[3]:index[3]+3] = B_Matrix_Entry_OutOfPlane_AtomD(coord[0], coord[1], coord[2], coord[3])
         i_internal += 1
 
     for dihedral in dihedrals:

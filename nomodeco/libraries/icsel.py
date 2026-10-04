@@ -202,6 +202,9 @@ def _flat_subsets_of_size(groups, target):
     and the function jumps directly to the one valid i, avoiding the
     ~sum(C(N,i) for i<target) wasted iterations that caused the hang.
     """
+    # Choosing zero coordinates is one valid (empty) selection, e.g. no dihedrals in H2O
+    if target == 0:
+        return [[]]
     sizes = [len(g) for g in groups]
     if not sizes:
         return []
@@ -349,7 +352,7 @@ def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihed
         ic_dict = topology.fully_linear_molecule(ic_dict, bonds, angles, linear_angles, out_of_plane, dihedrals)
 
     # @decision tree: planar, acyclic and no linear submolecules 
-    if specification["planar"] == "yes" and not specification["linearity"] == "linear submolecules found" and (
+    if specification["planar"] == "yes" and specification["linearity"] == "not linear" and (
             num_of_red == 0) and specification["intermolecular"] == "no":
         ic_dict = topology.planar_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                              dihedrals, num_bonds, num_atoms,
@@ -357,7 +360,7 @@ def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihed
                                                              specification)
 
     # @decision tree: planar, cyclic and no linear submolecules 
-    if specification["planar"] == "yes" and not specification["linearity"] == "linear submolecules found" and (
+    if specification["planar"] == "yes" and specification["linearity"] == "not linear" and (
             num_of_red != 0) and specification["intermolecular"] == "no":
         ic_dict = topology.planar_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                             dihedrals, num_bonds, num_atoms,
@@ -365,7 +368,7 @@ def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihed
                                                             specification)
 
     # @decision tree: general molecule, acyclic and no linear submolecules
-    if specification["planar"] == "no" and not specification["linearity"] == "linear submolecules found" and (
+    if specification["planar"] == "no" and specification["linearity"] == "not linear" and (
             num_of_red == 0) and specification["intermolecular"] == "no":
         ic_dict = topology.general_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                               dihedrals, num_bonds, num_atoms,
@@ -373,7 +376,7 @@ def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihed
                                                               specification)
 
     # @decision tree: general molecule, cyclic and no linear submolecules
-    if specification["planar"] == "no" and not specification["linearity"] == "linear submolecules found" and (
+    if specification["planar"] == "no" and specification["linearity"] == "not linear" and (
             num_of_red != 0) and specification["intermolecular"] == "no":
         ic_dict = topology.general_cyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                              dihedrals, num_bonds, num_atoms, num_of_red,
@@ -437,7 +440,7 @@ def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihed
                                                             specification["length of linear submolecule(s) l"],
                                                             specification)
     # This is already done and woring
-    if specification["planar"] == "no" and not specification["linearity"] == "linear submolecules found" and (
+    if specification["planar"] == "no" and specification["linearity"] == "not linear" and (
             num_of_red == 0) and specification["intermolecular"] == "yes":
         ic_dict = topology.intermolecular_general_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                               dihedrals, num_bonds, num_atoms,
@@ -486,7 +489,7 @@ def get_sets(idof, out, atoms, bonds, angles, linear_angles, out_of_plane, dihed
                                                            specification)
 
 
-    if specification["planar"] == "yes" and not specification["linearity"] == "linear submolecules found" and (num_of_red == 0) and specification["intermolecular"] == "yes":
+    if specification["planar"] == "yes" and specification["linearity"] == "not linear" and (num_of_red == 0) and specification["intermolecular"] == "yes":
         ic_dict = topology.intermolecular_planar_acyclic_nolinunit_molecule(ic_dict, out, idof, bonds, angles, linear_angles, out_of_plane,
                                                              dihedrals, num_bonds, num_atoms,
                                                              number_terminal_bonds(specification["multiplicity"]),
