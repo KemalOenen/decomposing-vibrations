@@ -1,7 +1,7 @@
 import numpy as np
 from collections import Counter
 import time
-from nomodeco.libraries.ic_class import Molecule
+from nomodeco.libraries.ic_class import Molecule, natural_key, sort_ics
 
 
 def get_linear_bonds(linear_angles) -> list:
@@ -9,7 +9,8 @@ def get_linear_bonds(linear_angles) -> list:
     for a1, mid, a3 in linear_angles:
         bonds.add(frozenset((mid, a1)))
         bonds.add(frozenset((mid, a3)))
-    return [tuple(b) for b in bonds]
+    # frozenset -> tuple order depends on PYTHONHASHSEED: fix the atom order and the list order
+    return sort_ics(tuple(sorted(b, key=natural_key)) for b in bonds)
 
 
 def is_string_in_tuples(string, list_of_tuples) -> bool:

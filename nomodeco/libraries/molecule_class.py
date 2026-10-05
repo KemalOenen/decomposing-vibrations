@@ -184,8 +184,9 @@ class Molecule(list):
         connected_components = list(nx.connected_components(molecular_graph))
         submolecules = []
         for component in connected_components:
-            subgraph = molecular_graph.subgraph(component)
-            submolecules.append(list(subgraph.edges))
+            # bonds in input order and orientation; subgraph.edges orients them by the
+            # component's set order, which depends on PYTHONHASHSEED
+            submolecules.append([bond for bond in bonds if bond[0] in component])
         submolecule_symbols = {}
         for i, submolecule in enumerate(submolecules):
             symbols = set()

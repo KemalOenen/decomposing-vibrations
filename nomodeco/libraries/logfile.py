@@ -333,6 +333,25 @@ def write_b_matrix_raw(
     logger.info("")
 
 
+def write_b_matrix_metrics(logger, metrics):
+    logger.info("B-Matrix Diagnostics".center(110, "-"))
+    logger.info("")
+    logger.info("Shape %s x %s, internal degrees of freedom %s", *metrics["shape"], metrics["idof"])
+    logger.info("numerical rank:               %s (complete: %s, redundant: %s)",
+                metrics["numerical_rank"], metrics["complete"], metrics["n_redundant"])
+    logger.info("largest singular value:       %.4e", metrics["sigma_max"])
+    logger.info("smallest vib. singular value: %.4e", metrics["sigma_min_vib"])
+    logger.info("condition number (vib.):      %.4e", metrics["cond_vib"])
+    logger.info("spectral gap:                 %.4e", metrics["spectral_gap"])
+    if "max_trans_residual" in metrics:
+        logger.info("max. translation residual:    %.2e", metrics["max_trans_residual"])
+        logger.info("max. rotation residual:       %.2e", metrics["max_rot_residual"])
+    logger.info("max. |cos| between B rows:    %.4f", metrics["max_offdiag_cos"])
+    for ic_1, ic_2, cos in metrics["collinear_pairs"]:
+        logger.info("    nearly collinear: %s  %s  cos = %+.4f", ic_1, ic_2, cos)
+    logger.info("")
+
+
 def write_hydrogen_bond_information(
     logger,
     h_bonds,

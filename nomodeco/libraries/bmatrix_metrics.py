@@ -75,6 +75,10 @@ def bmatrix_metrics(B, idof, coords=None, ic_labels=None, rtol=1e-8, collinear_t
         m.update(rigid_body_residuals(B, coords))
     return m
 
+
+
+
+
 if __name__ == "__main__":
     # Water: r1, r2, angle + a duplicated angle (should show up as redundant / collinear)
     coords = np.array([[0.0, 0.0, 0.117], [0.0, 0.757, -0.468], [0.0, -0.757, -0.468]])

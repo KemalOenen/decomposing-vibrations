@@ -1,12 +1,25 @@
 from __future__ import annotations
 
+import re
+
 import pandas as pd
 
 from mendeleev.fetch import fetch_table
 
 from nomodeco.libraries.molecule_class import Molecule
 
-__all__ = ["Molecule", "InternalCoordinates", "get_mass_information"]
+__all__ = ["Molecule", "InternalCoordinates", "get_mass_information", "natural_key", "sort_ics"]
+
+
+def natural_key(label):
+    """Atom label sort key with numeric suffix: O2 < O10 (plain string sort gives O10 < O2)."""
+    match = re.fullmatch(r"(\D*)(\d*)", label)
+    return (match.group(1), int(match.group(2)) if match.group(2) else -1)
+
+
+def sort_ics(ics) -> list:
+    """Deterministic order for ICs coming out of sets (set order depends on PYTHONHASHSEED)."""
+    return sorted(ics, key=lambda ic: tuple(natural_key(a) for a in ic))
 
 
 # TODO: isotopes for all elements with command line input?
@@ -43,15 +56,15 @@ class InternalCoordinates:
 
         if len(ic_list1[0]) == 3:
             sym_ic_set_2 = {(c, b, a) for a, b, c in ic_list2}
-            self.coordinates[key] = list(set1 - set2 - sym_ic_set_2)
+            self.coordinates[key] = sort_ics(set1 - set2 - sym_ic_set_2)
         else:
-            self.coordinates[key] = list(set1 - set2)
+            self.coordinates[key] = sort_ics(set1 - set2)
 
     def add_coord_diff_linear(self, key, ic_list1, ic_list2):
         sym_ic_set_2 = {(c, b, a) for a, b, c in ic_list2}
         set1 = set(ic_list1)
         set2 = set(ic_list2)
-        diff = list(set1 - set2 - sym_ic_set_2)
+        diff = sort_ics(set1 - set2 - sym_ic_set_2)
         self.coordinates[key] = diff * 2
 
     def __str__(self):

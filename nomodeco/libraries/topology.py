@@ -19,6 +19,7 @@ from nomodeco.libraries import logfile
 from nomodeco.libraries import specifications
 from nomodeco.libraries import icsel
 from nomodeco.libraries.molecule_class import Molecule
+from nomodeco.libraries.ic_class import sort_ics
 from nomodeco.libraries import arguments
 
 class LazyIcDict:
@@ -4433,7 +4434,7 @@ def intermolecular_fully_linear_molecule(
     n_phi_prime = 2 * (num_atoms - 2)
     # for fully linear molecules Decius work gives us n_r = b and npi = 2(a-2)
     # yet again we first fix the two submolecules, evaluate the missing angles and append them out of the pool of linear angles
-    covalent_bonds = list(set(bonds).difference(set(intermolecular_bonds)))
+    covalent_bonds = sort_ics(set(bonds).difference(set(intermolecular_bonds)))
     # Open up the dictionary
     ic_dict_list = []
     ic_dic_list_1d_complex = []

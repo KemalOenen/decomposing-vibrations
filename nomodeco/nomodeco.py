@@ -35,6 +35,7 @@ Nomodeco Modules
 
 from nomodeco.libraries import icsel
 from nomodeco.libraries import bmatrix
+from nomodeco.libraries import bmatrix_metrics
 from nomodeco.libraries import logfile
 from nomodeco.libraries import molpro_parser
 from nomodeco.libraries import specifications
@@ -44,7 +45,7 @@ from nomodeco.libraries import arguments
 from nomodeco.libraries import specifications as sp
 from nomodeco.libraries import topology as tp
 from nomodeco.libraries.molecule_class import Molecule
-from nomodeco.libraries.ic_class import InternalCoordinates
+from nomodeco.libraries.ic_class import InternalCoordinates, sort_ics
 from nomodeco.libraries import gaussian_parser
 from nomodeco.libraries import orca_parser
 from nomodeco.libraries import zmat
@@ -305,8 +306,8 @@ def main():
         )
 
         # Define Total Bonds
-        bonds = list(set(cov_bonds).union(set(h_bonds)))
-        bond_acc_don = list(set(cov_bonds).union(set(acc_don_bonds)))
+        bonds = sort_ics(set(cov_bonds).union(set(h_bonds)))
+        bond_acc_don = sort_ics(set(cov_bonds).union(set(acc_don_bonds)))
 
         Total_IC_dict.add_coord_diff(
             "h_bond_angles",
@@ -781,7 +782,26 @@ def main():
         dihedrals,
     )
 
-    """'' 
+    # Diagnostics of the final B matrix: completeness, conditioning, rigid-body invariance and
+    # nearly collinear ICs (bmatrix_metrics.py)
+    b_metrics = bmatrix_metrics.bmatrix_metrics(
+        b_without_rottra,
+        idof,
+        coords=np.array([atom.coordinates for atom in atoms]),
+        ic_labels=[str(ic) for ic in bonds + angles + linear_angles + out_of_plane + dihedrals],
+    )
+    logfile.write_b_matrix_metrics(out, b_metrics)
+    b_warnings = []
+    if not b_metrics["complete"]:
+        b_warnings.append(f"rank {b_metrics['numerical_rank']} < idof {idof}")
+    if max(b_metrics["max_trans_residual"], b_metrics["max_rot_residual"]) > 1e-6:
+        b_warnings.append("not invariant to translations/rotations")
+    if b_metrics["collinear_pairs"]:
+        b_warnings.append(f"{len(b_metrics['collinear_pairs'])} nearly collinear IC pair(s)")
+    if b_warnings:
+        print("B-matrix diagnostics: " + "; ".join(b_warnings) + " (see .out file)")
+
+    """''
     --------------------------- Main-Calculation ------------------------------
     """ ""
 
