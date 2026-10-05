@@ -7,7 +7,8 @@ import os
 
 
 def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra,
-                                CartesianF_Matrix, atoms, symmetric_coordinates, L, intfreq_penalty, intfc_penalty) -> dict:
+                                CartesianF_Matrix, atoms, symmetric_coordinates, L, intfreq_penalty, intfc_penalty,
+                                bend_refs=None) -> dict:
     """
     Returns a dictionary with the optimal coordinate set. For each entry in the ic_dict, the metric of Nomodeco gets calculated, then the set with the highest metric gets selected.
 
@@ -75,7 +76,7 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
                 seen_dihs.add(ic); dih_univ.append(ic)
 
     # One B-matrix call for all ICs (replaces N per-set calls)
-    B_master = bmatrix.b_matrix(atoms, bond_univ, angle_univ, la_univ, oop_univ, dih_univ, idof)
+    B_master = bmatrix.b_matrix(atoms, bond_univ, angle_univ, la_univ, oop_univ, dih_univ, idof, bend_refs)
 
     # IC → row-index lookup (linear angles tracked by occurrence count)
     ic_to_row: dict = {}

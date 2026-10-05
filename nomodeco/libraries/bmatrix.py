@@ -97,6 +97,16 @@ def B_Matrix_Entry_LinearBend(M, O, N, second):
 
 
 @njit(cache=True)
+def B_Matrix_Entry_LinearBend_Ref(M, O, N, w):
+    # Linear bend M-O-N with a given reference w (from linear_bends.linear_bend_references), Eq. 25
+    u = normalized_bond_vector(O, M)
+    v = normalized_bond_vector(O, N)
+    dm = np.cross(u, w) / bond_length(O, M)
+    dn = np.cross(w, v) / bond_length(O, N)
+    return dm, -(dm + dn), dn
+
+
+@njit(cache=True)
 def B_Matrix_Entry_Torsion_AtomB(A, B, C, D):
     eAC = normalized_bond_vector(A, C)
     eBA = normalized_bond_vector(B, A)
@@ -239,7 +249,9 @@ def B_Matrix_Entry_OutOfPlane_AtomA(A, B, C, D):
     )
 
 
-def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof) -> np.ndarray:
+def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof, bend_refs=None) -> np.ndarray:
+    # bend_refs: {(M, O, N): (w1, w2)} from linear_bends.linear_bend_references; triples without
+    # an entry use the geometric rule in B_Matrix_Entry_LinearBend
     n_atoms = len(atoms)
     coordinates = np.array([a.coordinates for a in atoms])
     atom_index = {a.symbol: i for i, a in enumerate(atoms)}
@@ -276,7 +288,14 @@ def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
         key = min(tuple(linear_angle), tuple(linear_angle)[::-1])
         second = key in seen_linear_angles
         seen_linear_angles.add(key)
-        dm, do, dn = B_Matrix_Entry_LinearBend(coord[0], coord[1], coord[2], second)
+        # normal-mode aligned (w1, w2) if given; a reversed triple only flips the row's sign
+        refs = None
+        if bend_refs:
+            refs = bend_refs.get(tuple(linear_angle)) or bend_refs.get(tuple(linear_angle)[::-1])
+        if refs is not None:
+            dm, do, dn = B_Matrix_Entry_LinearBend_Ref(coord[0], coord[1], coord[2], refs[1 if second else 0])
+        else:
+            dm, do, dn = B_Matrix_Entry_LinearBend(coord[0], coord[1], coord[2], second)
         matrix[i_internal, index[0]:index[0]+3] = dm
         matrix[i_internal, index[1]:index[1]+3] = do
         matrix[i_internal, index[2]:index[2]+3] = dn

@@ -39,6 +39,7 @@ from nomodeco.libraries import logfile
 from nomodeco.libraries import molpro_parser
 from nomodeco.libraries import specifications
 from nomodeco.libraries import icset_opt
+from nomodeco.libraries import linear_bends
 from nomodeco.libraries import arguments
 from nomodeco.libraries import specifications as sp
 from nomodeco.libraries import topology as tp
@@ -450,6 +451,12 @@ def main():
         Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
         # print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
 
+        # Align the linear bends with the normal modes: rotates degenerate pairs in L and gives
+        # the reference vectors used by every b_matrix call below
+        L, bend_refs = linear_bends.linear_bend_references(
+            atoms, linear_angles, L, Cartesian_eigenvalues, diag_reciprocal_square, idof
+        )
+
         # Determination of the normal modes of zero and low Frequencies
 
         rottra = L[:, 0 : (3 * n_atoms - idof)]
@@ -571,6 +578,7 @@ def main():
             L,
             args.penalty1,
             args.penalty2,
+            bend_refs,
         )
         optimal_set = result["set"]
         if optimal_set is None:
@@ -634,6 +642,11 @@ def main():
         Cartesian_eigenvalues, L = np.linalg.eigh(Mass_weighted_CartesianF_Matrix)
         # print("Cartesian_eigenvalues (EV from mw hessian):", Cartesian_eigenvalues)
 
+        L, bend_refs = linear_bends.linear_bend_references(
+            atoms, ic_set.get("linear valence angles", []), L, Cartesian_eigenvalues,
+            diag_reciprocal_square, idof,
+        )
+
         # Determination of the normal modes of zero and low Frequencies
 
         rottra = L[:, 0 : (3 * n_atoms - idof)]
@@ -654,6 +667,7 @@ def main():
             L,
             args.penalty1,
             args.penalty2,
+            bend_refs,
         )
         optimal_set = result["set"]
         if optimal_set is None:
@@ -683,7 +697,7 @@ def main():
     B = np.concatenate(
         (
             bmatrix.b_matrix(
-                atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof
+                atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof, bend_refs
             ),
             np.transpose(rottra),
         ),
@@ -753,7 +767,7 @@ def main():
     # printing the B matrix without rottra
 
     b_without_rottra = bmatrix.b_matrix(
-        atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof
+        atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof, bend_refs
     )
 
     logfile.write_b_matrix_raw(

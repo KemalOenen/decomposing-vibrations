@@ -54,6 +54,14 @@ def propyne():
     )
 
 
+def hcocn():
+    """planar, acyclic, with a linear submolecule (C-C#N) ending at an sp2 center that needs an oop"""
+    return build(
+        ["C", "O", "H", "C", "N"],
+        [(0, 0, 0), (-0.60, 1.04, 0), (-0.55, -0.95, 0), (1.47, 0, 0), (2.63, 0, 0)],
+    )
+
+
 def benzene():
     """planar, cyclic (mu = 1)"""
     angles = np.radians(np.arange(0, 360, 60))
@@ -77,6 +85,7 @@ ALL = {
     "nh3": nh3,
     "ethylene": ethylene,
     "propyne": propyne,
+    "hcocn": hcocn,
     "benzene": benzene,
     "water_dimer": water_dimer,
 }

@@ -719,13 +719,12 @@ def planar_acyclic_linunit_molecule(
             dihedrals = update_internal_coordinates_cyclic([linear_bond], dihedrals)
             n_tau -= l - 1
 
-    # corret n_gamma if it defined for a linear submolecule
-    # as we have 3 oop angles per central unit we need to divide by 3!
-    out_of_plane_updated = update_internal_coordinates_cyclic(
-        linear_bonds, out_of_plane
-    )
-    n_gamma = n_gamma - ((len(out_of_plane) - len(out_of_plane_updated)) // 3)
-    out_of_plane = out_of_plane_updated
+    # an oop whose central atom is the center of a linear angle is redundant with the
+    # out-of-plane linear bend: drop it and correct n_gamma once per such center.
+    # An oop at the end of a linear unit (e.g. C1 in H-C1(=O)-C2#N) is kept: it is needed
+    linear_centers = {linear_angle[1] for linear_angle in linear_angles}
+    n_gamma -= len({oop[0] for oop in out_of_plane} & linear_centers)
+    out_of_plane = [oop for oop in out_of_plane if oop[0] not in linear_centers]
 
     logfile.write_logfile_updatedICs_linunit(out, out_of_plane, dihedrals)
 
@@ -1330,7 +1329,11 @@ def general_acyclic_linunit_molecule(
     # also remove dihedrals,if they are terminal
 
     linear_bonds = specifications.get_linear_bonds(linear_angles)
-    out_of_plane = update_internal_coordinates_cyclic(linear_bonds, out_of_plane)
+    # drop only oops centered on a linear-angle center (redundant with the linear bend) and
+    # correct n_gamma once per such center; oops at the end of a linear unit are needed
+    linear_centers = {linear_angle[1] for linear_angle in linear_angles}
+    n_gamma -= len({oop[0] for oop in out_of_plane} & linear_centers)
+    out_of_plane = [oop for oop in out_of_plane if oop[0] not in linear_centers]
     for linear_bond in linear_bonds:
         if (
             get_multiplicity(linear_bond[0], specification["multiplicity"]) == 1
@@ -3395,16 +3398,13 @@ def intermolecular_planar_acyclic_linunit_molecule(
             # if there are no terminal dihedrals present
             intermolecular_dihedrals_updated = Total_IC_dict["h_bond_dihedrals"]
 
-    # correct n_gamma if it defined for a linear submolecule
-    # as we have 3 oop angles per central unit we need to divide by 3!
-
-    intermolecular_out_of_plane_updated = update_internal_coordinates_cyclic(
-        linear_bonds, Total_IC_dict["h_bond_oop"]
-    )
-    n_gamma = n_gamma - (
-        (len(Total_IC_dict["h_bond_oop"]) - len(intermolecular_out_of_plane_updated))
-        // 3
-    )
+    # drop only oops centered on a linear-angle center (redundant with the linear bend) and
+    # correct n_gamma once per such center; oops at the end of a linear unit are needed
+    linear_centers = {linear_angle[1] for linear_angle in linear_angles}
+    n_gamma -= len({oop[0] for oop in Total_IC_dict["h_bond_oop"]} & linear_centers)
+    intermolecular_out_of_plane_updated = [
+        oop for oop in Total_IC_dict["h_bond_oop"] if oop[0] not in linear_centers
+    ]
 
     ic_bonds_needed = n_r - max(bonds_length)
     ic_angles_needed = n_phi - max(angles_length)
@@ -3789,16 +3789,10 @@ def intermolecular_planar_cyclic_linunit_molecule(
             )
             n_tau -= l - 1
 
-    # correct n_gamma if it defined for a linear submolecule
-    # as we have 3 oop angles per central unit we need to divide by 3!
-
-    intermolecular_out_of_plane_updated = update_internal_coordinates_cyclic(
-        linear_bonds, Total_IC_dict["h_bond_oop"]
-    )
-    n_gamma = n_gamma - (
-        (len(Total_IC_dict["h_bond_oop"]) - len(intermolecular_out_of_plane_updated))
-        // 3
-    )
+    # drop only oops centered on a linear-angle center (redundant with the linear bend) and
+    # correct n_gamma once per such center; oops at the end of a linear unit are needed
+    linear_centers = {linear_angle[1] for linear_angle in linear_angles}
+    n_gamma -= len({oop[0] for oop in Total_IC_dict["h_bond_oop"]} & linear_centers)
 
     # Calculate Dihedrals and OOP after Cleanup
     intermolecular_dihedrals_needed = n_tau - max(dihedrals_length)
