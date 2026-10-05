@@ -66,56 +66,34 @@ def B_Matrix_Entry_Angle_AtomA(A, B, C):
     return -(B_Matrix_Entry_Angle_AtomB(A, B, C) + B_Matrix_Entry_Angle_AtomC(A, B, C))
 
 
-# 90 degree rotation around Y axis: [x,y,z] -> [z,y,-x]  (replaces scipy Rotation.from_rotvec)
 @njit(cache=True)
-def _rotate_y90(v):
-    result = np.empty(3)
-    result[0] = v[2]
-    result[1] = v[1]
-    result[2] = -v[0]
-    return result
-
-
-@njit(cache=True)
-def B_Matrix_Entry_LinearAngleFirstPlane_AtomB(A, B, C):
-    u = _rotate_y90(normalized_bond_vector(A, B))
-    return -(u / bond_length(A, B))
-
-
-@njit(cache=True)
-def B_Matrix_Entry_LinearAngleFirstPlane_AtomC(A, B, C):
-    u = _rotate_y90(normalized_bond_vector(A, B))
-    return -(u / bond_length(A, C))
+def _linear_bend_w(u, v):
+    # Bend direction w (Bakken & Helgaker, JCP 117, 9160 (2002), Eq. 24).
+    # w = u x v when the angle is not exactly linear: only a w perpendicular to both
+    # u and v gives a rotation-invariant row. At 180 deg, cross u with a reference
+    # vector; take whichever of [1,-1,1], [-1,1,1] is less parallel to u.
+    w = np.cross(u, v)
+    if np.dot(w, w) > 1e-12:
+        return w / np.sqrt(np.dot(w, w))
+    w1 = np.cross(u, np.array([1.0, -1.0, 1.0]))
+    w2 = np.cross(u, np.array([-1.0, 1.0, 1.0]))
+    if np.dot(w1, w1) < np.dot(w2, w2):
+        w1 = w2
+    return w1 / np.sqrt(np.dot(w1, w1))
 
 
 @njit(cache=True)
-def B_Matrix_Entry_LinearAngleFirstPlane_AtomA(A, B, C):
-    return -(
-        B_Matrix_Entry_LinearAngleFirstPlane_AtomB(A, B, C)
-        + B_Matrix_Entry_LinearAngleFirstPlane_AtomC(A, B, C)
-    )
-
-
-@njit(cache=True)
-def B_Matrix_Entry_LinearAngleSecondPlane_AtomB(A, B, C):
-    eAB = normalized_bond_vector(A, B)
-    up = np.cross(eAB, _rotate_y90(eAB))
-    return -(up / bond_length(A, B))
-
-
-@njit(cache=True)
-def B_Matrix_Entry_LinearAngleSecondPlane_AtomC(A, B, C):
-    eAB = normalized_bond_vector(A, B)
-    up = np.cross(eAB, _rotate_y90(eAB))
-    return -(up / bond_length(A, C))
-
-
-@njit(cache=True)
-def B_Matrix_Entry_LinearAngleSecondPlane_AtomA(A, B, C):
-    return -(
-        B_Matrix_Entry_LinearAngleSecondPlane_AtomB(A, B, C)
-        + B_Matrix_Entry_LinearAngleSecondPlane_AtomC(A, B, C)
-    )
+def B_Matrix_Entry_LinearBend(M, O, N, second):
+    # Linear bend M-O-N with center O (Bakken & Helgaker Eq. 25); returns (dq/dM, dq/dO, dq/dN).
+    # The second bend uses w2 = u x w1, orthogonal to the first (already unit length).
+    u = normalized_bond_vector(O, M)
+    v = normalized_bond_vector(O, N)
+    w = _linear_bend_w(u, v)
+    if second:
+        w = np.cross(u, w)
+    dm = np.cross(u, w) / bond_length(O, M)
+    dn = np.cross(w, v) / bond_length(O, N)
+    return dm, -(dm + dn), dn
 
 
 @njit(cache=True)
@@ -273,7 +251,9 @@ def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
     )
     matrix = np.zeros((n_internal, 3 * n_atoms))
     i_internal = 0
-    n_used_linear_angles = 0
+    # each linear triple appears twice (two orthogonal bends): first occurrence -> first bend,
+    # later occurrence -> second bend; M-O-N and N-O-M are the same triple
+    seen_linear_angles = set()
 
     for bond in bonds:
         index = [atom_index[a] * 3 for a in bond]
@@ -293,16 +273,14 @@ def b_matrix(atoms, bonds, angles, linear_angles, out_of_plane, dihedrals, idof)
     for linear_angle in linear_angles:
         index = [atom_index[a] * 3 for a in linear_angle]
         coord = [coordinates[atom_index[a]] for a in linear_angle]
-        if (n_used_linear_angles % 2) == 0:
-            matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomB(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomA(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleFirstPlane_AtomC(coord[1], coord[0], coord[2])
-        else:
-            matrix[i_internal, index[0]:index[0]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomB(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[1]:index[1]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomA(coord[1], coord[0], coord[2])
-            matrix[i_internal, index[2]:index[2]+3] = B_Matrix_Entry_LinearAngleSecondPlane_AtomC(coord[1], coord[0], coord[2])
+        key = min(tuple(linear_angle), tuple(linear_angle)[::-1])
+        second = key in seen_linear_angles
+        seen_linear_angles.add(key)
+        dm, do, dn = B_Matrix_Entry_LinearBend(coord[0], coord[1], coord[2], second)
+        matrix[i_internal, index[0]:index[0]+3] = dm
+        matrix[i_internal, index[1]:index[1]+3] = do
+        matrix[i_internal, index[2]:index[2]+3] = dn
         i_internal += 1
-        n_used_linear_angles += 1
 
     for outofplane in out_of_plane:
         index = [atom_index[a] * 3 for a in outofplane]

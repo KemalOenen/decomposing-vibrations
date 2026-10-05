@@ -83,6 +83,33 @@ def test_angle_rows_match_finite_difference(name):
         assert np.allclose(analytic, fd_row(bmatrix.bond_angle, mol, angle), atol=ATOL), angle
 
 
+def linear_bend_value(w):
+    """Signed bend of M-O-N about the fixed direction w; 0 when linear, smooth through 180 deg."""
+    def value(m, o, n):
+        u = (m - o) / np.linalg.norm(m - o)
+        minus_v = -(n - o) / np.linalg.norm(n - o)
+        return np.arctan2(np.dot(w, np.cross(u, minus_v)), np.dot(u, minus_v))
+    return value
+
+
+@pytest.mark.parametrize("name", ["co2", "propyne"])
+def test_linear_bend_rows_match_finite_difference(name):
+    """Both bends of each linear triple, with w held fixed at the reference geometry."""
+    mol = molecules.ALL[name]()
+    linear_angles = analyse(mol).linear_angles
+    assert linear_angles
+    xyz = coordinates(mol)
+    index = {a.symbol: i for i, a in enumerate(mol)}
+    for triple in dict.fromkeys(linear_angles):
+        m, o, n = (xyz[index[a]] for a in triple)
+        u = (m - o) / np.linalg.norm(m - o)
+        v = (n - o) / np.linalg.norm(n - o)
+        w1 = bmatrix._linear_bend_w(u, v)
+        B = b_row(mol, linear_angles=[triple, triple])
+        for row, w in zip(B, (w1, np.cross(u, w1))):
+            assert np.allclose(row, fd_row(linear_bend_value(w), mol, triple), atol=ATOL), triple
+
+
 def test_dihedral_rows_match_finite_difference():
     mol = twisted_ethylene()
     dihedrals = analyse(mol).dihedrals
