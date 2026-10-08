@@ -9,6 +9,7 @@ import itertools
 import logging
 import random
 import string
+from collections import Counter
 import pandas as pd
 import pymatgen.core as mg
 import re
@@ -293,17 +294,21 @@ def remove_angles(atom_and_mult, angles):
     return result
 
 
-def get_param_planar_submolecule(planar_subunits_list, multiplicity_list, angles):
+def get_param_planar_submolecule(planar_subunits_list, multiplicity_list, angles, bonds):
+    # count neighbours from the (possibly ring-opened) bond list; multiplicity_list is from the intact molecule
+    n_neighbours = Counter(atom for bond in bonds for atom in bond)
+    planar_atoms = {atom for atom, _ in planar_subunits_list}
     n_phi = 0
     n_gamma = 0
-    for atom_and_mult in multiplicity_list:
-        if atom_and_mult[1] > 1:
-            if atom_and_mult in planar_subunits_list:
-                n_phi += atom_and_mult[1] - 1
-                n_gamma += atom_and_mult[1] - 2
-                angles = remove_angles(atom_and_mult, angles)
+    for atom, _ in multiplicity_list:
+        mult = n_neighbours[atom]
+        if mult > 1:
+            if atom in planar_atoms:
+                n_phi += mult - 1
+                n_gamma += mult - 2
+                angles = remove_angles((atom, mult), angles)
             else:
-                n_phi += 2 * atom_and_mult[1] - 3
+                n_phi += 2 * mult - 3
     return n_phi, n_gamma, angles
 
 
@@ -1010,7 +1015,7 @@ def general_acyclic_nolinunit_molecule(
     # remove angles at the specified coordinate, as we else would have linear dependencies
     if len(planar_subunits_list) != 0:
         n_phi, n_gamma, angles = get_param_planar_submolecule(
-            planar_subunits_list, specification["multiplicity"], angles
+            planar_subunits_list, specification["multiplicity"], angles, bonds
         )
 
     symmetric_angles = icsel.get_symm_angles(angles, specification)
@@ -1308,7 +1313,7 @@ def general_acyclic_linunit_molecule(
     # remove angles at the specified coordinate, as we else would have linear dependencies
     if len(planar_subunits_list) != 0:
         n_phi, n_gamma, angles = get_param_planar_submolecule(
-            planar_subunits_list, specification["multiplicity"], angles
+            planar_subunits_list, specification["multiplicity"], angles, bonds
         )
         # correct n_phi because we lose (l-1) DOF
         n_phi = n_phi - (l - 1)
@@ -2047,7 +2052,7 @@ def intermolecular_general_acyclic_linunit_molecule(
     # remove angles at the specified coordinate, as we else would have linear dependencies
     if len(planar_subunits_list) != 0:
         n_phi, n_gamma, angles = get_param_planar_submolecule(
-            planar_subunits_list, specification["multiplicity"], angles
+            planar_subunits_list, specification["multiplicity"], angles, bonds
         )
 
     # Open up the dictionary
@@ -2303,7 +2308,7 @@ def intermolecular_general_acyclic_nolinunit_molecule(
     # remove angles at the specified coordinate, as we else would have linear dependencies
     if len(planar_subunits_list) != 0:
         n_phi, n_gamma, angles = get_param_planar_submolecule(
-            planar_subunits_list, specification["multiplicity"], angles
+            planar_subunits_list, specification["multiplicity"], angles, bonds
         )
 
     # Open up the dictionary

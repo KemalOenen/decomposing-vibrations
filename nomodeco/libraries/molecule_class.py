@@ -25,7 +25,6 @@ def get_bond_information():
 BOND_INFO = get_bond_information()
 
 # Bond angles at or above this are treated as linear (two linear-bend coordinates); a dihedral
-# through such an angle is undefined, so generate_dihedrals uses the same cutoff.
 # 175 deg follows Bakken & Helgaker, JCP 117, 9160 (2002)
 LINEAR_ANGLE_DEG = 175.0
 
