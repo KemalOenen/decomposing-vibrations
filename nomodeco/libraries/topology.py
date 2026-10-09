@@ -15,6 +15,7 @@ import re
 from pymatgen.symmetry.analyzer import PointGroupAnalyzer
 import os
 import matplotlib.pyplot as plt
+from nomodeco.libraries import decius
 from nomodeco.libraries import logfile
 from nomodeco.libraries import specifications
 from nomodeco.libraries import icsel
@@ -297,20 +298,14 @@ def remove_angles(atom_and_mult, angles):
 
 
 def get_param_planar_submolecule(planar_subunits_list, multiplicity_list, angles, bonds):
+    """Decius counts for planar submolecules, and the angles left after removing m - 2 per planar center."""
+    planar_atoms = {atom for atom, _ in planar_subunits_list}
+    n_phi, n_gamma = decius.planar_submolecule_counts(planar_atoms, multiplicity_list, bonds)
     # count neighbours from the (possibly ring-opened) bond list; multiplicity_list is from the intact molecule
     n_neighbours = Counter(atom for bond in bonds for atom in bond)
-    planar_atoms = {atom for atom, _ in planar_subunits_list}
-    n_phi = 0
-    n_gamma = 0
     for atom, _ in multiplicity_list:
-        mult = n_neighbours[atom]
-        if mult > 1:
-            if atom in planar_atoms:
-                n_phi += mult - 1
-                n_gamma += mult - 2
-                angles = remove_angles((atom, mult), angles)
-            else:
-                n_phi += 2 * mult - 3
+        if atom in planar_atoms and n_neighbours[atom] > 1:
+            angles = remove_angles((atom, n_neighbours[atom]), angles)
     return n_phi, n_gamma, angles
 
 
@@ -411,10 +406,7 @@ def planar_acyclic_nolinunit_molecule(
 
     """
     # set length of subsets
-    n_r = num_bonds
-    n_phi = 2 * num_bonds - num_atoms
-    n_gamma = 2 * (num_bonds - num_atoms) + a_1
-    n_tau = num_bonds - a_1
+    n_r, n_phi, n_gamma, n_tau, _ = decius.planar(num_bonds, num_atoms, a_1)
 
     # remove angles that are at specific oop spots
     oop_central_atoms = dict.fromkeys(oop[0] for oop in out_of_plane)
@@ -565,7 +557,7 @@ def planar_cyclic_nolinunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            2 * n_bonds_updated - num_atoms,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_phi,
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -579,7 +571,7 @@ def planar_cyclic_nolinunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            n_bonds_updated - a_1,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_tau,
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -701,9 +693,7 @@ def planar_acyclic_linunit_molecule(
     # set length of subsets
     # IMPORTANT: there is a distinction to Decius work -> Decius counts one l.A. in n_phi and one in n_phi'!
 
-    n_r = num_bonds
-    n_phi = 2 * num_bonds - num_atoms - (l - 1)
-    n_phi_prime = 2 * (l - 1)
+    n_r, n_phi, n_gamma, n_tau, n_phi_prime = decius.planar(num_bonds, num_atoms, a_1, l)
 
     # remove angles that are at specific oop spots
     oop_central_atoms = dict.fromkeys(oop[0] for oop in out_of_plane)
@@ -715,9 +705,6 @@ def planar_acyclic_linunit_molecule(
             ),
             angles,
         )
-
-    n_gamma = 2 * (num_bonds - num_atoms) + a_1
-    n_tau = num_bonds - a_1
 
     # before computing the number of ICs we will remove all oop that are associated with this linear angle
     # also remove dihedrals,if they are terminal ==> we will then also reset the number of internals
@@ -881,7 +868,7 @@ def planar_cyclic_linunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            2 * n_bonds_updated - num_atoms,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_phi,
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -895,7 +882,7 @@ def planar_cyclic_linunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            n_bonds_updated - a_1,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_tau,
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -1019,11 +1006,8 @@ def general_acyclic_nolinunit_molecule(
         a dictionary where each entry is a IC set
     """
     # set length of subsets
-    n_r = num_bonds
-    n_phi = 4 * num_bonds - 3 * num_atoms + a_1
-    n_gamma = 0
+    n_r, n_phi, n_gamma, n_tau, _ = decius.general(num_bonds, num_atoms, a_1)
     planar_subunits_list = specification["planar submolecule(s)"]
-    n_tau = num_bonds - a_1
 
     # if planar subunits exist, we need to do 2 things: change n_phi and n_gamma;
     # remove angles at the specified coordinate, as we else would have linear dependencies
@@ -1169,7 +1153,7 @@ def general_cyclic_nolinunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            2 * n_bonds_updated - num_atoms,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_phi,  # planar count in a general molecule
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -1183,7 +1167,7 @@ def general_cyclic_nolinunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            n_bonds_updated - a_1,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_tau,  # planar count in a general molecule
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -1302,12 +1286,8 @@ def general_acyclic_linunit_molecule(
             the specification for the given molecule (see specifcation documentation)
     """
     # set length of subsets
-    n_r = num_bonds
-    n_phi = 4 * num_bonds - 3 * num_atoms + a_1 - (l - 1)
-    n_gamma = 0
+    n_r, n_phi, n_gamma, n_tau, n_phi_prime = decius.general(num_bonds, num_atoms, a_1, l)
     planar_subunits_list = specification["planar submolecule(s)"]
-    n_phi_prime = 2 * (l - 1)
-    n_tau = num_bonds - a_1 - (l - 1)
 
     # occurs for SF6
     if n_tau < 0 or n_phi < 0:
@@ -1500,7 +1480,7 @@ def general_cyclic_linunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            2 * n_bonds_updated - num_atoms,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_phi,  # planar count in a general molecule
         )
         if len(angle_subsets) == 0:
             logging.warning(
@@ -1514,7 +1494,7 @@ def general_cyclic_linunit_molecule(
             n_bonds_updated,
             n_angles_updated,
             idof,
-            n_bonds_updated - a_1,
+            decius.planar(n_bonds_updated, num_atoms, a_1).n_tau,  # planar count in a general molecule
         )
         if len(dihedral_subsets) == 0:
             logging.warning(
@@ -2067,12 +2047,8 @@ def intermolecular_general_acyclic_linunit_molecule(
 
     args = arguments.get_args()
 
-    n_r = num_bonds
-    n_phi = 4 * num_bonds - 3 * num_atoms + a_1 - (l - 1)
-    n_gamma = 0
+    n_r, n_phi, n_gamma, n_tau, n_phi_prime = decius.general(num_bonds, num_atoms, a_1, l)
     planar_subunits_list = specification["planar submolecule(s)"]
-    n_phi_prime = 2 * (l - 1)
-    n_tau = num_bonds - a_1 - (l - 1)
 
     # If planar submolecules exist we have to change our definition of n_phi and n_gamma
     # remove angles at the specified coordinate, as we else would have linear dependencies
@@ -2318,11 +2294,8 @@ def intermolecular_general_acyclic_nolinunit_molecule(
     """
     args = arguments.get_args()
 
-    n_r = num_bonds
-    n_phi = 4 * num_bonds - 3 * num_atoms + a_1
-    n_gamma = 0
+    n_r, n_phi, n_gamma, n_tau, _ = decius.general(num_bonds, num_atoms, a_1)
     planar_subunits_list = specification["planar submolecule(s)"]
-    n_tau = num_bonds - a_1
 
     # If planar submolecules exist we have to change our definition of n_phi and n_gamma
     # remove angles at the specified coordinate, as we else would have linear dependencies
@@ -2655,9 +2628,7 @@ def intermolecular_general_cyclic_nolinsub(
     fixed_ic_dict = combine_dictionaries(summarized_submolecule_ic_dict)
 
     # Redundancies mu get taken out of the intermolecular coordinates taking symmetry into account
-    n_r = num_bonds - specification["mu"]
-    n_phi = 4 * (num_bonds - specification["mu"]) - 3 * num_atoms + a_1
-    n_tau = (num_bonds - specification["mu"]) - a_1
+    n_r, n_phi, _, n_tau, _ = decius.general(num_bonds - specification["mu"], num_atoms, a_1)
 
     # First we delete the h-bond coordinate then the corresponding acc_don_coordinate
 
@@ -3139,25 +3110,14 @@ def intermolecular_general_cyclic_linunit_molecule(
 
         if removed_bonds[0] in linear_bonds or swapped_removed_bonds in linear_bonds:
             print("The bond removed", removed_bonds, "was linear")
-            # Decius for this topology : n_phi = 4 * b - 3a - a_1 - (l-1)
             # because the bond removed was linear we also reduce the number l by two because the whole linear system is destroyed
-            n_phi = (
-                4 * (num_bonds - specification["mu"])
-                - 3 * num_atoms
-                + a_1
-                - ((l - 2 * specification["mu"]) - 1)
-            )
-            # for n_phi_prime l gets also reduced by two
-            n_phi_prime = 2 * ((l - 2 * specification["mu"]) - 1)
-            n_tau = (
-                (num_bonds - specification["mu"])
-                - a_1
-                - (l - 2 * specification["mu"] - 1)
+            _, n_phi, _, n_tau, n_phi_prime = decius.general(
+                num_bonds - specification["mu"], num_atoms, a_1, l - 2 * specification["mu"]
             )
     else:
-        n_phi = 4 * (num_bonds - specification["mu"]) - 3 * num_atoms + a_1 - (l - 1)
-        n_phi_prime = 2 * (l - 1)
-        n_tau = (num_bonds - specification["mu"]) - a_1 - (l - 1)
+        _, n_phi, _, n_tau, n_phi_prime = decius.general(
+            num_bonds - specification["mu"], num_atoms, a_1, l
+        )
 
     n_r = num_bonds - specification["mu"]
 
@@ -3376,11 +3336,7 @@ def intermolecular_planar_acyclic_linunit_molecule(
     # And the Dihedral Angles are defined as n_tau = b- a_1 - y
     # in the end x + y = l - 1
 
-    n_r = num_bonds
-    n_phi = 2 * num_bonds - num_atoms - (l - 1)
-    n_phi_prime = 2 * (l - 1)
-    n_gamma = 2 * (num_bonds - num_atoms) + a_1
-    n_tau = num_bonds - a_1
+    n_r, n_phi, n_gamma, n_tau, n_phi_prime = decius.planar(num_bonds, num_atoms, a_1, l)
 
     # so therefore we have to update the whole definition
     linear_bonds = specifications.get_linear_bonds(linear_angles)
@@ -3756,17 +3712,14 @@ def intermolecular_planar_cyclic_linunit_molecule(
     linear_bonds = specifications.get_linear_bonds(linear_angles)
     swapped_removed_bonds = removed_bonds[0][::-1]
 
-    n_r = num_bonds - specification["mu"]
-    n_gamma = 2 * (num_bonds - num_atoms) + a_1
-    n_tau = (num_bonds - specification["mu"]) - a_1
+    n_r, _, _, n_tau, _ = decius.planar(num_bonds - specification["mu"], num_atoms, a_1)
+    # n_gamma from the uncut bond count b; every other cyclic variant uses b - mu
+    n_gamma = decius.planar(num_bonds, num_atoms, a_1).n_gamma
 
     if removed_bonds[0] in linear_bonds or swapped_removed_bonds in linear_bonds:
-        n_phi = (
-            2 * (num_bonds - specification["mu"])
-            - num_atoms
-            - (l - 2 * specification["mu"] - 1)
+        _, n_phi, _, _, n_phi_prime = decius.planar(
+            num_bonds - specification["mu"], num_atoms, a_1, l - 2 * specification["mu"]
         )
-        n_phi_prime = 2 * ((l - 2 * specification["mu"]) - 1)
 
     # what we can do immediatly is to find the number of bonds needed for a complete set also the normal angles provide no problem
     intermolecular_bonds_needed = n_r - max(bonds_length)
@@ -4114,10 +4067,7 @@ def intermolecular_planar_cyclic_nolinunit_molecule(
         )
 
     # Evaluate the Internal Coordinates needed
-    n_r = num_bonds - specification["mu"]
-    n_phi = 2 * (num_bonds - specification["mu"]) - num_atoms
-    n_gamma = 2 * ((num_bonds - specification["mu"]) - num_atoms) + a_1
-    n_tau = (num_bonds - specification["mu"]) - a_1
+    n_r, n_phi, n_gamma, n_tau, _ = decius.planar(num_bonds - specification["mu"], num_atoms, a_1)
     intermolecular_bonds_needed = n_r - max(bonds_length)
     intermolecular_angles_needed = n_phi - max(angles_length)
     intermolecular_oop_needed = n_gamma - max(oop_length)
@@ -4320,10 +4270,7 @@ def intermolecular_planar_acyclic_nolinunit_molecule(
             dihedrals_length.append(len(value.get("dihedrals", [])))
             out_of_plane_length.append(len(value.get("out of plane angles", [])))
     # Now we can specify how much of the different intermolecular coordinates we need in our sets:
-    n_r = num_bonds
-    n_phi = 2 * num_bonds - num_atoms
-    n_gamma = 2 * (num_bonds - num_atoms) + a_1
-    n_tau = num_bonds - a_1
+    n_r, n_phi, n_gamma, n_tau, _ = decius.planar(num_bonds, num_atoms, a_1)
 
     ic_bonds_needed = n_r - max(bonds_length)
     ic_angles_needed = n_phi - max(angles_length)

@@ -35,6 +35,7 @@ Nomodeco Modules
 from nomodeco.libraries import icsel
 from nomodeco.libraries import bmatrix
 from nomodeco.libraries import bmatrix_metrics
+from nomodeco.libraries import graph_descriptors
 from nomodeco.libraries import logfile
 from nomodeco.libraries import molpro_parser
 from nomodeco.libraries import specifications
@@ -263,6 +264,14 @@ def main():
     molecule_pg = PointGroupAnalyzer(molecule)
     point_group_sch = molecule_pg.sch_symbol
 
+    # Graph-theoretical descriptors of the molecular graph (graph_descriptors.py)
+    descriptors = graph_descriptors.graph_descriptors(atoms)
+    logfile.write_graph_descriptors(out, descriptors)
+    print(
+        f"Molecular graph: {descriptors['n_atoms']} atoms, "
+        f"{descriptors['n_bonds']['cov']} covalent / {descriptors['n_bonds']['h_bond']} hydrogen bonds, "
+        f"{descriptors['n_components']} component(s), {descriptors['cyclomatic_number']} ring(s)"
+    )
 
     if args.nomodeco_coords == None:
 

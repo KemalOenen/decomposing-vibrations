@@ -1,0 +1,273 @@
+ .__   __.   ______   .___  ___.   ______    _______   _______   ______   ______      .______   ____    ____ 
+ |  \ |  |  /  __  \  |   \/   |  /  __  \  |       \ |   ____| /      | /  __  \     |   _  \  \   \  /   / 
+ |   \|  | |  |  |  | |  \  /  | |  |  |  | |  .--.  ||  |__   |  ,----'|  |  |  |    |  |_)  |  \   \/   /  
+ |  . `  | |  |  |  | |  |\/|  | |  |  |  | |  |  |  ||   __|  |  |     |  |  |  |    |   ___/    \_    _/   
+ |  |\   | |  `--'  | |  |  |  | |  `--'  | |  '--'  ||  |____ |  `----.|  `--'  |  __|  |          |  |     
+ |__| \__|  \______/  |__|  |__|  \______/  |_______/ |_______| \______| \______/  (__) _|          |__|     
+                                                                                                             
+
+
+**************************************************************************************************************
+                         Kemal Önen, Lukas Meinschad, Dennis F. Dinu, Klaus R. Liedl                          
+                                      Liedl Lab, University of Innsbruck                                      
+**************************************************************************************************************
+
+Planar system detected. Therefore out-of-plane angles are used in your analysis. Note that out-of-plane angles tend to perform worse
+than the other internal coordinates in terms of computational cost and in the decomposition. However they can be
+useful for planar systems.
+
+The detected point group is D*h
+The following equivalent atoms were found: [['O1', 'O2'], ['C']] 
+
+The following primitive internals (bonds, (in-plane) angles, linear valence angles, out-of-plane angles and torsions) were generated:
+bonds: [('C', 'O1'), ('C', 'O2')]
+in-plane angles: []
+linear valence-angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O2')]
+out-of-plane angles: []
+dihedrals: []
+
+4 internal coordinates are at least needed for the decomposition scheme.
+
+--------------------------------------------Mass weighted F-Matrix--------------------------------------------
+
+In this section the mass weighted F matrix is displayed.
+   	Cx    	Cy    	Cz    	O1x   	O1y   	O1z   	O2x   	O2y   	O2z   
+Cx 	0.016 	0.000 	0.000 	-0.007	0.000 	0.000 	-0.007	0.000 	-0.000
+Cy 	0.000 	0.016 	0.000 	0.000 	-0.007	-0.000	0.000 	-0.007	0.000 
+Cz 	0.000 	0.000 	0.185 	0.000 	-0.000	-0.080	-0.000	0.000 	-0.080
+O1x	-0.007	0.000 	0.000 	0.003 	0.000 	-0.000	0.003 	0.000 	0.000 
+O1y	0.000 	-0.007	-0.000	0.000 	0.003 	0.000 	0.000 	0.003 	-0.000
+O1z	0.000 	-0.000	-0.080	-0.000	0.000 	0.079 	-0.000	0.000 	-0.009
+O2x	-0.007	0.000 	-0.000	0.003 	0.000 	-0.000	0.003 	0.000 	0.000 
+O2y	0.000 	-0.007	0.000 	0.000 	0.003 	0.000 	0.000 	0.003 	-0.000
+O2z	-0.000	0.000 	-0.080	0.000 	-0.000	-0.009	0.000 	-0.000	0.079 
+
+---------------------------------------------------L-Matrix---------------------------------------------------
+
+In this section the L matrix is displayed. The L matrix gives the vibrational normal modes in cartesian coordinates
+The eigenvalues of the mass weighted force constant matrix are: [-2.08346245e-06 -2.08346245e-06 -1.94008197e-16 -1.85204183e-17
+  1.27159909e-16  2.22597441e-02  2.22597441e-02  8.76579471e-02
+  2.54099708e-01]
+
+   	q1    	q2    	q3    	q4    	q5    	q6    	q7    	q8    	q9    
+Cx 	-0.000	0.000 	-0.414	-0.168	-0.270	-0.002	-0.853	-0.000	-0.000
+Cy 	0.000 	0.000 	-0.091	0.487 	-0.165	0.853 	-0.002	0.000 	-0.000
+Cz 	-0.000	0.000 	-0.305	0.084 	0.416 	-0.000	0.000 	0.000 	-0.853
+O1x	-0.001	0.707 	-0.478	-0.194	-0.312	0.001 	0.369 	0.000 	-0.000
+O1y	0.707 	0.001 	-0.105	0.563 	-0.190	-0.369	0.001 	-0.000	0.000 
+O1z	-0.000	0.000 	-0.352	0.096 	0.480 	0.000 	0.000 	-0.707	0.369 
+O2x	0.001 	-0.707	-0.478	-0.194	-0.312	0.001 	0.369 	0.000 	0.000 
+O2y	-0.707	-0.001	-0.105	0.563 	-0.190	-0.369	0.001 	-0.000	-0.000
+O2z	-0.000	0.000 	-0.352	0.096 	0.480 	-0.000	-0.000	0.707 	0.369 
+
+---------------------------------------------B-Matrix argumented----------------------------------------------
+
+The following block displays the argumented b matrix, with appended rows to make it quadratic
+Shape of the B-Matrix is 9 x 9
+                 	Cx    	Cy    	Cz    	O1x   	O1y   	O1z   	O2x   	O2y   	O2z   
+('C', 'O1')      	0.000 	-0.000	-1.000	-0.000	0.000 	1.000 	0.000 	0.000 	0.000 
+('C', 'O2')      	0.000 	-0.000	1.000 	0.000 	0.000 	0.000 	-0.000	0.000 	-1.000
+('O1', 'C', 'O2')	-0.003	1.762 	0.000 	0.002 	-0.881	0.000 	0.002 	-0.881	-0.000
+('O1', 'C', 'O2')	-1.762	-0.003	0.000 	0.881 	0.002 	0.000 	0.881 	0.002 	-0.000
+Rottra 1         	-0.000	0.000 	-0.000	-0.001	0.707 	-0.000	0.001 	-0.707	-0.000
+Rottra 2         	0.000 	0.000 	0.000 	0.707 	0.001 	0.000 	-0.707	-0.001	0.000 
+Rottra 3         	-0.414	-0.091	-0.305	-0.478	-0.105	-0.352	-0.478	-0.105	-0.352
+Rottra 4         	-0.168	0.487 	0.084 	-0.194	0.563 	0.096 	-0.194	0.563 	0.096 
+Rottra 5         	-0.270	-0.165	0.416 	-0.312	-0.190	0.480 	-0.312	-0.190	0.480 
+
+
+-------------------------------- Initialization of an internal coordinate set --------------------------------
+
+The following 4 Internal Coordinates are used in your analysis:
+bonds: [('C', 'O1'), ('C', 'O2')]
+in-plane angles: []
+linear valence-angles: [('O1', 'C', 'O2'), ('O1', 'C', 'O2')]
+out-of-plane angles: []
+dihedrals: []
+
+
+---------------------------------------------------B-Matrix---------------------------------------------------
+
+The following block displays the non-argumented B matrix, with the ICs as rows and the coordinates as columns.
+Shape of the B-Matrix is 4 x 9
+
+                 	Cx    	Cy    	Cz    	O1x   	O1y   	O1z  	O2x   	O2y   	O2z   
+('C', 'O1')      	0.000 	-0.000	-1.000	-0.000	0.000 	1.000	0.000 	0.000 	0.000 
+('C', 'O2')      	0.000 	-0.000	1.000 	0.000 	0.000 	0.000	-0.000	0.000 	-1.000
+('O1', 'C', 'O2')	-0.003	1.762 	0.000 	0.002 	-0.881	0.000	0.002 	-0.881	-0.000
+('O1', 'C', 'O2')	-1.762	-0.003	0.000 	0.881 	0.002 	0.000	0.881 	0.002 	-0.000
+
+---------------------------------------------B-Matrix Diagnostics---------------------------------------------
+
+Shape 4 x 9, internal degrees of freedom 4
+numerical rank:               4 (complete: True, redundant: 0)
+largest singular value:       2.1577e+00
+smallest vib. singular value: 1.0000e+00
+condition number (vib.):      2.1577e+00
+spectral gap:                 inf
+max. translation residual:    4.36e-17
+max. rotation residual:       1.55e+00
+max. |cos| between B rows:    0.5000
+
+---------------------------------------------------D-Matrix---------------------------------------------------
+
+Shape of the D-Matrix is 9 x 9
+
+The following block displays the D matrix, which contains eigenvectors of the mass weighted normal modes in internal coordinates
+                 	q1    	q2    	q3    	q4    	q5    	q6    	q7    	q8    	q9    
+('C', 'O1')      	0.000 	-0.000	0.000 	0.000 	0.000 	-0.000	-0.000	-0.177	0.338 
+('C', 'O2')      	-0.000	0.000 	0.000 	0.000 	0.000 	-0.000	-0.000	-0.177	-0.338
+('O1', 'C', 'O2')	0.000 	0.000 	-0.000	0.000 	0.000 	0.596 	0.000 	0.000 	-0.000
+('O1', 'C', 'O2')	0.000 	-0.000	0.000 	-0.000	-0.000	-0.000	0.596 	0.000 	0.000 
+Rottra 1         	0.250 	-0.000	0.000 	-0.000	-0.000	0.000 	0.000 	-0.000	0.000 
+Rottra 2         	-0.000	0.250 	-0.000	0.000 	0.000 	0.000 	-0.000	0.000 	-0.000
+Rottra 3         	0.000 	-0.000	0.261 	0.000 	0.000 	-0.003	0.014 	0.000 	0.010 
+Rottra 4         	-0.000	0.000 	0.000 	0.261 	-0.000	0.016 	0.006 	0.000 	-0.003
+Rottra 5         	-0.000	0.000 	0.000 	-0.000	0.261 	-0.005	0.009 	0.000 	-0.014
+
+-------------------------- Results of the Decomposition Scheme ---------------------------
+
+1.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    vibrational distribution matrix (exact approximation) at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies   767   767  1522 2591
+            (C, O1)               2124.95 -0.00 -0.00  0.50 0.50
+            (C, O2)               2124.95 -0.00 -0.00  0.50 0.50
+        (O1, C, O2)                766.95  1.00 -0.00 -0.00 0.00
+        (O1, C, O2)                766.95  0.00  1.00 -0.00 0.00
+
+Check if matrix is normalized: 1.0
+
+2.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    diagonal elements of the PED matrix at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies  767  767 1522 2591
+            (C, O1)               2124.95 0.00 0.00 0.45 0.57
+            (C, O2)               2124.95 0.00 0.00 0.45 0.57
+        (O1, C, O2)                766.95 1.00 0.00 0.00 0.00
+        (O1, C, O2)                766.95 0.00 1.00 0.00 0.00
+
+3.) Intrinsic Frequencies for all normal-coordinate frequencies and
+    contribution table calculated from the diagonal elements of the PED at the following
+    harmonic frequencies (all frequency values in cm-1):
+
+Internal Coordinate Intrinsic Frequencies    767    767  1522  2591
+            (C, O1)               2124.95   0.00   0.00 50.00 50.00
+            (C, O2)               2124.95   0.00   0.00 50.00 50.00
+        (O1, C, O2)                766.95 100.00   0.00  0.00  0.00
+        (O1, C, O2)                766.95   0.00 100.00  0.00  0.00
+
+----- Extended Results: Exact PED, KED and TED analysis per mode -----
+
+Normal mode at the following harmonic frequency: 767 cm-1
+
+Potential energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.00    0.00       -0.00        0.00
+            (C, O2)    0.00    0.00       -0.00        0.00
+        (O1, C, O2)   -0.00   -0.00        1.00        0.00
+        (O1, C, O2)    0.00    0.00        0.00        0.00
+
+Kinetic energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.00    0.00       -0.00        0.00
+            (C, O2)    0.00    0.00       -0.00        0.00
+        (O1, C, O2)   -0.00   -0.00        1.00        0.00
+        (O1, C, O2)    0.00    0.00        0.00        0.00
+
+Total energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.00    0.00       -0.00        0.00
+            (C, O2)    0.00    0.00       -0.00        0.00
+        (O1, C, O2)   -0.00   -0.00        1.00        0.00
+        (O1, C, O2)    0.00    0.00        0.00        0.00
+
+----- Extended Results: Exact PED, KED and TED analysis per mode -----
+
+Normal mode at the following harmonic frequency: 767 cm-1
+
+Potential energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.00    0.00       -0.00       -0.00
+            (C, O2)    0.00    0.00       -0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00        0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00       -0.00        1.00
+
+Kinetic energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.00    0.00       -0.00       -0.00
+            (C, O2)    0.00    0.00       -0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00        0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00       -0.00        1.00
+
+Total energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.00    0.00       -0.00       -0.00
+            (C, O2)    0.00    0.00       -0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00        0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00       -0.00        1.00
+
+----- Extended Results: Exact PED, KED and TED analysis per mode -----
+
+Normal mode at the following harmonic frequency: 1522 cm-1
+
+Potential energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.45    0.05       -0.00       -0.00
+            (C, O2)    0.05    0.45       -0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00        0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00       -0.00        0.00
+
+Kinetic energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.32    0.18       -0.00       -0.00
+            (C, O2)    0.18    0.32       -0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00        0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00       -0.00        0.00
+
+Total energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.38    0.12       -0.00       -0.00
+            (C, O2)    0.12    0.38       -0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00        0.00       -0.00
+        (O1, C, O2)   -0.00   -0.00       -0.00        0.00
+
+----- Extended Results: Exact PED, KED and TED analysis per mode -----
+
+Normal mode at the following harmonic frequency: 2591 cm-1
+
+Potential energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.57   -0.07       -0.00        0.00
+            (C, O2)   -0.07    0.57        0.00       -0.00
+        (O1, C, O2)   -0.00    0.00        0.00        0.00
+        (O1, C, O2)    0.00   -0.00        0.00        0.00
+
+Kinetic energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    1.17   -0.66       -0.00        0.00
+            (C, O2)   -0.66    1.17        0.00       -0.00
+        (O1, C, O2)   -0.00    0.00        0.00        0.00
+        (O1, C, O2)    0.00   -0.00        0.00        0.00
+
+Total energy distribution matrix (normalization check: 1.0)
+
+Internal Coordinate (C, O1) (C, O2) (O1, C, O2) (O1, C, O2)
+            (C, O1)    0.87   -0.37       -0.00        0.00
+            (C, O2)   -0.37    0.87        0.00       -0.00
+        (O1, C, O2)   -0.00    0.00        0.00        0.00
+        (O1, C, O2)    0.00   -0.00        0.00        0.00
+

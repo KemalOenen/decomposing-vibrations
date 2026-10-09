@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pyfiglet
 import logging
 
@@ -352,6 +353,67 @@ def write_b_matrix_metrics(logger, metrics):
     logger.info("")
 
 
+_INDEX_LABELS = {
+    "n": "atoms (n)", "m": "bonds (m)", "diameter": "diameter", "radius": "radius",
+    "wiener": "Wiener index", "avg_path_length": "average path length",
+    "randic": "Randic index", "zagreb_m1": "Zagreb M1", "zagreb_m2": "Zagreb M2",
+    "balaban_j": "Balaban J", "algebraic_connectivity": "algebraic connectivity",
+    "kirchhoff": "Kirchhoff index", "spectral_radius": "spectral radius",
+    "graph_energy": "graph energy", "estrada": "Estrada index",
+}
+
+
+def _fmt_index(value):
+    if value is None:
+        return "-"
+    if isinstance(value, (int, np.integer)):
+        return str(value)
+    return f"{value:.4f}"
+
+
+def write_graph_descriptors(logger, d):
+    """Molecular graph descriptors from graph_descriptors.graph_descriptors."""
+    logger.info("Molecular Graph".center(110, "-"))
+    logger.info("")
+    bonds = d["n_bonds"]
+    logger.info("atoms: %s, bonds: %s covalent, %s hydrogen, %s acceptor-donor",
+                d["n_atoms"], bonds["cov"], bonds["h_bond"], bonds["acc_don"])
+    logger.info("covalent components:          %s", d["n_components"])
+    if "n_components_with_h_bonds" in d:
+        logger.info("components incl. h-bonds:     %s", d["n_components_with_h_bonds"])
+    logger.info("cyclomatic number (rings):    %s", d["cyclomatic_number"])
+    for ring in d["rings"]:
+        logger.info("    %s-membered ring: %s", len(ring), ", ".join(ring))
+    logger.info("degree histogram:             %s",
+                ", ".join(f"{deg}: {n}" for deg, n in d["degree_histogram"].items()))
+    logger.info("terminal / branching atoms:   %s / %s", d["n_terminal"], d["n_branching"])
+    logger.info("bridges:                      %s", d["bridges"])
+    logger.info("articulation atoms:           %s", ", ".join(d["articulation_atoms"]) or "-")
+    logger.info("zero Laplacian eigenvalues:   %s", d["n_zero_laplacian"])
+    logger.info("Laplacian spectrum:           %s",
+                pformat(np.round(d["laplacian_spectrum"], 4).tolist(), width=80, compact=True))
+    logger.info("")
+
+    for i, sub in enumerate(d["submolecules"], 1):
+        logger.info("Submolecule %s: %s (%s)", i, sub["formula"], ", ".join(sub["atoms"]))
+        graphs = {"full graph": sub["full"]}
+        if sub["heavy"] is not None:
+            graphs["heavy-atom graph"] = sub["heavy"]
+        keys = [k for k in _INDEX_LABELS if k in sub["full"]]
+        table = pd.DataFrame(
+            {name: [_fmt_index(g.get(k)) for k in keys] for name, g in graphs.items()},
+            index=[_INDEX_LABELS[k] for k in keys],
+        )
+        logger.info(table.to_string())
+        logger.info("")
+
+    atoms = pd.DataFrame(d["atoms"], columns=["atom", "degree", "in ring", "eccentricity",
+                                              "betweenness", "closeness"])
+    logger.info("Per-atom descriptors (within the covalent submolecule):")
+    logger.info(atoms.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
+    logger.info("")
+
+
 # Every place that cuts the IC-set search short (subset caps, symmetry-breaking caps, the total
 # cap, the --max-sets sampling) warns on this logger; main() collects them with SearchReport
 search_log = logging.getLogger("nomodeco.search")
@@ -414,7 +476,8 @@ def write_logfile_submolecule_treatment(logger, submolecule_atom, connected_comp
     )
     logger.info("")
     logger.info(
-        f"The following covalent submolecules where found in the structure: {connected_components}"
+        "The following covalent submolecules where found in the structure: "
+        f"{[sorted(component) for component in connected_components]}"
     )
 
     for i, subdict in enumerate(submolecule_atom):

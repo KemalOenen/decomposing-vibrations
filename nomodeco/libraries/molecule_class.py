@@ -437,3 +437,4 @@ class Molecule(list):
     def beta(self):
         G = self.graph()
         return len(G.graph["cov_bonds"]) - len(self) + len(G.graph["components"])
+
