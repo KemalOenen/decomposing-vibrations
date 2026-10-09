@@ -21,3 +21,36 @@ def test_planar_linunit_keeps_oop_at_end_of_linear_unit():
         assert n_ics(ic_set) == a.idof
         assert len(ic_set["out of plane angles"]) == 1
         assert ic_set["out of plane angles"][0][0] == "C1"
+
+
+def test_general_linunit_keeps_oop_at_end_of_linear_unit():
+    """
+    CH3-C1(=O)-C3#N: non-planar (methyl), C1 is a planar submolecule at the end of the linear
+    unit C1-C3-N, so one oop at C1 is needed (idof 18). Removing every oop that contains the
+    linear bond C1-C3 left no valid set at all.
+    """
+    ic_dict, a = generate_sets(molecules.acetyl_cyanide())
+    assert a.spec["linearity"] == "linear submolecules found" and a.spec["planar"] == "no"
+    assert len(ic_dict) > 0
+    for k in range(len(ic_dict)):
+        ic_set = ic_dict[k]
+        assert n_ics(ic_set) == a.idof
+        assert len(ic_set["out of plane angles"]) == 1
+        assert ic_set["out of plane angles"][0][0] == "C1"
+
+
+def test_intermolecular_planar_linunit_keeps_oop_at_end_of_linear_unit():
+    """
+    N#C-H...OH2: the h-bond oop at the acceptor O (wings H1, H2, H3) is at the end of the linear
+    unit C-H1...O, not its center, so it is needed (idof 12). It used to be removed because it
+    contains the linear bond H1...O, which left 11 ICs.
+    """
+    ic_dict, a = generate_sets(molecules.hcn_h2o())
+    assert a.spec["intermolecular"] == "yes" and a.spec["planar"] == "yes"
+    assert a.spec["linearity"] == "linear submolecules found"
+    assert len(ic_dict) > 0
+    for k in range(len(ic_dict)):
+        ic_set = ic_dict[k]
+        assert n_ics(ic_set) == a.idof
+        assert len(ic_set["out of plane angles"]) == 1
+        assert ic_set["out of plane angles"][0][0] == "O"

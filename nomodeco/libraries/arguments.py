@@ -152,6 +152,19 @@ def get_args():
         default = 20,
         help="""Minimum contribution value for a entry to be displayed in the sankey plot"""
     )
+    parser.add_argument(
+        "--max-sets",
+        type=int,
+        default=200_000,
+        help="maximum number of IC sets to evaluate; larger search spaces are sampled "
+        "(default: %(default)s)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="seed for sampling the IC sets when there are more than --max-sets (default: %(default)s)",
+    )
 
 
 

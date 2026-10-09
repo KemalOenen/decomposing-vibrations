@@ -352,6 +352,31 @@ def write_b_matrix_metrics(logger, metrics):
     logger.info("")
 
 
+# Every place that cuts the IC-set search short (subset caps, symmetry-breaking caps, the total
+# cap, the --max-sets sampling) warns on this logger; main() collects them with SearchReport
+search_log = logging.getLogger("nomodeco.search")
+
+
+class SearchReport(logging.Handler):
+    """Collects the search_log warnings of one run."""
+
+    def __init__(self):
+        super().__init__(level=logging.WARNING)
+        self.messages = []
+
+    def emit(self, record):
+        self.messages.append(record.getMessage())
+
+
+def write_search_warnings(logger, messages):
+    logger.info("SEARCH WAS TRUNCATED".center(110, "!"))
+    logger.info("")
+    logger.info("Not every IC set was generated or evaluated, the optimal set may be missing:")
+    for message in dict.fromkeys(messages):
+        logger.info("    %s", message)
+    logger.info("")
+
+
 def write_hydrogen_bond_information(
     logger,
     h_bonds,

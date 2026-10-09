@@ -21,7 +21,6 @@ import pyfiglet
 import pubchempy as pcp  # import pubchemmpy --> pubchempy as a databank
 import plotly.graph_objects as go
 import sys
-import random
 
 # for heatmap
 mpl.rcParams["backend"] = "Agg"
@@ -42,7 +41,6 @@ from nomodeco.libraries import specifications
 from nomodeco.libraries import icset_opt
 from nomodeco.libraries import linear_bends
 from nomodeco.libraries import arguments
-from nomodeco.libraries import specifications as sp
 from nomodeco.libraries import topology as tp
 from nomodeco.libraries.molecule_class import Molecule
 from nomodeco.libraries.ic_class import InternalCoordinates, sort_ics
@@ -274,22 +272,12 @@ def main():
         # Intermolecular Bonds:
         # Use Degree of Covalance https://doi.org/10.1002/qua.21049 for hydrogen bond detection
         print("Generating intra- and intermolecular internal coordinates...")
-        degofc_table = atoms.degree_of_covalance()
-        cov_bonds = atoms.covalent_bonds(degofc_table)
-
-        # Pass covalent bonds to specification
-        sp.covalent_bonds = cov_bonds
-
-        # Detect and generate covalent submolecules
-
-        _, _, cov_submolecules_symbols = atoms.detect_submolecules()
-
-        # Generate Hydrogen Bond and the Acceptor-Donor Coordinate
-
-        h_bonds = atoms.intermolecular_h_bond(degofc_table, cov_submolecules_symbols)
-        acc_don_bonds = atoms.intermolecular_acceptor_donor(
-            degofc_table, cov_submolecules_symbols
-        )
+        # covalent bonds, hydrogen bonds and acceptor-donor bonds from the molecular graph
+        # (copies: the graph is cached on the molecule)
+        molecular_graph = atoms.graph()
+        cov_bonds = list(molecular_graph.graph["cov_bonds"])
+        h_bonds = list(molecular_graph.graph["h_bonds"])
+        acc_don_bonds = list(molecular_graph.graph["acc_don_bonds"])
 
         Total_IC_dict = InternalCoordinates()
 
@@ -509,6 +497,9 @@ def main():
         else:
             symmetric_coordinates = dict()
 
+        search_report = logfile.SearchReport()
+        logfile.search_log.addHandler(search_report)
+
         if not args.graph_ic:
             print("Generating IC sets based on Topology and Specification...")
             ic_dict = icsel.get_sets(
@@ -553,15 +544,22 @@ def main():
 
             print("Length of Imported IC set", len(ic_dict))
 
-        _MAX_IC_SETS = 100_000
-        _total_sets = len(ic_dict)
-        if _total_sets > _MAX_IC_SETS:
-            print(
-                f"Large search space detected: {_total_sets:,} sets. "
-                f"Randomly sampling {_MAX_IC_SETS:,} for evaluation..."
+        total_sets = len(ic_dict)
+        if total_sets > args.max_sets:
+            logfile.search_log.warning(
+                "%s of %s IC sets sampled for evaluation (--max-sets %s, --seed %s)",
+                f"{args.max_sets:,}", f"{total_sets:,}", args.max_sets, args.seed,
             )
-            _sampled_keys = random.sample(range(_total_sets), _MAX_IC_SETS)
-            ic_dict = {i: ic_dict[k] for i, k in enumerate(_sampled_keys)}
+            # sorted, so the sets are evaluated in generation order (ties keep the first set)
+            sampled_keys = np.sort(
+                np.random.default_rng(args.seed).choice(total_sets, args.max_sets, replace=False)
+            )
+            ic_dict = {i: ic_dict[int(k)] for i, k in enumerate(sampled_keys)}
+
+        logfile.search_log.removeHandler(search_report)
+        if search_report.messages:
+            logfile.write_search_warnings(out, search_report.messages)
+            print("SEARCH WAS TRUNCATED: " + "; ".join(dict.fromkeys(search_report.messages)))
 
         print(f"{len(ic_dict):,} IC sets will be evaluated. "
               f"Memory footprint: {sys.getsizeof(ic_dict) / 1e6:.1f} MB")

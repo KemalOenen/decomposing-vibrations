@@ -38,6 +38,12 @@ class Molecule(list):
         a list of of atoms
     """
 
+    def __init__(self, atoms=None):
+        if atoms is None:
+            atoms = []
+        super().__init__(atoms)
+        # Construct bonds, h-bonds and acceptor-donor bonds upon initialization    
+
     class Atom:
         """
         The atom class in nomodeco
@@ -117,36 +123,6 @@ class Molecule(list):
             )
         super().append(value)
 
-    def theoretical_length(self, symbol1, symbol2) -> float:
-        return float(
-            BOND_INFO.loc[symbol1.strip(string.digits)].iloc[0]
-            + BOND_INFO.loc[symbol2.strip(string.digits)].iloc[0]
-        )
-
-    def theoretical_length_vdw(self, symbol1, symbol2) -> float:
-        return float(
-            BOND_INFO.loc[symbol1.strip(string.digits)].iloc[1]
-            + BOND_INFO.loc[symbol2.strip(string.digits)].iloc[1]
-        )
-
-    def actual_length(self, symbol1, symbol2) -> float:
-        sym_coords = {atom.symbol: atom.coordinates for atom in self}
-        if symbol1 not in sym_coords or symbol2 not in sym_coords:
-            raise ValueError("One of the Elements not found in the Molecule")
-        return float(np.linalg.norm(
-            np.array(sym_coords[symbol1]) - np.array(sym_coords[symbol2])
-        ))
-
-    def bond_angle(self, symbol1, symbol2, symbol3) -> float:
-        sym_coords = {atom.symbol: np.array(atom.coordinates) for atom in self}
-        ba = sym_coords[symbol1] - sym_coords[symbol2]
-        bc = sym_coords[symbol3] - sym_coords[symbol2]
-        cosine_angle = np.clip(
-            np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc)),
-            -1.0, 1.0,
-        )
-        return np.arccos(cosine_angle)
-
     def degree_of_covalance(self) -> dict:
         """
         Reference https://doi.org/10.1002/qua.21049
@@ -173,66 +149,6 @@ class Molecule(list):
 
     def covalent_bonds(self, degofc_table) -> list:
         return [key for key, value in degofc_table.items() if value > 0.75]
-
-    def detect_submolecules(self, degofc_table=None):
-        if degofc_table is None:
-            degofc_table = self.degree_of_covalance()
-        bonds = self.covalent_bonds(degofc_table)
-        molecular_graph = nx.Graph()
-        molecular_graph.add_edges_from(bonds)
-        connected_components = list(nx.connected_components(molecular_graph))
-        submolecules = []
-        for component in connected_components:
-            # bonds in input order and orientation; subgraph.edges orients them by the
-            # component's set order, which depends on PYTHONHASHSEED
-            submolecules.append([bond for bond in bonds if bond[0] in component])
-        submolecule_symbols = {}
-        for i, submolecule in enumerate(submolecules):
-            symbols = set()
-            for bond in submolecule:
-                symbols.update(bond)
-            submolecule_symbols[i] = symbols
-        return connected_components, submolecules, submolecule_symbols
-
-    def graph_rep(self, bonds=None):
-        if bonds is None:
-            bonds = self.covalent_bonds(self.degree_of_covalance())
-        graph = {}
-        for a, b in bonds:
-            graph.setdefault(a, []).append(b)
-            graph.setdefault(b, []).append(a)
-        return graph
-
-    @staticmethod
-    def dfs(graph, start, visited):
-        stack = [start]
-        while stack:
-            node = stack.pop()
-            if node not in visited:
-                visited.add(node)
-                stack.extend(n for n in graph.get(node, []) if n not in visited)
-
-    @staticmethod
-    def is_connected(graph):
-        if not graph:
-            return True
-        visited = set()
-        Molecule.dfs(graph, next(iter(graph)), visited)
-        return len(visited) == len(graph)
-
-    @staticmethod
-    def count_connected_components(graph) -> int:
-        if not graph:
-            return 0
-        visited = set()
-        count = 0
-        for node in graph:
-            if node not in visited:
-                count += 1
-                Molecule.dfs(graph, node, visited)
-        return count
-    
-    
 
     def bond_dict(self, bonds) -> dict:
         return self.generate_connectivity(bonds)
@@ -292,39 +208,6 @@ class Molecule(list):
                 ):
                     acc_don_bonds.append(bond)
         return acc_don_bonds
-
-    def covalent_adjacency_matrix(self):
-        atom_symbols = self.list_of_atom_symbols()
-        bonds = self.covalent_bonds(self.degree_of_covalance())
-        molecular_graph = nx.Graph()
-        molecular_graph.add_nodes_from(atom_symbols)
-        molecular_graph.add_edges_from(bonds)
-        return nx.to_numpy_array(molecular_graph)
-
-    def hydrogen_adjacency_matrix(self):
-        degofc_table = self.degree_of_covalance()
-        _, _, submolecule_symbols = self.detect_submolecules(degofc_table)
-        atom_symbols = self.list_of_atom_symbols()
-        h_bonds = self.intermolecular_h_bond(degofc_table, submolecule_symbols)
-        molecular_graph = nx.Graph()
-        molecular_graph.add_nodes_from(atom_symbols)
-        molecular_graph.add_edges_from(h_bonds)
-        return nx.to_numpy_array(molecular_graph)
-
-    def mu(self):
-        degofc = self.degree_of_covalance()
-        cov_bonds = self.covalent_bonds(degofc)
-        _, _, submolecule_symbols = self.detect_submolecules(degofc)
-        len_bonds = len(cov_bonds) + len(
-            self.intermolecular_h_bond(degofc, submolecule_symbols)
-        )
-        return len_bonds - len(self) + 1
-
-    def beta(self):
-        degofc = self.degree_of_covalance()
-        cov_bonds = self.covalent_bonds(degofc)
-        connectivity_c = self.count_connected_components(self.graph_rep(cov_bonds))
-        return len(cov_bonds) - len(self) + connectivity_c
 
     @staticmethod
     def generate_connectivity(bonds):
@@ -418,8 +301,8 @@ class Molecule(list):
 
         dihedral_indices = []
         dihedral_tuples = []
-        for d in seen:
-            indices = tuple(atom_list.index(atom) for atom in d)
+        # sorted by atom indices: set order depends on PYTHONHASHSEED
+        for indices, d in sorted((tuple(atom_list.index(atom) for atom in d), d) for d in seen):
             dihedral_indices.append(indices)
             dihedral_tuples.append(d)
 
@@ -460,65 +343,97 @@ class Molecule(list):
                                     hits.append((atom, bonded_list[k], bonded_list[i], bonded_list[j]))
         return hits
 
-    def interatomic_distance_matrix(self):
-        coords = np.array([a.coordinates for a in self])     # (n, 3)
-        diff = coords[:, np.newaxis] - coords[np.newaxis]    # (n, n, 3)
-        return np.sqrt((diff ** 2).sum(axis=2))              # (n, n)
-        
 
-# ----------------------------
-# Profiling and Memory Usage
-# ----------------------------
+    #----------------------------
+    # Build molecular graph representation
+    #----------------------------
 
-if __name__ == "__main__":
-    import time
-    import numpy as _np
+    def _graph_key(self) -> tuple:
+        """ 
+        Fingerprint of molecule; cached graph is rebuild when it changes
+        """
+        return tuple((atom.symbol, tuple(atom.coordinates)) for atom in self)
 
-    # build molecule
-    def build_random_molecule(n):
-        symbols = ["H", "C", "O", "N", "Cl", "S"]
-        mol = Molecule()
-        for i in range(n):
-            sym = symbols[i % len(symbols)] + str(i + 1)
-            coords = tuple(_np.random.rand(3))
-            mol.append(Molecule.Atom(sym, coords))
-        return mol
-    
-    def run_benchmarks(mol):
-        results = {}
-        t0 = time.time(); mol.degree_of_covalance(); results["degree_of_covalance"] = time.time() - t0
-        t0 = time.time(); mol.covalent_bonds(mol.degree_of_covalance()); results["covalent_bonds"] = time.time() - t0
-        t0 = time.time(); mol.detect_submolecules(); results["detect_submolecules"] = time.time() - t0
-        t0 = time.time(); mol.generate_angles(mol.covalent_bonds(mol.degree_of_covalance())); results["generate_angles"] = time.time() - t0
-        t0 = time.time(); mol.generate_dihedrals(mol.covalent_bonds(mol.degree_of_covalance())); results["generate_dihedrals"] = time.time() - t0
-        return results
-    
-    molecule_sizes = [10, 15, 20, 30]
-    for size in molecule_sizes:
-        print(f"Building molecule with {size} atoms...")
-        mol = build_random_molecule(size)
-        print(f"Running benchmarks for molecule with {size} atoms...")
-        benchmark_results = run_benchmarks(mol)
-        print(f"Results for {size} atoms: {benchmark_results}")
+    def graph(self, degofc_table=None) -> nx.Graph:
+        """  
+        Build a molecular graph, atoms are nodes bonds are edges
 
-    # Make a test function that the right dihedrals are generated
-    methanol_test = "/home/lme/decomposing-vibrations/test_calculations/xyz_tests/methanol.xyz"
-
-    # Generate mol
-    mol = Molecule.from_xyz_file(methanol_test)
-    # Generate bonds
-    degofc = mol.degree_of_covalance()
-    bonds = mol.covalent_bonds(degofc)
-    print("Bonds:", bonds)
-    # Generate angles
-    angles, linear_angles = mol.generate_angles(bonds)
-    print("Angles:", angles)
-    print("Linear Angles:", linear_angles)
-    # Generate dihedrals
-    dihedrals = mol.generate_dihedrals(bonds)
-    print("Dihedrals:", dihedrals)
-    # Generate out of plane
-    oop = mol.generate_out_of_plane(bonds)
-    print("Out of Plane:", oop) 
+        Build once form the degree of covalence then cached; rebuilt automatically if atoms, symbols or coordinates
+        change. Returned graph is frozen
 
 
+        Node attributes: index (position), element
+        Edge attributes: kind ("cov", "h_bond", "acc_don"), degofc
+        Graph Attributes: cov_bongs, h_bonds, acc_don_bonds, components (covalent submolecules)
+        """
+        key = None
+        if degofc_table is None:
+            key = self._graph_key()
+            cache = getattr(self, "_graph_cache", None)
+            if cache is not None and cache[0] == key:
+                return cache[1]
+            degofc_table = self.degree_of_covalance()
+
+        cov_bonds = self.covalent_bonds(degofc_table)
+
+        # Covalent submolecules = connected components over the covalent bonds
+        # (atoms without any covalent bond are not in a submolecule, as before)
+        bonded = nx.Graph()
+        bonded.add_edges_from(cov_bonds)
+        components = list(nx.connected_components(bonded))
+        submolecule_symbols = dict(enumerate(components))
+
+        h_bonds = self.intermolecular_h_bond(degofc_table, submolecule_symbols)
+        acc_don_bonds = self.intermolecular_acceptor_donor(degofc_table, submolecule_symbols)
+
+        G = nx.Graph(
+            cov_bonds=cov_bonds,h_bonds=h_bonds,acc_don_bonds=acc_don_bonds,components=components
+        )
+        for i, atom in enumerate(self):
+            G.add_node(atom.symbol, index=i, element=atom.symbol.strip(string.digits))
+        for kind, bonds in (("acc_don", acc_don_bonds), ("h_bond", h_bonds), ("cov", cov_bonds)):
+            for a, b in bonds:
+                doc = degofc_table.get((a, b), degofc_table.get((b, a)))
+                G.add_edge(a, b, kind=kind, degofc=doc)
+
+        nx.freeze(G)
+        if key is not None:
+            self._graph_cache = (key, G)
+        return G
+
+    def bond_graph(self, *kinds) -> nx.Graph:
+        """ 
+        Read-only view of the molecular graph with the specified kinds
+        """
+        kinds = set(kinds or ("cov",))
+        G = self.graph()
+        return nx.subgraph_view(G, filter_edge=lambda u, v: G.edges[u, v]["kind"] in kinds)
+
+    def detect_submolecules(self, degofc_table=None):
+        G = self.graph(degofc_table)
+        bonds = G.graph["cov_bonds"]
+        # copies: the graph is cached, callers must not be able to change its components
+        connected_components = [set(component) for component in G.graph["components"]]
+        # bonds in input order and orientation; subgraph.edges orients them by the
+        # component's set order, which depends on PYTHONHASHSEED
+        submolecules = [[bond for bond in bonds if bond[0] in component]
+                        for component in connected_components]
+        submolecule_symbols = {
+            i: set(itertools.chain.from_iterable(submolecule))
+            for i, submolecule in enumerate(submolecules)
+        }
+        return connected_components, submolecules, submolecule_symbols
+
+    def covalent_adjacency_matrix(self):
+        return nx.to_numpy_array(self.bond_graph("cov"), nodelist=self.list_of_atom_symbols())
+
+    def hydrogen_adjacency_matrix(self):
+        return nx.to_numpy_array(self.bond_graph("h_bond"), nodelist=self.list_of_atom_symbols())
+
+    def mu(self):
+        G = self.graph()
+        return len(G.graph["cov_bonds"]) + len(G.graph["h_bonds"]) - len(self) + 1
+
+    def beta(self):
+        G = self.graph()
+        return len(G.graph["cov_bonds"]) - len(self) + len(G.graph["components"])

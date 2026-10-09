@@ -7,7 +7,6 @@ small vibrational coordinates
 import networkx as nx
 import itertools
 import logging
-import random
 import string
 from collections import Counter
 import pandas as pd
@@ -49,7 +48,10 @@ class LazyIcDict:
 
     def add_product(self, bonds, linear_angles, angle_subsets, oop_subsets, dihedral_subsets):
         if self._offsets[-1] >= _MAX_IC_SETS_TOTAL:
-            return   # hard ceiling already reached; skip silently
+            logfile.search_log.warning(
+                "IC product block skipped, total limit of %s sets reached", f"{_MAX_IC_SETS_TOTAL:,}"
+            )
+            return
         n = len(angle_subsets) * len(oop_subsets) * len(dihedral_subsets)
         if n == 0:
             logging.warning(
@@ -438,6 +440,9 @@ def planar_acyclic_nolinunit_molecule(
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
             if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken angle subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
             # the if statement ensures, that oop angles to the same central atom can not be in the same set
@@ -456,6 +461,9 @@ def planar_acyclic_nolinunit_molecule(
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
             if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken dihedral subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
     ic_dict = LazyIcDict()
@@ -600,7 +608,7 @@ def planar_cyclic_nolinunit_molecule(
         removed_bonds = []
         _running_total = sum(len(d) for d in ic_dict_list)
         if _running_total >= _MAX_IC_SETS_TOTAL:
-            logging.warning(
+            logfile.search_log.warning(
                 "IC generation stopped after %s sets (limit: %s). "
                 "Remaining bond-cutting scenarios will be skipped.",
                 f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
@@ -747,6 +755,9 @@ def planar_acyclic_linunit_molecule(
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
             if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken angle subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
     oop_subsets = icsel.get_oop_subsets(out_of_plane, n_gamma)
@@ -764,6 +775,9 @@ def planar_acyclic_linunit_molecule(
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
             if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken dihedral subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
     ic_dict = LazyIcDict()
@@ -910,7 +924,7 @@ def planar_cyclic_linunit_molecule(
         removed_bonds = []
         _running_total = sum(len(d) for d in ic_dict_list)
         if _running_total >= _MAX_IC_SETS_TOTAL:
-            logging.warning(
+            logfile.search_log.warning(
                 "IC generation stopped after %s sets (limit: %s). "
                 "Remaining bond-cutting scenarios will be skipped.",
                 f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
@@ -1029,6 +1043,9 @@ def general_acyclic_nolinunit_molecule(
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
             if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken angle subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
     oop_subsets = icsel.get_oop_subsets(out_of_plane, n_gamma)
@@ -1046,6 +1063,9 @@ def general_acyclic_nolinunit_molecule(
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
             if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken dihedral subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
     ic_dict = LazyIcDict()
@@ -1192,7 +1212,7 @@ def general_cyclic_nolinunit_molecule(
         removed_bonds = []
         _running_total = sum(len(d) for d in ic_dict_list)
         if _running_total >= _MAX_IC_SETS_TOTAL:
-            logging.warning(
+            logfile.search_log.warning(
                 "IC generation stopped after %s sets (limit: %s). "
                 "Remaining bond-cutting scenarios will be skipped.",
                 f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
@@ -1329,6 +1349,9 @@ def general_acyclic_linunit_molecule(
         for subset in itertools.combinations(angles, n_phi):
             angle_subsets.append(list(subset))
             if len(angle_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken angle subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
             # before computing the number of ICs we will remove all oop that are associated with this linear angle
@@ -1369,6 +1392,9 @@ def general_acyclic_linunit_molecule(
         for subset in itertools.combinations(dihedrals, n_tau):
             dihedral_subsets.append(list(subset))
             if len(dihedral_subsets) >= icsel._MAX_SUBSETS:
+                logfile.search_log.warning(
+                    "symmetry-broken dihedral subsets stopped at %s", f"{icsel._MAX_SUBSETS:,}"
+                )
                 break
 
     ic_dict = LazyIcDict()
@@ -1517,7 +1543,7 @@ def general_cyclic_linunit_molecule(
         removed_bonds = []
         _running_total = sum(len(d) for d in ic_dict_list)
         if _running_total >= _MAX_IC_SETS_TOTAL:
-            logging.warning(
+            logfile.search_log.warning(
                 "IC generation stopped after %s sets (limit: %s). "
                 "Remaining bond-cutting scenarios will be skipped.",
                 f"{_running_total:,}", f"{_MAX_IC_SETS_TOTAL:,}",
@@ -2100,12 +2126,6 @@ def intermolecular_general_acyclic_linunit_molecule(
         # Transform into a Molecule Class
         submolecule_atom = Molecule(submolecule_atom)
 
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -2243,7 +2263,7 @@ def intermolecular_general_acyclic_linunit_molecule(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )
@@ -2357,12 +2377,6 @@ def intermolecular_general_acyclic_nolinunit_molecule(
 
         submolecule_atom = Molecule(submolecule_atom)
 
-        # Step 1.1: Calculate the Connectivity C and pass it to specification
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -2486,7 +2500,7 @@ def intermolecular_general_acyclic_nolinunit_molecule(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )
@@ -2571,12 +2585,6 @@ def intermolecular_general_cyclic_nolinsub(
         # Convert into Molecule Class
         submolecule_atom = Molecule(submolecule_atom)
 
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -2806,7 +2814,7 @@ def intermolecular_general_cyclic_nolinsub(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )
@@ -2897,12 +2905,6 @@ def intermolecular_general_cyclic_linunit_molecule(
         point_group_sch = molecule_pg.sch_symbol
 
         submolecule_atom = Molecule(submolecule_atom)
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -3197,7 +3199,7 @@ def intermolecular_general_cyclic_linunit_molecule(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )
@@ -3287,12 +3289,6 @@ def intermolecular_planar_acyclic_linunit_molecule(
         point_group_sch = molecule_pg.sch_symbol
 
         submolecule_atom = Molecule(submolecule_atom)
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -3478,7 +3474,7 @@ def intermolecular_planar_acyclic_linunit_molecule(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )
@@ -3565,12 +3561,6 @@ def intermolecular_planar_cyclic_linunit_molecule(
         # Convert Submolecule_Atom into Molecule Class
         submolecule_atom = Molecule(submolecule_atom)
 
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -3844,7 +3834,7 @@ def intermolecular_planar_cyclic_linunit_molecule(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )
@@ -3928,12 +3918,6 @@ def intermolecular_planar_cyclic_nolinunit_molecule(
         # Convert submolecule_atom into Molecule_Class
         submolecule_atom = Molecule(submolecule_atom)
 
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -4256,12 +4240,6 @@ def intermolecular_planar_acyclic_nolinunit_molecule(
 
         # Transform into Molecule Class
         submolecule_atom = Molecule(submolecule_atom)
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = submolecule_atom.graph_rep()
-        specifications.connectivity_c = submolecule_atom.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = submolecule_atom.generate_angles(
@@ -4408,7 +4386,7 @@ def intermolecular_planar_acyclic_nolinunit_molecule(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )
@@ -4463,12 +4441,6 @@ def intermolecular_fully_linear_molecule(
         molecule_pg = PointGroupAnalyzer(molecule)
         point_group_sch = molecule_pg.sch_symbol
 
-        # Step 1.1: Calculate the Connectivity C and pass it to specification (just a quick fix)
-
-        molecular_graph = dfs_connected.graph_rep(submolecule_bonds)
-        specifications.connectivity_c = dfs_connected.count_connected_components(
-            molecular_graph
-        )
 
         # Step 2: Initialize Internal Coordinates:
         sub_angles, sub_linear_angles = alt_icgen.initialize_angles(
@@ -4548,7 +4520,7 @@ def intermolecular_fully_linear_molecule(
             ic_dict[new_key] = value
             new_key += 1
             if new_key >= _MAX_IC_SETS_TOTAL:
-                logging.warning(
+                logfile.search_log.warning(
                     "IC generation stopped at %s sets (limit: %s).",
                     f"{new_key:,}", f"{_MAX_IC_SETS_TOTAL:,}",
                 )

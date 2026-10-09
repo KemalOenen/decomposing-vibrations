@@ -67,7 +67,7 @@ def calculation_specification(specification, atoms, molecule_pg, bonds, angles, 
 
     # Topology
     atoms_mol = Molecule(atoms)
-    connectivity_c = atoms_mol.count_connected_components(atoms_mol.graph_rep())
+    connectivity_c = len(atoms_mol.graph().graph["components"])
     mu = atoms_mol.mu()
     beta = atoms_mol.beta()
 

@@ -7,6 +7,7 @@ import itertools
 import logging
 from collections import Counter
 import numpy as np
+from nomodeco.libraries import logfile
 from nomodeco.libraries import topology
 
 
@@ -220,6 +221,10 @@ def _flat_subsets_of_size(groups, target):
             if sum(sizes[j] for j in idx) == target:
                 result.append([item for j in idx for item in groups[j]])
                 if len(result) >= _MAX_SUBSETS:
+                    logfile.search_log.warning(
+                        "subset enumeration stopped at %s subsets of size %s (from %s groups)",
+                        f"{_MAX_SUBSETS:,}", target, len(groups),
+                    )
                     return result
     return result
 

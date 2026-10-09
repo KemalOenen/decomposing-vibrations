@@ -62,6 +62,15 @@ def hcocn():
     )
 
 
+def acetyl_cyanide():
+    """general (methyl), acyclic, with a linear submolecule (C-C#N) ending at a planar sp2 center"""
+    methyl_h = [(-0.25, -2.25, 0.0), (-1.38, -1.20, 0.89), (-1.38, -1.20, -0.89)]
+    return build(
+        ["C", "O", "C", "C", "N", "H", "H", "H"],
+        [(0, 0, 0), (-0.60, 1.04, 0), (-0.75, -1.30, 0), (1.47, 0, 0), (2.63, 0, 0), *methyl_h],
+    )
+
+
 def benzene():
     """planar, cyclic (mu = 1)"""
     angles = np.radians(np.arange(0, 360, 60))
@@ -79,6 +88,14 @@ def water_dimer():
     )
 
 
+def hcn_h2o():
+    """intermolecular, planar: N#C-H...OH2, the acceptor O (oop center) ends the linear unit C-H...O"""
+    return build(
+        ["N", "C", "H", "O", "H", "H"],
+        [(-3.27, 0, 0), (-2.12, 0, 0), (-1.05, 0, 0), (1.10, 0, 0), (1.69, 0.76, 0), (1.69, -0.76, 0)],
+    )
+
+
 ALL = {
     "h2o": h2o,
     "co2": co2,
@@ -86,6 +103,8 @@ ALL = {
     "ethylene": ethylene,
     "propyne": propyne,
     "hcocn": hcocn,
+    "acetyl_cyanide": acetyl_cyanide,
     "benzene": benzene,
     "water_dimer": water_dimer,
+    "hcn_h2o": hcn_h2o,
 }
