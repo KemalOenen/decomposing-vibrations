@@ -165,9 +165,11 @@ class Molecule(list):
                 return i
 
     def intermolecular_h_bond(self, degofc_table, submolecule_symbols):
+        # 0.16 as on main: bent H-bonds such as the cyclic NH3 dimer (0.21) or the second
+        # formic acid-water H-bond (0.25) lie below 0.27
         possible_h_bonds = [
             key for key, value in degofc_table.items()
-            if 0.27 < value < 0.7
+            if 0.16 < value < 0.7
         ]
         donor_atoms = self.get_donor_atoms()
         h_bonds = []

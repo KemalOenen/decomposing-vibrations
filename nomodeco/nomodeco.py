@@ -553,10 +553,19 @@ def main():
 
             print("Length of Imported IC set", len(ic_dict))
 
+        # Keep only complete sets (rank of B = idof) before sampling, so --max-sets is spent on
+        # sets that can be the optimal one
+        generated_sets = len(ic_dict)
+        complete_keys = icset_opt.complete_set_keys(ic_dict, atoms, idof, bend_refs)
+        print(f"{len(complete_keys):,} of {generated_sets:,} IC sets are complete (rank of B = {idof})")
+        out.info("%s of %s generated IC sets are complete (rank of the B matrix = %s)",
+                 len(complete_keys), generated_sets, idof)
+        ic_dict = {i: ic_dict[k] for i, k in enumerate(complete_keys)}
+
         total_sets = len(ic_dict)
         if total_sets > args.max_sets:
             logfile.search_log.warning(
-                "%s of %s IC sets sampled for evaluation (--max-sets %s, --seed %s)",
+                "%s of %s complete IC sets sampled for evaluation (--max-sets %s, --seed %s)",
                 f"{args.max_sets:,}", f"{total_sets:,}", args.max_sets, args.seed,
             )
             # sorted, so the sets are evaluated in generation order (ties keep the first set)
@@ -730,9 +739,11 @@ def main():
     K = K[:, idx]
 
     # if redundancies are present, then approximate the inverse of the G-Matrix
+    # drop the red smallest eigenvalues (the last red after the descending sort);
+    # np.delete(K, -red) removed only one column, wrong for red >= 2
     if red > 0:
-        K = np.delete(K, -red, axis=1)
-        e = np.delete(e, -red, axis=0)
+        K = K[:, :-red]
+        e = e[:-red]
 
     e = np.diag(e)
     try:

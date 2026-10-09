@@ -1833,7 +1833,8 @@ def add_element_to_all_entries(dict_list, element, dict_key, amount) -> list:
         for key, value in d.items():
             # Append the new bond to the bonds list
             if dict_key in value:
-                value[dict_key].extend(number_elements)
+                # new list: sets made by shallow copies share their IC lists
+                value[dict_key] = value[dict_key] + number_elements
             else:
                 value[dict_key] = number_elements.copy()
     return dict_list
@@ -1941,7 +1942,10 @@ def distribute_elements(dict_list, elements, dict_key, number_of_elements) -> li
             for outer_key, inner_dict in new_dict.items():
                 result[outer_key] = inner_dict.copy()
                 existing = set(result[outer_key][dict_key])
-                result[outer_key][dict_key].extend(e for e in elements if e not in existing)
+                # new list: .copy() is shallow, extend would change the input set as well
+                result[outer_key][dict_key] = result[outer_key][dict_key] + [
+                    e for e in elements if e not in existing
+                ]
         # Second-Case .2 if the length of the elements is bigger then the dictionary we create new elements
         # TODO i think this case is pointess and can be combined with the upper one
         if number_of_elements == len(elements) and len(elements) >= n_inner:
@@ -1951,7 +1955,10 @@ def distribute_elements(dict_list, elements, dict_key, number_of_elements) -> li
             for outer_key, inner_dict in new_dict.items():
                 result[outer_key] = inner_dict.copy()
                 existing = set(result[outer_key][dict_key])
-                result[outer_key][dict_key].extend(e for e in elements if e not in existing)
+                # new list: .copy() is shallow, extend would change the input set as well
+                result[outer_key][dict_key] = result[outer_key][dict_key] + [
+                    e for e in elements if e not in existing
+                ]
 
         if number_of_elements != len(elements):
             # n choose k combinatorial case
@@ -1977,10 +1984,12 @@ def distribute_elements(dict_list, elements, dict_key, number_of_elements) -> li
             for outer_key, inner_dict in new_dict.items():
                 result[outer_key] = inner_dict.copy()
                 orig_val = inner_dict[dict_key]
+                # list(): the combination lists are shared by every set they are dealt to, and
+                # the extend below would otherwise add this set's ICs to all of them
                 if length_of_the_dictionary == 1:
-                    result[outer_key][dict_key] = element_combinations.pop(0)
+                    result[outer_key][dict_key] = list(element_combinations.pop(0))
                 elif length_of_the_dictionary > 1:
-                    result[outer_key][dict_key] = duplicated_element_combinations.pop(0)
+                    result[outer_key][dict_key] = list(duplicated_element_combinations.pop(0))
                 if orig_val:
                     existing = set(result[outer_key][dict_key])
                     result[outer_key][dict_key].extend(
@@ -3070,8 +3079,10 @@ def intermolecular_general_cyclic_linunit_molecule(
             total_intermolecular_angles = (
                 total_intermolecular_angles + Total_IC_dict["acc_don_angles"]
             )
+            # the linear-angle pool: was total_intermolecular_angles, which put ordinary
+            # angles into the linear bend slot and dropped the H-bond linear bends
             total_intermolecular_linear_angles = (
-                total_intermolecular_angles + Total_IC_dict["acc_don_linear_angles"]
+                total_intermolecular_linear_angles + Total_IC_dict["acc_don_linear_angles"]
             )
 
         if args.comb == 3:
@@ -3081,8 +3092,10 @@ def intermolecular_general_cyclic_linunit_molecule(
             total_intermolecular_angles = (
                 total_intermolecular_angles + Total_IC_dict["acc_don_angles"]
             )
+            # the linear-angle pool: was total_intermolecular_angles, which put ordinary
+            # angles into the linear bend slot and dropped the H-bond linear bends
             total_intermolecular_linear_angles = (
-                total_intermolecular_angles + Total_IC_dict["acc_don_linear_angles"]
+                total_intermolecular_linear_angles + Total_IC_dict["acc_don_linear_angles"]
             )
             total_intermolecular_dihedrals = (
                 total_intermolecular_dihedrals + Total_IC_dict["acc_don_dihedrals"]

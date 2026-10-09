@@ -3,7 +3,134 @@ import pandas as pd
 from nomodeco.libraries import icsel
 from nomodeco.libraries import bmatrix
 from nomodeco.libraries import logfile
+from nomodeco.libraries import metric
 import os
+from collections import defaultdict, deque
+from concurrent.futures import ThreadPoolExecutor
+
+# a singular value of B counts towards the rank if it is above RANK_RTOL * sigma_max
+# (the same criterion as bmatrix_metrics.condition_metrics)
+RANK_RTOL = 1e-8
+_RANK_BATCH = 1024
+
+
+def _ic_universe(ic_dict):
+    """
+    All distinct ICs over all sets, in first-seen order, and their row in the B matrix built from
+    them. A linear angle appears twice per set (both bends), so its rows are keyed by occurrence.
+    Returns (universe, ic_to_row, la_occ_to_row), universe = (bonds, angles, linear angles,
+    oops, dihedrals) for bmatrix.b_matrix.
+    """
+    bond_univ, angle_univ, la_univ, oop_univ, dih_univ = [], [], [], [], []
+    seen_bonds, seen_angles, seen_oops, seen_dihs = set(), set(), set(), set()
+    seen_la_keys: set = set()
+
+    for s in ic_dict.values():
+        for ic in s["bonds"]:
+            ic = tuple(ic)
+            if ic not in seen_bonds:
+                seen_bonds.add(ic); bond_univ.append(ic)
+        for ic in s["angles"]:
+            ic = tuple(ic)
+            if ic not in seen_angles:
+                seen_angles.add(ic); angle_univ.append(ic)
+        la_local: dict = {}
+        for ic in s["linear valence angles"]:
+            ic = tuple(ic)
+            cnt = la_local.get(ic, 0)
+            key = (ic, cnt)
+            if key not in seen_la_keys:
+                seen_la_keys.add(key); la_univ.append(ic)
+            la_local[ic] = cnt + 1
+        for ic in s["out of plane angles"]:
+            ic = tuple(ic)
+            if ic not in seen_oops:
+                seen_oops.add(ic); oop_univ.append(ic)
+        for ic in s["dihedrals"]:
+            ic = tuple(ic)
+            if ic not in seen_dihs:
+                seen_dihs.add(ic); dih_univ.append(ic)
+
+    ic_to_row: dict = {}
+    _r = 0
+    for ic in bond_univ:  ic_to_row[('b',   ic)] = _r; _r += 1
+    for ic in angle_univ: ic_to_row[('a',   ic)] = _r; _r += 1
+    la_occ_to_row: dict = {}
+    la_occ_cnt: dict = {}
+    for ic in la_univ:
+        cnt = la_occ_cnt.get(ic, 0)
+        la_occ_to_row[(ic, cnt)] = _r
+        la_occ_cnt[ic] = cnt + 1
+        _r += 1
+    for ic in oop_univ: ic_to_row[('oop', ic)] = _r; _r += 1
+    for ic in dih_univ: ic_to_row[('d',   ic)] = _r; _r += 1
+
+    universe = (bond_univ, angle_univ, la_univ, oop_univ, dih_univ)
+    return universe, ic_to_row, la_occ_to_row
+
+
+def _row_index(ic_set, ic_to_row, la_occ_to_row) -> np.ndarray:
+    """Rows of the universe B matrix for one set, in bonds, angles, linear, oop, dihedral order."""
+    row_idx = [ic_to_row[('b', tuple(b))] for b in ic_set["bonds"]]
+    row_idx += [ic_to_row[('a', tuple(a))] for a in ic_set["angles"]]
+    _la_cnt: dict = {}
+    for la in ic_set["linear valence angles"]:
+        la = tuple(la)
+        cnt = _la_cnt.get(la, 0)
+        row_idx.append(la_occ_to_row[(la, cnt)])
+        _la_cnt[la] = cnt + 1
+    row_idx += [ic_to_row[('oop', tuple(o))] for o in ic_set["out of plane angles"]]
+    row_idx += [ic_to_row[('d', tuple(d))] for d in ic_set["dihedrals"]]
+    return np.array(row_idx, dtype=np.intp)
+
+
+def _complete_keys(keys_and_rows, B_master, idof, workers=None) -> list:
+    """
+    Keys whose rows of B_master have rank idof, i.e. the set describes every internal motion.
+    Sets with the same number of ICs are stacked into batches; each batch is one batched SVD,
+    and the batches run in a thread pool (numpy's SVD releases the GIL).
+    """
+    workers = workers or min(os.cpu_count() or 1, 16)
+    complete = []
+    pending = defaultdict(list)
+    in_flight = deque()
+
+    def complete_in(batch):
+        s = np.linalg.svd(B_master[np.stack([rows for _, rows in batch])], compute_uv=False)
+        rank = (s > RANK_RTOL * s[:, :1]).sum(axis=1)
+        return [key for (key, _), r in zip(batch, rank) if r >= idof]
+
+    with ThreadPoolExecutor(workers) as pool:
+        def submit(n):
+            batch = pending.pop(n)
+            if n < idof:
+                return  # fewer ICs than internal degrees of freedom: never complete
+            in_flight.append(pool.submit(complete_in, batch))
+            # bounded: the stacked batches of a large search would not fit in memory at once
+            while len(in_flight) > 2 * workers:
+                complete.extend(in_flight.popleft().result())
+
+        for key, rows in keys_and_rows:
+            pending[len(rows)].append((key, rows))
+            if len(pending[len(rows)]) >= _RANK_BATCH:
+                submit(len(rows))
+        for n in list(pending):
+            submit(n)
+        while in_flight:
+            complete.extend(in_flight.popleft().result())
+    return sorted(complete)
+
+
+def complete_set_keys(ic_dict, atoms, idof, bend_refs=None) -> list:
+    """Keys of the IC sets whose B matrix has full rank idof (sorted, generation order)."""
+    if len(ic_dict) == 0:
+        return []
+    universe, ic_to_row, la_occ_to_row = _ic_universe(ic_dict)
+    B_master = bmatrix.b_matrix(atoms, *universe, idof, bend_refs)
+    return _complete_keys(
+        ((k, _row_index(ic_dict[k], ic_to_row, la_occ_to_row)) for k in ic_dict.keys()),
+        B_master, idof,
+    )
 
 
 def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reciprocal_square_massmatrix, rottra,
@@ -45,53 +172,21 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
     # Linear angles must preserve occurrence order (same tuple appears
     # twice: once for first-plane, once for second-plane bending).
     # ------------------------------------------------------------------
-    bond_univ, angle_univ, la_univ, oop_univ, dih_univ = [], [], [], [], []
-    seen_bonds, seen_angles, seen_oops, seen_dihs = set(), set(), set(), set()
-    seen_la_keys: set = set()
-
-    for s in ic_dict.values():
-        for ic in s["bonds"]:
-            ic = tuple(ic)
-            if ic not in seen_bonds:
-                seen_bonds.add(ic); bond_univ.append(ic)
-        for ic in s["angles"]:
-            ic = tuple(ic)
-            if ic not in seen_angles:
-                seen_angles.add(ic); angle_univ.append(ic)
-        la_local: dict = {}
-        for ic in s["linear valence angles"]:
-            ic = tuple(ic)
-            cnt = la_local.get(ic, 0)
-            key = (ic, cnt)
-            if key not in seen_la_keys:
-                seen_la_keys.add(key); la_univ.append(ic)
-            la_local[ic] = cnt + 1
-        for ic in s["out of plane angles"]:
-            ic = tuple(ic)
-            if ic not in seen_oops:
-                seen_oops.add(ic); oop_univ.append(ic)
-        for ic in s["dihedrals"]:
-            ic = tuple(ic)
-            if ic not in seen_dihs:
-                seen_dihs.add(ic); dih_univ.append(ic)
+    universe, ic_to_row, la_occ_to_row = _ic_universe(ic_dict)
 
     # One B-matrix call for all ICs (replaces N per-set calls)
-    B_master = bmatrix.b_matrix(atoms, bond_univ, angle_univ, la_univ, oop_univ, dih_univ, idof, bend_refs)
+    B_master = bmatrix.b_matrix(atoms, *universe, idof, bend_refs)
 
-    # IC → row-index lookup (linear angles tracked by occurrence count)
-    ic_to_row: dict = {}
-    _r = 0
-    for ic in bond_univ:  ic_to_row[('b',   ic)] = _r; _r += 1
-    for ic in angle_univ: ic_to_row[('a',   ic)] = _r; _r += 1
-    la_occ_to_row: dict = {}
-    la_occ_cnt: dict = {}
-    for ic in la_univ:
-        cnt = la_occ_cnt.get(ic, 0)
-        la_occ_to_row[(ic, cnt)] = _r
-        la_occ_cnt[ic] = cnt + 1
-        _r += 1
-    for ic in oop_univ: ic_to_row[('oop', ic)] = _r; _r += 1
-    for ic in dih_univ: ic_to_row[('d',   ic)] = _r; _r += 1
+    # Rank check first: an incomplete set (rank B < idof) can not be the optimal set, so it is
+    # dropped before any G/H/PED work
+    set_rows = {k: _row_index(ic_dict[k], ic_to_row, la_occ_to_row) for k in ic_dict.keys()}
+    complete_keys = _complete_keys(set_rows.items(), B_master, idof)
+    n_incomplete = len(set_rows) - len(complete_keys)
+    if n_incomplete:
+        print(f"{n_incomplete:,} of {len(set_rows):,} IC sets are incomplete (rank B < {idof}) and are skipped")
+    if args.log and n_incomplete:
+        log.info("%s of %s IC sets are incomplete (rank of B < %s) and were skipped",
+                 n_incomplete, len(set_rows), idof)
 
     # ------------------------------------------------------------------
     # Precompute shared blocks (computed once, indexed per set)
@@ -125,7 +220,7 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
     # ------------------------------------------------------------------
     # Main loop — per-set work is now cheap: index + eigh + G_inv
     # ------------------------------------------------------------------
-    for num_of_set in ic_dict.keys():
+    for num_of_set in complete_keys:
         bonds         = [tuple(b)   for b   in ic_dict[num_of_set]["bonds"]]
         angles        = [tuple(a)   for a   in ic_dict[num_of_set]["angles"]]
         linear_angles = [tuple(la)  for la  in ic_dict[num_of_set]["linear valence angles"]]
@@ -135,18 +230,7 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
         n_internals = len(bonds) + len(angles) + len(linear_angles) + len(out_of_plane) + len(dihedrals)
         red = n_internals - idof
 
-        # Map ICs to rows in B_master
-        row_idx = []
-        for b   in bonds:         row_idx.append(ic_to_row[('b',   b)])
-        for a   in angles:        row_idx.append(ic_to_row[('a',   a)])
-        _la_cnt: dict = {}
-        for la  in linear_angles:
-            cnt = _la_cnt.get(la, 0)
-            row_idx.append(la_occ_to_row[(la, cnt)])
-            _la_cnt[la] = cnt + 1
-        for oop in out_of_plane:  row_idx.append(ic_to_row[('oop', oop)])
-        for d   in dihedrals:     row_idx.append(ic_to_row[('d',   d)])
-        row_idx = np.array(row_idx, dtype=np.intp)
+        row_idx = set_rows[num_of_set]
 
         # Assemble G_aug from precomputed blocks (no B @ M_inv @ B^T per set)
         G_11  = G_uu[np.ix_(row_idx, row_idx)]
@@ -157,9 +241,11 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
         idx_sort = e.argsort()[::-1]
         e = e[idx_sort]; K = K[:, idx_sort]
 
+        # drop the red smallest eigenvalues (the last red after the descending sort);
+        # np.delete(K, -red) removed only one column, wrong for red >= 2
         if red > 0:
-            K = np.delete(K, -red, axis=1)
-            e = np.delete(e, -red, axis=0)
+            K = K[:, :-red]
+            e = e[:-red]
 
         e = np.diag(e)
         try:
@@ -276,18 +362,30 @@ def find_optimal_coordinate_set(ic_dict, args, idof, reciprocal_massmatrix, reci
             ContributionTable = ContributionTable.rename(columns=columns)
             logfile.write_logfile_results(log, Results, DiagonalElementsPED, ContributionTable, sum_check_VED)
 
-            metric_analysis[num_of_set] = icsel.Kemalian_metric_log(matrix, Diag_elements, counter,
-                                                                     intfreq_penalty, intfc_penalty, log)
+        if args.metric == "kemalian":
+            # with the --matrix_opt choice and the penalties of --penalty1/--penalty2
+            if args.log:
+                metric_analysis[num_of_set] = icsel.Kemalian_metric_log(matrix, Diag_elements, counter,
+                                                                         intfreq_penalty, intfc_penalty, log)
+            else:
+                metric_analysis[num_of_set] = icsel.Kemalian_metric(matrix, Diag_elements, counter,
+                                                                     intfreq_penalty, intfc_penalty, args)
         else:
-            metric_analysis[num_of_set] = icsel.Kemalian_metric(matrix, Diag_elements, counter,
-                                                                 intfreq_penalty, intfc_penalty, args)
+            nu_harmonic = np.sqrt(ev_vib) * 5140.4981
+            metric_fn = metric.METRICS[args.metric][0]
+            metric_analysis[num_of_set] = float(metric_fn(contribution_matrix,
+                                                          P[:, :n_internals, :n_internals],
+                                                          nu_final, nu_harmonic))
+            if args.log:
+                log.info("%s metric: %s", args.metric, np.around(metric_analysis[num_of_set], 4))
 
     if not metric_analysis:
         return {"best_key": None, "metric": 0, "set": None}
 
     best_key = max(metric_analysis, key=metric_analysis.get)
     best_metric_value = metric_analysis[best_key]
-    print("Optimal coordinate set has the following assigned metric value:", metric_analysis[best_key])
+    print(f"Optimal coordinate set has the following assigned {args.metric} metric value:",
+          metric_analysis[best_key])
 
     return {
         "best_key": best_key,

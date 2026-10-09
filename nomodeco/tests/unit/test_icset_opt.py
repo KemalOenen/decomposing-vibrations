@@ -12,12 +12,12 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from nomodeco.libraries import bmatrix, icsel, icset_opt
+from nomodeco.libraries import bmatrix, icsel, icset_opt, metric
 from nomodeco.nomodeco import reciprocal_square_massvector
 from nomodeco.tests import molecules
 from nomodeco.tests.helpers import generate_sets
 
-ARGS = SimpleNamespace(log=False, matrix_opt="contr")
+ARGS = SimpleNamespace(log=False, matrix_opt="contr", metric="kemalian")
 KINDS = ("bonds", "angles", "linear valence angles", "out of plane angles", "dihedrals")
 
 
@@ -100,8 +100,65 @@ def test_selects_the_set_with_the_highest_metric(case):
     assert result["set"] == case.ic_dict[result["best_key"]]
 
 
+@pytest.mark.parametrize("name", list(metric.METRICS))
+def test_every_metric_selects_a_complete_set(case, name, monkeypatch):
+    monkeypatch.setattr(ARGS, "metric", name)
+    result = find_optimal(case, case.ic_dict)
+    assert np.isfinite(result["metric"])
+    assert reference_metric(case, result["set"]) is not None
+
+
 def test_empty_ic_dict(case):
     assert find_optimal(case, {}) == {"best_key": None, "metric": 0, "set": None}
+
+
+def test_rank_check_agrees_with_completeness_test(case):
+    """rank(B) == idof exactly for the sets the plain B^T F_int B == F check accepts."""
+    keys = icset_opt.complete_set_keys(case.ic_dict, case.mol, case.a.idof)
+    expected = [k for k in case.ic_dict.keys() if reference_metric(case, case.ic_dict[k]) is not None]
+    assert keys == expected
+
+
+def test_rank_check_rejects_missing_and_dependent_coordinates():
+    """NH3 needs 6 ICs: dropping an angle loses a motion, three bonds + three copies of one angle too."""
+    mol = molecules.nh3()
+    ic_dict, a = generate_sets(mol)
+    full = ic_dict[0]
+    missing = dict(full, angles=full["angles"][:-1])
+    dependent = dict(full, angles=[full["angles"][0]] * 3)
+    sets = {0: missing, 1: full, 2: dependent}
+    assert icset_opt.complete_set_keys(sets, mol, a.idof) == [1]
+
+
+def test_rank_check_batches_give_the_same_result(monkeypatch):
+    case_mol = molecules.ethylene()
+    ic_dict, a = generate_sets(case_mol)
+    expected = icset_opt.complete_set_keys(ic_dict, case_mol, a.idof)
+    monkeypatch.setattr(icset_opt, "_RANK_BATCH", 5)
+    assert icset_opt.complete_set_keys(ic_dict, case_mol, a.idof) == expected
+
+
+@pytest.mark.parametrize("n_extra", [1, 2])
+def test_sets_with_several_redundant_coordinates(n_extra):
+    """
+    Ethylene set plus n_extra of the unused angles: the pseudo-inverse of G must drop the n_extra
+    smallest eigenvalues. Dropping only one (np.delete(K, -red)) rejected every set with red >= 2.
+    """
+    mol = molecules.ethylene()
+    ic_dict, a = generate_sets(mol)
+    F = model_hessian(mol, a)
+    m = reciprocal_square_massvector(mol)
+    _, L = np.linalg.eigh(m[:, None] * F * m[None, :])
+    case = SimpleNamespace(mol=mol, a=a, F=F, m=m, L=L, rottra=L[:, : 3 * len(mol) - a.idof])
+    base = ic_dict[0]
+    unused = [ang for ang in a.angles if ang not in base["angles"]]
+    assert len(unused) >= n_extra
+    redundant = dict(base, angles=list(base["angles"]) + unused[:n_extra])
+    expected = reference_metric(case, redundant)
+    assert expected is not None
+    result = find_optimal(case, {0: redundant})
+    assert result["best_key"] == 0
+    assert result["metric"] == pytest.approx(expected, rel=1e-8)
 
 
 def test_incomplete_set_is_never_selected():

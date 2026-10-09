@@ -1,5 +1,6 @@
 import argparse
 from argparse import RawTextHelpFormatter
+from nomodeco.libraries.metric import METRICS
 
 
 def get_args():
@@ -25,6 +26,14 @@ def get_args():
         "VED matrix (keyword: ved), Diagonal elements of PED matrix "
         "(keyword: diag) and / or Contribution Table (keyword: contr) "
         "(default: %(default)s)",
+    )
+    parser.add_argument(
+        "--metric",
+        default="kemalian",
+        choices=list(METRICS),
+        help="metric used to select the optimal IC set (default: %(default)s):\n"
+        + "\n".join(f"  {name} --> {desc}" for name, (_, desc) in METRICS.items())
+        + "\n--matrix_opt, --penalty1 and --penalty2 apply to kemalian only",
     )
     parser.add_argument(
         "--penalty1",

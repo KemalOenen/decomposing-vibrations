@@ -39,11 +39,20 @@ def test_edge_kinds_and_degree_of_covalence():
         assert G.edges[a, b]["kind"] == "acc_don"
 
 
+def test_bent_hydrogen_bonds_of_the_cyclic_nh3_dimer():
+    """Degree of covalence 0.21: detected with the H-bond window 0.16 < DoC < 0.7 (not with 0.27)."""
+    G = molecules.nh3_dimer().graph()
+    assert sorted(G.graph["h_bonds"]) == [("H3", "N2"), ("H5", "N1")]
+    for a, b in G.graph["h_bonds"]:
+        assert 0.16 < G.edges[a, b]["degofc"] < 0.27
+
+
 @pytest.mark.parametrize("name, components, mu, beta", [
     ("h2o", 1, 0, 0),
     ("benzene", 1, 1, 1),
     ("water_dimer", 2, 0, 0),
     ("hcn_h2o", 2, 0, 0),
+    ("nh3_dimer", 2, 1, 0),        # the two H-bonds close one ring
 ])
 def test_components_and_cycle_numbers(name, components, mu, beta):
     mol = molecules.ALL[name]()

@@ -39,6 +39,22 @@ def test_general_linunit_keeps_oop_at_end_of_linear_unit():
         assert ic_set["out of plane angles"][0][0] == "C1"
 
 
+def test_intermolecular_cyclic_linunit_uses_the_linear_bends_of_the_h_bond():
+    """
+    Cyclopropanol...water: O1-H6...O2 is linear (175.1 deg), so every set needs its 2 linear
+    bends. The linear-angle pool used to be built from the ordinary intermolecular angles
+    (typo), which put acceptor-donor angles such as C3-O1...O2 into the linear-bend slot.
+    """
+    ic_dict, a = generate_sets(molecules.cyclopropanol_water())
+    assert a.spec["intermolecular"] == "yes" and a.spec["linearity"] == "linear submolecules found"
+    assert len(ic_dict) > 0
+    for ic_set in ic_dict.values():
+        assert n_ics(ic_set) == a.idof
+        bends = [tuple(t) for t in ic_set["linear valence angles"]]
+        assert len(bends) == 2
+        assert all(t in (("O2", "H6", "O1"), ("O1", "H6", "O2")) for t in bends)
+
+
 def test_intermolecular_planar_linunit_keeps_oop_at_end_of_linear_unit():
     """
     N#C-H...OH2: the h-bond oop at the acceptor O (wings H1, H2, H3) is at the end of the linear

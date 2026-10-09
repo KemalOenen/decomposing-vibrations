@@ -105,6 +105,45 @@ def test_param_planar_submolecule_counts_neighbours_from_the_cut_bonds():
     assert (n_phi, n_gamma) == (1 + 0 + 1 + 1, 0)
 
 
+# --- distributing intermolecular ICs over the submolecule sets ------------------------
+
+
+def shared_list_sets():
+    """Two sets sharing their angle list, as left by the shallow copies of the bond step."""
+    angles = ["a1", "a2"]
+    return [{0: {"angles": angles, "bonds": ["b1"]}, 1: {"angles": angles, "bonds": ["b2"]}}]
+
+
+def test_distribute_elements_gives_every_set_exactly_the_requested_number():
+    """
+    Two of three intermolecular angles per set: each result has its own 2 + 2 angles. The
+    combination lists used to be extended in place, so later sets inherited the ICs of earlier
+    ones (methanol dimer: 17 instead of 15 angles, 2 redundancies per set).
+    """
+    # two submolecule sets with different angles, like the three angle subsets of one methanol
+    sets = [{0: {"angles": ["a1", "a2"]}, 1: {"angles": ["a1", "a3"]}}]
+    result = tp.distribute_elements(sets, ["X1", "X2", "X3"], "angles", 2)[0]
+    assert len(result) == 2 * 3
+    combos = {frozenset(c) for c in (("X1", "X2"), ("X1", "X3"), ("X2", "X3"))}
+    for own in (["a1", "a2"], ["a1", "a3"]):
+        mine = [set(s["angles"]) for s in result.values() if set(own) <= set(s["angles"])]
+        assert [len(s) for s in mine] == [4, 4, 4]
+        assert {frozenset(s - set(own)) for s in mine} == combos
+
+
+def test_distribute_elements_does_not_change_its_input():
+    for take in (2, 3):
+        sets = shared_list_sets()
+        tp.distribute_elements(sets, ["X1", "X2", "X3"], "angles", take)
+        assert sets[0][0]["angles"] == ["a1", "a2"]
+
+
+def test_add_element_to_all_entries_with_shared_lists():
+    sets = shared_list_sets()
+    tp.add_element_to_all_entries(sets, ["X1", "X2"], "angles", 1)
+    assert [s["angles"] for s in sets[0].values()] == [["a1", "a2", "X1"]] * 2
+
+
 def test_get_multiplicity():
     assert tp.get_multiplicity("C1", RING_MULT) == 3
     assert tp.get_multiplicity("X", RING_MULT) is None
