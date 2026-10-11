@@ -40,7 +40,11 @@ nomodeco = "nomodeco.nomodeco:main"
 [tool.pytest.ini_options]
 testpaths = ["nomodeco/tests"]
 pythonpath = ["."]
-markers = ["slow: full nomodeco runs on real molecules"]
+markers = [
+    "slow: full nomodeco runs on real molecules",
+    "benchmark: speed comparisons, run with -m benchmark",
+]
+addopts = "-m 'not benchmark'"
 filterwarnings = ["ignore::DeprecationWarning:pymatgen.*"]
 
 

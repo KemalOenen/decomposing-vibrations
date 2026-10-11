@@ -40,6 +40,7 @@ from nomodeco.libraries import logfile
 from nomodeco.libraries import molpro_parser
 from nomodeco.libraries import specifications
 from nomodeco.libraries import icset_opt
+from nomodeco.libraries import completeness
 from nomodeco.libraries import linear_bends
 from nomodeco.libraries import arguments
 from nomodeco.libraries import topology as tp
@@ -556,7 +557,7 @@ def main():
         # Keep only complete sets (rank of B = idof) before sampling, so --max-sets is spent on
         # sets that can be the optimal one
         generated_sets = len(ic_dict)
-        complete_keys = icset_opt.complete_set_keys(ic_dict, atoms, idof, bend_refs)
+        complete_keys = completeness.complete_keys(ic_dict, atoms, idof, bend_refs).tolist()
         print(f"{len(complete_keys):,} of {generated_sets:,} IC sets are complete (rank of B = {idof})")
         out.info("%s of %s generated IC sets are complete (rank of the B matrix = %s)",
                  len(complete_keys), generated_sets, idof)

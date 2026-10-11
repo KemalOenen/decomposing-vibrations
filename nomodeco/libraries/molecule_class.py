@@ -42,6 +42,14 @@ class Molecule(list):
         if atoms is None:
             atoms = []
         super().__init__(atoms)
+        # Failsafe: ICs, the molecular graph and all output tables are keyed by atom label
+        labels = [atom.symbol for atom in self]
+        duplicates = sorted({label for label in labels if labels.count(label) > 1})
+        if duplicates:
+            raise ValueError(
+                f"Duplicate atom labels after read-in: {duplicates}. "
+                f"Atom labels must be unique, check the atom names in the input file."
+            )
         # Construct bonds, h-bonds and acceptor-donor bonds upon initialization    
 
     class Atom:
